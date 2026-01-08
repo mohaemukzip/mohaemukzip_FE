@@ -20,8 +20,8 @@ mohaemukzip_FE_Repo
 ## 👥 멤버
 | 팀원 1 | 팀원 2 | 팀원 3 | 팀원 4 | 팀원 5 |
 |:------:|:------:|:------:|:------:|:------:|
-| <img src="" width=120px alt="고석현"/> | <img src="" width=120px alt="이한결"/> | <img src="" width=120px alt="이서현"/>  |
-| [고석현](https://github.com/dev-koh) | [김지우](https://github.com/keemeoow) | [김영택](https://github.com/kim0taek) | 
+
+| [고석현](https://github.com/dev-koh) | [이한결](https://github.com/2-1g) | [이서현](https://github.com/doitexactly) | 
 
 <br>
 
