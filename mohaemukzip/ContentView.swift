@@ -17,8 +17,10 @@ struct ContentView: View {
                 .foregroundStyle(.sub400)
                 .font(.PretendardRegular13)
         }
-        .padding()
+        .padding(30)
     }
+    //테스트용 수정
+    
 }
 
 #Preview {
