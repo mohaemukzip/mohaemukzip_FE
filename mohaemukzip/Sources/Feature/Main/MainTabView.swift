@@ -9,24 +9,22 @@ import SwiftUI
 
 struct MainTabView: View {
     var body: some View {
-        
         TabView {
             Tab("홈", image: "icon-home") {
-                Text("홈")
+                HomeView()
             }
             Tab("검색", image: "icon-search") {
-                Text("검색")
+                SearchView()
             }
             Tab("재료", image: "icon-ingredient") {
-                Text("재료")
+                IngredientView()
             }
             Tab("마이", image: "icon-profile") {
-                Text("마이")
+                ProfileView()
             }
-        } // end of TabView
-        
-    } // end of body
-} // end of MainTabView
+        }
+    }
+}
 
 #Preview {
     MainTabView()
