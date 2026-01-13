@@ -15,6 +15,14 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				Service/.gitkeep,
+				Sources/.gitkeep,
+				Sources/Common/.gitkeep,
+				Sources/Common/Components/.gitkeep,
+				Sources/Common/Extensions/.gitkeep,
+				Sources/Common/Navigation/.gitkeep,
+				Sources/Common/Utilities/.gitkeep,
+				Sources/Feature/.gitkeep,
 			);
 			target = 67A031AE2F0FC1BF005E0E39 /* mohaemukzip */;
 		};
