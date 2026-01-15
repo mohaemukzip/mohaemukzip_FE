@@ -14,13 +14,20 @@ struct MainTabView: View {
         case ingredient
         case profile
     }
-    
+        
     //기본 설정된 상태 -> home
     @State private var selection: TabType = .home
 
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
+
+        // 탭 아이템 간 간격 조절 (가운데 정렬 + 간격 촘촘하게)
+        UITabBar.appearance().itemPositioning = .centered
+      
+    
+        // 각 탭 아이템의 너비를 줄여 전체 간격을 촘촘하게 유지 (좌우 대칭 유지)
+       
 
         // 선택되지 않은 상태 (grey500)
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(named: "grey500")
@@ -36,6 +43,7 @@ struct MainTabView: View {
 
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
+
     }
     var body: some View {
         TabView(selection: $selection) {
