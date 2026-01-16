@@ -12,5 +12,5 @@ struct IngredientManagementCardModel: Identifiable, Hashable {
     let id: UUID = UUID()
     let name: String
     let amount: String
-    let expirationData: Int
+    let expirationDate: Int
 }

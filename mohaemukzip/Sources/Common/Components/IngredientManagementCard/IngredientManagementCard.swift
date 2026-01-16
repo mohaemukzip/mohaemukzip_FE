@@ -32,7 +32,7 @@ struct IngredientManagementCard: View {
                         .foregroundStyle(Color.clear)
                         .frame(width: 44, height: 18)
                     
-                    Text("D-\(ingredientInfo.expirationData)")
+                    Text("D-\(ingredientInfo.expirationDate)")
                         .font(.PretendardMedium13)
                         .foregroundStyle(color)
                 }
@@ -43,5 +43,5 @@ struct IngredientManagementCard: View {
 }
 
 #Preview {
-    IngredientManagementCard(ingredientInfo: IngredientManagementCardModel(name: "배추", amount: "100g", expirationData: 100), color: .green)
+    IngredientManagementCard(ingredientInfo: IngredientManagementCardModel(name: "배추", amount: "100g", expirationDate: 100), color: .green)
 }
