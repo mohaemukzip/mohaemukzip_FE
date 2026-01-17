@@ -48,8 +48,20 @@ struct IngredientBox: View {
                                 .foregroundStyle(.clear)
                         }
                     }
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(lineWidth: 1)
+                            .foregroundStyle(.grey300)
+                            .frame(width: 76, height: 80)
+                        RoundedRectangle(cornerRadius: 30)
+                            .foregroundStyle(.grey100)
+                            .frame(width: 32, height: 32)
+                        Image("icon-plus")
+                            .foregroundStyle(.grey400)
+                    }
                 }
             }.frame(width: 327) // end of VStack
+                .padding()
         } // end of ZStack
         
     }
