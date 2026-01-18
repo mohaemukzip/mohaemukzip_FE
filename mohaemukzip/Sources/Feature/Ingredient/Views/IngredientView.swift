@@ -72,9 +72,9 @@ struct IngredientView: View {
                     .foregroundStyle(.white)
                 HStack {
                     Spacer()
-                    Button ( action: { } ) { OrangeButton(text: "장보기 연동하기", type: .small) }
+                    Button ( action: { } ) { OrangeButton(text: "장보기 연동하기", size: .small) }
                     Spacer()
-                    Button ( action: { } ) { OrangeButton(text: "재료 입력하기", type: .small) }
+                    Button ( action: { } ) { OrangeButton(text: "재료 입력하기", size: .small) }
                     Spacer()
                 }.padding()
             }.frame(height: 94)
