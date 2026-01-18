@@ -7,22 +7,22 @@
 
 import SwiftUI
 
-enum type {
+enum ButtonSize {
     case big
     case small
 }
 
 struct OrangeButton: View {
     let text: String
-    let type: type
+    let size: ButtonSize
     
     var body: some View {
-        switch type {
+        switch size {
         case .big:
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .foregroundStyle(.main400)
-                    .frame(width: 359, height: 57)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Text(text)
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
@@ -36,13 +36,10 @@ struct OrangeButton: View {
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold16)
             }
-        } // end of switch
-        
-    } // end of body
+        }
+    }
 }
 
 #Preview {
-    OrangeButton(text: "시작하기", type: .small)
+    OrangeButton(text: "시작하기", size: .small)
 }
-
-/// OrangeButton(text: "버튼 안에 넣을 텍스트", type: .big 아니면 .small)

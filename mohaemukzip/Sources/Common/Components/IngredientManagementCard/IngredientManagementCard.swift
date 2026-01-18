@@ -1,5 +1,5 @@
 //
-//  IngredientCard.swift
+//  IngredientManagementCard.swift
 //  mohaemukzip
 //
 //  Created by 이한결 on 1/15/26.
@@ -38,8 +38,7 @@ struct IngredientManagementCard: View {
                 }
             }
         }
-
-    } // end of body
+    }
 }
 
 #Preview {

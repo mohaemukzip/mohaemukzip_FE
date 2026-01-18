@@ -1,5 +1,5 @@
 //
-//  IngredientCardModel.swift
+//  IngredientManagementCardModel.swift
 //  mohaemukzip
 //
 //  Created by 이한결 on 1/15/26.
