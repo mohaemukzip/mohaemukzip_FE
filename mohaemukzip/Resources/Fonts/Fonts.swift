@@ -37,7 +37,7 @@ extension Font {
         return pretend(type: .bold, size: 26)
     }
     
-    static var PretendardBod24: Font {
+    static var PretendardBold24: Font {
         return pretend(type: .bold, size: 24)
     }
     
