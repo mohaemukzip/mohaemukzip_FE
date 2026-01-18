@@ -17,7 +17,7 @@ struct MainTabView: View {
                 SearchView()
             }
             Tab("재료", image: "icon-ingredient") {
-                IngredientView()
+                FridgeView()
             }
             Tab("마이", image: "icon-profile") {
                 ProfileView()

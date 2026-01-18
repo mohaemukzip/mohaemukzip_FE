@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct IngredientManagementCard: View {
-    let ingredientInfo: IngredientManagementCardModel
-    let color: Color // MARK: viewModel에서 소비기한 계산해서 color 넘겨줄 것
+    let ingredientInfo: IngredientModel
+    let color: Color
     
         
     var body: some View {
@@ -42,5 +42,5 @@ struct IngredientManagementCard: View {
 }
 
 #Preview {
-    IngredientManagementCard(ingredientInfo: IngredientManagementCardModel(name: "배추", amount: "100g", expirationDate: 100), color: .green)
+    IngredientManagementCard(ingredientInfo: IngredientModel(name: "배추", amount: "100g", expirationDate: 100, ty: .chilled), color: .green)
 }
