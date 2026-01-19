@@ -41,4 +41,11 @@ class FridgeViewModel: ObservableObject {
                                IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
                                IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room)]
     }
+    
+    func deleteIngredient(at id: UUID) {
+        withAnimation {
+            allIngredients.removeAll{ $0.id == id }
+        }
+    }
+    
 }

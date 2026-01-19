@@ -10,6 +10,8 @@ import SwiftUI
 struct IngredientManagementCard: View {
     let ingredientInfo: IngredientModel
     let color: Color
+    @Binding var isEditing: Bool
+    let onDelete: () -> Void
     
         
     var body: some View {
@@ -37,10 +39,21 @@ struct IngredientManagementCard: View {
                         .foregroundStyle(color)
                 }
             }
+        }.overlay(alignment: .topTrailing) {
+            if isEditing {
+                Button( action: onDelete ) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.grey500)
+                        .padding(4)
+                }.offset(x: 8, y: -8)
+            }
         }
+        .onLongPressGesture { withAnimation { isEditing.toggle() } }
     }
 }
 
+/*
 #Preview {
     IngredientManagementCard(ingredientInfo: IngredientModel(name: "배추", amount: "100g", expirationDate: 100, ty: .chilled), color: .green)
 }
+*/

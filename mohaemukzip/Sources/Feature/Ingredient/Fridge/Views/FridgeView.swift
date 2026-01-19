@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FridgeView: View {
     @StateObject private var viewModel = FridgeViewModel()
+    @State var isEditing: Bool = false
     
     var body: some View {
         VStack {
@@ -28,13 +29,22 @@ struct FridgeView: View {
             ZStack {
                 ScrollView {
                     Group {
-                        IngredientBox(text: "냉동", ingredients: viewModel.frozenIngredients)
+                        IngredientBox(isEditing: $isEditing,
+                                      text: "냉동",
+                                      ingredients: viewModel.frozenIngredients,
+                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
                         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
-                        IngredientBox(text: "냉장", ingredients: viewModel.chilledIngredients)
-                        IngredientBox(text: "실온", ingredients: viewModel.roomIngredients)
+                        IngredientBox(isEditing: $isEditing,
+                                      text: "냉장",
+                                      ingredients: viewModel.chilledIngredients,
+                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
+                        IngredientBox(isEditing: $isEditing,
+                                      text: "실온",
+                                      ingredients: viewModel.roomIngredients,
+                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
                         .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
                     }.padding()
-                } // end of ScrollView
+                }
             }.background(.grey100)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             
