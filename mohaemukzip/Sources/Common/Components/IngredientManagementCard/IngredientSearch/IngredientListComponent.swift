@@ -10,6 +10,7 @@ import SwiftUI
 struct IngredientListComponent: View {
     let name: String
     let amount: String
+    let category: String
     @State var isSaved: Bool = false
     
     var body: some View {
@@ -43,6 +44,6 @@ struct IngredientListComponent: View {
 
 
 #Preview {
-    IngredientListComponent(name: "대파", amount: "1기본량(100g)")
+    IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")
 }
 
