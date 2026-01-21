@@ -13,6 +13,32 @@ struct IngredientSearchView: View {
     
     var body: some View {
         VStack {
+            HStack {
+                Button( action: { } ) {
+                    Image("icon-back-big")
+                        .foregroundStyle(.grey700)
+                }
+                
+                Button ( action: { /* FRG-SRC-002 이동 */ } ) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .frame(height: 44)
+                            .foregroundStyle(.grey100)
+                        
+                        HStack {
+                            Text("재료명을 입력하세요.")
+                                .font(.PretendardRegular16)
+                                .foregroundStyle(.grey500)
+                                .padding(.leading, 14)
+                            Spacer()
+                            Image("icon-search")
+                                .foregroundStyle(.grey500)
+                                .padding(.trailing, 14)
+                        }
+                    }
+                }
+            }.padding()
+            
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(IngredientCategory.allCases, id: \.self) { category in
@@ -29,7 +55,7 @@ struct IngredientSearchView: View {
                         }.padding(.leading)
                     }
                 }
-            }
+            }.padding(.vertical, 10)
             
             IngredientList(ingredients: viewModel.filteredIngredients)
             
