@@ -13,8 +13,7 @@ struct IngredientModel: Identifiable, Hashable {
         case chilled
         case room
     }
-    
-    // MARK: API 연결 시 삭제하고 백에서 주는 고유 id 사용할 것 (백에서 만약 고유 id 준다면!)
+
     let id: UUID = UUID()
     let name: String
     let amount: String
