@@ -1,5 +1,5 @@
 //
-//  IngredientCard.swift
+//  IngredientManagementCard.swift
 //  mohaemukzip
 //
 //  Created by 이한결 on 1/15/26.
@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct IngredientManagementCard: View {
-    let ingredientInfo: IngredientManagementCardModel
-    let color: Color // MARK: viewModel에서 소비기한 계산해서 color 넘겨줄 것
+    let ingredientInfo: IngredientModel
+    let color: Color
+    @Binding var isEditing: Bool
+    let onDelete: () -> Void
     
         
     var body: some View {
@@ -32,16 +34,26 @@ struct IngredientManagementCard: View {
                         .foregroundStyle(Color.clear)
                         .frame(width: 44, height: 18)
                     
-                    Text("D-\(ingredientInfo.expirationData)")
+                    Text("D-\(ingredientInfo.expirationDate)")
                         .font(.PretendardMedium13)
                         .foregroundStyle(color)
                 }
             }
+        }.overlay(alignment: .topTrailing) {
+            if isEditing {
+                Button( action: onDelete ) {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.grey500)
+                        .padding(4)
+                }.offset(x: 8, y: -8)
+            }
         }
-
-    } // end of body
+        .onLongPressGesture { withAnimation { isEditing.toggle() } }
+    }
 }
 
+/*
 #Preview {
-    IngredientManagementCard(ingredientInfo: IngredientManagementCardModel(name: "배추", amount: "100g", expirationData: 100), color: .green)
+    IngredientManagementCard(ingredientInfo: IngredientModel(name: "배추", amount: "100g", expirationDate: 100, ty: .chilled), color: .green)
 }
+*/
