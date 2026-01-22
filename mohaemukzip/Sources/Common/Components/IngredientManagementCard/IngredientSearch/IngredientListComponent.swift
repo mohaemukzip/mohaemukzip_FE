@@ -11,7 +11,8 @@ struct IngredientListComponent: View {
     let name: String
     let amount: String
     let category: String
-    @State var isSaved: Bool = false
+    let isSaved: Bool
+    let onSaveTap: () -> Void
     
     var body: some View {
         HStack {
@@ -20,7 +21,7 @@ struct IngredientListComponent: View {
                     Text(name)
                         .foregroundStyle(.grey900)
                         .font(.PretendardMedium16)
-                    Button( action: { isSaved.toggle() } ) {
+                    Button( action: { onSaveTap() } ) {
                         Image("icon-star")
                             .foregroundStyle(isSaved ? .main300 : .grey300)
                     }
@@ -44,6 +45,6 @@ struct IngredientListComponent: View {
 
 
 #Preview {
-    IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")
+    IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품", isSaved: false, onSaveTap: { })
 }
 

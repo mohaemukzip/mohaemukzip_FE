@@ -10,6 +10,7 @@ import Combine
 
 class IngredientSearchViewModel: ObservableObject {
     @Published var selectedCategory: IngredientCategory = .all
+    @Published var searchText: String = ""
     @Published var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "면"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
@@ -28,12 +29,36 @@ class IngredientSearchViewModel: ObservableObject {
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")]
+    @Published var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
+                                                                  IngredientDetailSearchModel(name: "소파"),
+                                                                  IngredientDetailSearchModel(name: "중파")]
     
     var filteredIngredients: [IngredientSearchModel] {
-        if (selectedCategory == .all) {
-            return allIngredients
+        
+        // 카테고리 필터링
+        let categoryFiltered = allIngredients.filter { ingredient in
+            selectedCategory == .all || ingredient.category == selectedCategory.rawValue
+        }
+        
+        // 검색어 필터링
+        if (searchText.isEmpty) {
+            return categoryFiltered
         } else {
-            return allIngredients.filter { $0.category == selectedCategory.rawValue }
+            return categoryFiltered.filter { ingredient in
+                ingredient.name.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    
+    var savedIngredient: [IngredientSearchModel] {
+        return allIngredients.filter { ingredient in
+            ingredient.isSaved
+        }
+    }
+    
+    func toggleIsSaved(for id: UUID) {
+        if let index = allIngredients.firstIndex(where: {$0.id == id}) {
+            allIngredients[index].isSaved.toggle()
         }
     }
 }

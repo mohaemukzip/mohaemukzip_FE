@@ -28,7 +28,7 @@ struct IngredientSearchView: View {
                         HStack {
                             Text("재료명을 입력하세요.")
                                 .font(.PretendardRegular16)
-                                .foregroundStyle(.grey500)
+                                .foregroundStyle(.grey400)
                                 .padding(.leading, 14)
                             Spacer()
                             Image("icon-search")
@@ -57,7 +57,10 @@ struct IngredientSearchView: View {
                 }
             }.padding(.vertical, 10)
             
-            IngredientList(ingredients: viewModel.filteredIngredients)
+            IngredientList(ingredients: viewModel.filteredIngredients,
+                           onSaveTap: { id in
+                viewModel.toggleIsSaved(for: id)
+            })
             
         }
         .onChange(of: selectedCategory) {
