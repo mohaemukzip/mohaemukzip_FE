@@ -11,7 +11,6 @@ import SwiftUI
 struct mohaemukzipApp: App {
     var body: some Scene {
         WindowGroup {
-            RecipeListView(category: .korean)
-        }
+            RecipeListView(category: .korean)        }
     }
 }
