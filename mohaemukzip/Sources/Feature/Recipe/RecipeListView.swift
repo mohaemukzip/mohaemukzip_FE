@@ -8,18 +8,16 @@
 import SwiftUI
 import YouTubePlayerKit
 
-// MARK: - Recipe List View
 
 struct RecipeListView: View {
 
     @StateObject private var viewModel: RecipeVideoViewModel
 
-    // 기본 진입: 아무것도 선택되지 않은 상태
+    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화. 
     init() {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
 
-    // 기존 진입 코드 호환용 (ViewModel 정책상 자동 선택은 하지 않음)
     init(category: CuisineCategory) {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel(category: category))
     }
@@ -239,9 +237,9 @@ struct RecipeVideoCard: View {
             }
             .padding(.horizontal, 16)
 
-            // ✅ 유튜브 썸네일만 표시 + 썸네일 스타일 오버레이
+            //  유튜브 썸네일만 표시 + 썸네일 스타일 오버레이
             ThumbnailView(videoId: video.videoId, durationText: video.videoDuration)
-                .frame(maxWidth: .infinity)   // ✅ 타이틀/북마크와 동일한 좌우 라인
+                .frame(maxWidth: .infinity)   //  타이틀/북마크와 동일한 좌우 라인
                 .frame(height: 200)
                 .clipped()
                 .cornerRadius(12)
@@ -298,7 +296,7 @@ private struct ThumbnailView: View {
             }
             .clipped()
 
-            // ✅ 재생 시간 (우측 하단 오버레이)
+            //  재생 시간 (우측 하단 오버레이)
             if !durationText.isEmpty {
                 Text(durationText)
                     .font(.system(size: 12, weight: .semibold))
@@ -316,7 +314,8 @@ private struct ThumbnailView: View {
     }
 }
 
-// MARK: - Recipe Video Detail View (Player)
+// MARK: -상세 화면
+//TODO: - 할 예정 !!!!!!!
 
 struct RecipeVideoDetailView: View {
 
