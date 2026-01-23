@@ -13,7 +13,7 @@ struct RecipeListView: View {
 
     @StateObject private var viewModel: RecipeVideoViewModel
 
-    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화. 
+    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화. 	
     init() {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
@@ -314,40 +314,40 @@ private struct ThumbnailView: View {
     }
 }
 
-// MARK: -상세 화면
-//TODO: - 할 예정 !!!!!!!
-
-struct RecipeVideoDetailView: View {
-
-    let video: RecipeVideo
-
-    @StateObject private var player: YouTubePlayer
-
-    init(video: RecipeVideo) {
-        self.video = video
-        _player = StateObject(
-            wrappedValue: YouTubePlayer(
-                source: .video(id: video.videoId),
-                configuration: .init(
-                    fullscreenMode: .system,
-                    allowsInlineMediaPlayback: true
-                )
-            )
-        )
-    }
-
-    var body: some View {
-        VStack(spacing: 0) {
-            YouTubePlayerView(player)
-                .aspectRatio(16 / 9, contentMode: .fit)
-
-            Spacer()
-        }
-        .navigationTitle(video.title)
-        .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
+//// MARK: -상세 화면
+////TODO: - 할 예정 !!!!!!!
+//
+//struct RecipeVideoDetailView: View {
+//
+//    let video: RecipeVideo
+//
+//    @StateObject private var player: YouTubePlayer
+//
+//    init(video: RecipeVideo) {
+//        self.video = video
+//        _player = StateObject(
+//            wrappedValue: YouTubePlayer(
+//                source: .video(id: video.videoId),
+//                configuration: .init(
+//                    fullscreenMode: .system,
+//                    allowsInlineMediaPlayback: true
+//                )
+//            )
+//        )
+//    }
+//
+//    var body: some View {
+//        VStack(spacing: 0) {
+//            YouTubePlayerView(player)
+//                .aspectRatio(16 / 9, contentMode: .fit)
+//
+//            Spacer()
+//        }
+//        .navigationTitle(video.title)
+//        .navigationBarTitleDisplayMode(.inline)
+//    }
+//}
+//
 #Preview {
     RecipeListView()
 }

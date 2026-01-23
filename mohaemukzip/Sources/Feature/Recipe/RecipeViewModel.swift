@@ -143,11 +143,11 @@ final class RecipeVideoViewModel: ObservableObject {
         videos = [
             RecipeVideo(
                 id: 1,
-                title: "된장찌개 레시피",
+                title: "김민우 헬창",
                 channelName: "한식연구소",
                 viewCount: 120_000,
                 thumbnailImageName: "thumbnail1",
-                videoId: "gWHWUj5AzvU",
+                videoId: "VgPuT73v5iY",
                 videoDuration: "10:23",
                 cookingTimeMinutes: 20,
                 difficulty: 2,
