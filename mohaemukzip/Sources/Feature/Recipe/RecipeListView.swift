@@ -6,14 +6,13 @@
 //
 
 import SwiftUI
-import YouTubePlayerKit
 
 
 struct RecipeListView: View {
 
     @StateObject private var viewModel: RecipeVideoViewModel
 
-    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화. 	
+    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.     
     init() {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
@@ -231,14 +230,14 @@ struct RecipeVideoCard: View {
                 Button {
                     isBookmarked.toggle()
                 } label: {
-                    Image(isBookmarked ? "bookmark.fill" : "bookmark")
+                    Image(isBookmarked ? "bookmark_filled" : "bookmark")
                         .renderingMode(.original)
                 }
             }
             .padding(.horizontal, 16)
 
             //  유튜브 썸네일만 표시 + 썸네일 스타일 오버레이
-            ThumbnailView(videoId: video.videoId, durationText: video.videoDuration)
+            ThumbnailView(videoId: video.videoId, durationText: video.videoDuration ?? "")
                 .frame(maxWidth: .infinity)   //  타이틀/북마크와 동일한 좌우 라인
                 .frame(height: 200)
                 .clipped()
@@ -361,9 +360,15 @@ private extension Int {
     var formattedViewCount: String {
         if self < 10_000 {
             return self.formatted()
-        } else {
-            let value = Double(self) / 10_000
-            return String(format: "%.1f만", value)
         }
+
+        let value = Double(self) / 10_000.0
+        let rounded = (value * 10).rounded() / 10
+
+        if rounded.truncatingRemainder(dividingBy: 1) == 0 {
+            return "\(Int(rounded))만"
+        }
+
+        return "\(rounded)만"
     }
 }

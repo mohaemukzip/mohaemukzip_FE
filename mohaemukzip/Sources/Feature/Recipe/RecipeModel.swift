@@ -144,38 +144,44 @@ struct RecipeStep: Identifiable, Equatable {
 struct RecipeVideo: Identifiable {
 
     // MARK: Identity
-    let id: Int // server: recipeId
+    /// List API uses `id`, Detail API uses `recipeId`.
+    let id: Int
 
     // MARK: Basic
     let title: String
 
     // MARK: Video
-    /// Full YouTube URL (server: videoUrl). If your server later removes it, you can keep it empty in dummy.
-    let videoUrl: String
-    /// YouTube video id (server: videoId)
+    /// Detail API: full YouTube URL (`videoUrl`). May be absent in list.
+    let videoUrl: String?
+    /// Both APIs: YouTube video id (`videoId`).
     let videoId: String
-    /// Channel name (server: channel)
+    /// List API: channelId. Detail API may not provide it.
+    let channelId: String?
+    /// List API: video runtime string (e.g., "13:10"). Detail API may not provide it.
+    let videoDuration: String?
+
+    // MARK: Channel / Views
+    /// List API: `channelName`, Detail API: `channel`.
     let channelName: String
-    /// Views (server: views)
+    /// List API: `viewCount`, Detail API: `views`.
     let viewCount: Int
 
     // MARK: Cooking
-    /// Cooking time minutes (server: cookingTime)
+    /// List API: `cookingTimeMinutes`, Detail API: `cookingTime`.
     let cookingTimeMinutes: Int
 
     // MARK: Difficulty / Rating
-    /// Difficulty / level (server: level) - backend uses Double
-    let level: Double
-    /// Rating count (server: ratingCount)
-    let ratingCount: Int
+    /// List API: `difficulty` (Int 0~5 or 1~5 depending on your backend).
+    let difficulty: Int?
+    /// Detail API: `level` (Double).
+    let level: Double?
+    /// Detail API: rating count.
+    let ratingCount: Int?
 
     // MARK: Detail
-    /// Ingredients list (server: ingredients)
-    let ingredients: [RecipeIngredient]
-    /// Steps list (server: steps)
-    let steps: [RecipeStep]
-    /// Summary exists flag (server: summaryExists)
-    let summaryExists: Bool
+    let ingredients: [RecipeIngredient]?
+    let steps: [RecipeStep]?
+    let summaryExists: Bool?
 
     // MARK: Categories (Front-defined)
     let cuisine: CuisineCategory
@@ -184,39 +190,79 @@ struct RecipeVideo: Identifiable {
     let japaneseSubCategory: JapaneseSubCategory?
     let westernSubCategory: WesternSubCategory?
     let southeastAsianSubCategory: SoutheastAsianSubCategory?
+    
+    
+
 
     // MARK: UI State
+    /// List API provides it. Detail API may omit it; default to false.
     var isBookmarked: Bool
+    
+    //채널 프사
+    let channelProfileImageUrl: String?
+
+    // MARK: Computed (UI convenience)
+
+    /// Prefer list `difficulty`, else derive from detail `level`.
+    var displayDifficultyStars: Int {
+        if let difficulty {
+            return max(0, min(5, difficulty))
+        }
+        if let level {
+            return max(0, min(5, Int(level.rounded())))
+        }
+        return 0
+    }
+
+    /// Safe arrays for UI.
+    var displayIngredients: [RecipeIngredient] {
+        ingredients ?? []
+    }
+
+    var displaySteps: [RecipeStep] {
+        steps ?? []
+    }
+
+    var hasSummary: Bool {
+        summaryExists ?? false
+    }
 
     // MARK: Init
     init(
         id: Int,
         title: String,
-        videoUrl: String = "",
+        videoUrl: String? = nil,
         videoId: String,
+        channelId: String? = nil,
+        videoDuration: String? = nil,
         channelName: String,
         viewCount: Int,
         cookingTimeMinutes: Int,
-        level: Double = 0.0,
-        ratingCount: Int = 0,
-        ingredients: [RecipeIngredient] = [],
-        steps: [RecipeStep] = [],
-        summaryExists: Bool = false,
+        difficulty: Int? = nil,
+        level: Double? = nil,
+        ratingCount: Int? = nil,
+        ingredients: [RecipeIngredient]? = nil,
+        steps: [RecipeStep]? = nil,
+        summaryExists: Bool? = nil,
         cuisine: CuisineCategory,
         koreanSubCategory: KoreanSubCategory? = nil,
         chineseSubCategory: ChineseSubCategory? = nil,
         japaneseSubCategory: JapaneseSubCategory? = nil,
         westernSubCategory: WesternSubCategory? = nil,
         southeastAsianSubCategory: SoutheastAsianSubCategory? = nil,
-        isBookmarked: Bool = false
+        isBookmarked: Bool = false,
+        channelProfileImageUrl: String? = nil
     ) {
         self.id = id
         self.title = title
         self.videoUrl = videoUrl
         self.videoId = videoId
+        self.channelId = channelId
+        self.videoDuration = videoDuration
         self.channelName = channelName
         self.viewCount = viewCount
         self.cookingTimeMinutes = cookingTimeMinutes
+        self.difficulty = difficulty
         self.level = level
         self.ratingCount = ratingCount
         self.ingredients = ingredients
@@ -229,5 +275,7 @@ struct RecipeVideo: Identifiable {
         self.westernSubCategory = westernSubCategory
         self.southeastAsianSubCategory = southeastAsianSubCategory
         self.isBookmarked = isBookmarked
+        self.channelProfileImageUrl = channelProfileImageUrl
+        
     }
 }
