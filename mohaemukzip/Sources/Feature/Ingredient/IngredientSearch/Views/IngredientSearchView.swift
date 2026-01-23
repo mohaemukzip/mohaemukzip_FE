@@ -58,9 +58,8 @@ struct IngredientSearchView: View {
             }.padding(.vertical, 10)
             
             IngredientList(ingredients: viewModel.filteredIngredients,
-                           onSaveTap: { id in
-                viewModel.toggleIsSaved(for: id)
-            })
+                           onSaveTap: { id in viewModel.toggleIsSaved(for: id)},
+                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item})
             
         }
         .onChange(of: selectedCategory) {

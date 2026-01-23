@@ -10,6 +10,7 @@ import SwiftUI
 struct IngredientDetailSearchView: View {
     @Binding var selectedCategory: IngredientCategory
     @StateObject var viewModel = IngredientSearchViewModel()
+    @ObservedObject var fridgeVM: FridgeViewModel
     @State var isShowingSheet: Bool = false
     
     var body: some View {
@@ -84,9 +85,8 @@ struct IngredientDetailSearchView: View {
                             }
                         } else {
                             IngredientList(ingredients: viewModel.savedIngredient,
-                                           onSaveTap: { id in
-                                viewModel.toggleIsSaved(for: id)
-                            })
+                                           onSaveTap: { id in viewModel.toggleIsSaved(for: id) },
+                                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                         }
                         
                     }.padding()
@@ -110,9 +110,8 @@ struct IngredientDetailSearchView: View {
                     }.padding(.vertical, 10)
                     
                     IngredientList(ingredients: viewModel.filteredIngredients,
-                                   onSaveTap: { id in
-                        viewModel.toggleIsSaved(for: id)
-                    })
+                                   onSaveTap: { id in viewModel.toggleIsSaved(for: id) },
+                                   onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                 }
             }.onChange(of: selectedCategory) {
                 viewModel.selectedCategory = selectedCategory
@@ -129,11 +128,24 @@ struct IngredientDetailSearchView: View {
                 }).presentationDetents([.fraction(0.45), .large])
             }
             
+            .sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
+                IngredientAdditionBottomSheet(ingredient: ingredient,
+                                              onAdd: { storage, date, weight in
+                    fridgeVM.addIngredientToFridge(name: ingredient.name,
+                                                   amount: weight,
+                                                   storage: storage)
+                    viewModel.selectedIngredientForAddition = nil},
+                                              onSave: {
+                    viewModel.toggleIsSaved(for: ingredient.id)
+                    viewModel.selectedIngredientForAddition?.isSaved.toggle()
+                },
+                                              onDismiss: { viewModel.selectedIngredientForAddition = nil } ).presentationDetents([.fraction(0.98)])
+            }
         } // end of ZStack
     } // end of body
 }
 
 #Preview {
     @Previewable @State var selectedCategory: IngredientCategory = .all
-    IngredientDetailSearchView(selectedCategory: $selectedCategory)
+    IngredientDetailSearchView(selectedCategory: $selectedCategory, fridgeVM: FridgeViewModel())
 }

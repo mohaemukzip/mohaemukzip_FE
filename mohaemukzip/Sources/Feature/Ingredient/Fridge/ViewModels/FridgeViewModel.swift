@@ -48,4 +48,14 @@ class FridgeViewModel: ObservableObject {
         }
     }
     
+    func addIngredientToFridge(name: String, amount: String, storage: IngredientModel.StorageType) {
+        let newEntry = IngredientModel(name: name,
+                                       amount: amount,
+                                       expirationDate: 10,
+                                       ty: storage)
+        withAnimation {
+            self.allIngredients.insert(newEntry, at: 0)
+        }
+    }
+    
 }

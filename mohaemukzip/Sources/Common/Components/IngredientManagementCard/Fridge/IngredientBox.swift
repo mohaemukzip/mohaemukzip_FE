@@ -30,7 +30,7 @@ struct IngredientBox: View {
                         .foregroundStyle(.grey700)
                     Spacer().frame(width: 278)
                     Button(action: { withAnimation { isExpanded.toggle() } } ) {
-                        Image(isExpanded ? "icon-chevron.down" : "icon-chevron.up")
+                        Image(isExpanded ? "icon-chevron-down" : "icon-chevron-up")
                             .foregroundStyle(.grey700)
                     }
                 }

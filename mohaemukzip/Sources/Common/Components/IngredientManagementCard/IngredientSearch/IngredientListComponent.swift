@@ -13,6 +13,7 @@ struct IngredientListComponent: View {
     let category: String
     let isSaved: Bool
     let onSaveTap: () -> Void
+    let onPlusTap: () -> Void
     
     var body: some View {
         HStack {
@@ -33,7 +34,7 @@ struct IngredientListComponent: View {
             
             Spacer()
             
-            Button( action: { } ) {
+            Button( action: { onPlusTap() } ) {
                 Image("icon-plus")
                     .frame(width: 32, height: 32)
             }
@@ -45,6 +46,6 @@ struct IngredientListComponent: View {
 
 
 #Preview {
-    IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품", isSaved: false, onSaveTap: { })
+    IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품", isSaved: false, onSaveTap: { }, onPlusTap: { })
 }
 

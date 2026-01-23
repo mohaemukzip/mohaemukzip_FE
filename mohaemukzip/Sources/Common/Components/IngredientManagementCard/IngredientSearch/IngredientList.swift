@@ -10,6 +10,7 @@ import SwiftUI
 struct IngredientList: View {
     var ingredients: [IngredientSearchModel]
     var onSaveTap: (UUID) -> Void
+    var onPlusTap: (IngredientSearchModel) -> Void
     
     var body: some View {
         if (ingredients.isEmpty) {
@@ -40,7 +41,8 @@ struct IngredientList: View {
                             amount: ingredient.amount,
                             category: ingredient.category,
                             isSaved: ingredient.isSaved,
-                            onSaveTap: {onSaveTap(ingredient.id)})
+                            onSaveTap: {onSaveTap(ingredient.id)},
+                            onPlusTap: {onPlusTap(ingredient)})
                     }
                 }
             }

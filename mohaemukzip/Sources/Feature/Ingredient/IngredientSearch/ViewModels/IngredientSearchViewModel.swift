@@ -32,6 +32,7 @@ class IngredientSearchViewModel: ObservableObject {
     @Published var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
                                                                   IngredientDetailSearchModel(name: "소파"),
                                                                   IngredientDetailSearchModel(name: "중파")]
+    @Published var selectedIngredientForAddition: IngredientSearchModel?
     
     var filteredIngredients: [IngredientSearchModel] {
         
