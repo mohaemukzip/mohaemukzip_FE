@@ -10,6 +10,7 @@ import SwiftUI
 struct IngredientDetailSearchView: View {
     @Binding var selectedCategory: IngredientCategory
     @StateObject var viewModel = IngredientSearchViewModel()
+    @State var isShowingSheet: Bool = false
     
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -116,10 +117,18 @@ struct IngredientDetailSearchView: View {
             }.onChange(of: selectedCategory) {
                 viewModel.selectedCategory = selectedCategory
             } // end of VStack
+            Button ( action: { isShowingSheet = true } ) {
+                IngredientRequestButton()
+                    .padding(.horizontal)
+                    .padding(.bottom, 35)
+            }
+            .sheet(isPresented: $isShowingSheet) {
+                RequestBottomSheet(isShowingSheet: $isShowingSheet,
+                                   onRequest: { requestedText in
+                    viewModel.sendRequest(name: requestedText)
+                }).presentationDetents([.fraction(0.45), .large])
+            }
             
-            IngredientRequestButton()
-                .padding(.horizontal)
-                .padding(.bottom, 35)
         } // end of ZStack
     } // end of body
 }

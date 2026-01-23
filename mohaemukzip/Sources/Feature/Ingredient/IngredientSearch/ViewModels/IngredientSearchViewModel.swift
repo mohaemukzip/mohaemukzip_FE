@@ -91,4 +91,9 @@ class IngredientSearchViewModel: ObservableObject {
             }
         }
     }
+    
+    // 재료 추가 요청 함수
+    func sendRequest(name: String) {
+        print("서버에 \(name) 재료 요청 전송")
+    }
 }
