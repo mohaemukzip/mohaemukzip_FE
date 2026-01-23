@@ -144,109 +144,139 @@ final class RecipeVideoViewModel: ObservableObject {
             RecipeVideo(
                 id: 1,
                 title: "김민우 헬창",
+                videoUrl: "",
+                videoId: "VgPuT73v5iY",
                 channelName: "한식연구소",
                 viewCount: 120_000,
-                thumbnailImageName: "thumbnail1",
-                videoId: "VgPuT73v5iY",
-                videoDuration: "10:23",
                 cookingTimeMinutes: 20,
-                difficulty: 2,
+                level: 2.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 1, name: "돼지고기", amount: 400.0, unit: "g", hasIngredient: true),
+                    RecipeIngredient(id: 2, name: "양파", amount: 0.5, unit: "개", hasIngredient: false)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "재료 준비", description: "고기와 채소를 손질합니다.", videoTime: 120),
+                    RecipeStep(stepNumber: 2, title: "볶기", description: "팬에 고기를 볶습니다.", videoTime: 300)
+                ],
+                summaryExists: true,
                 cuisine: .korean,
                 koreanSubCategory: .soupStew,
-                chineseSubCategory: nil,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             ),
             RecipeVideo(
                 id: 4,
                 title: "초간단 고석현 김치찌개",
+                videoUrl: "",
+                videoId: "tDlw8yMg9NY",
                 channelName: "고석현",
                 viewCount: 54_000,
-                thumbnailImageName: "",
-                videoId: "tDlw8yMg9NY",
-                videoDuration: "09:15",
                 cookingTimeMinutes: 25,
-                difficulty: 1,
+                level: 1.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 3, name: "김치", amount: 300.0, unit: "g", hasIngredient: true),
+                    RecipeIngredient(id: 4, name: "두부", amount: 1.0, unit: "모", hasIngredient: false)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "육수 준비", description: "물에 재료를 넣고 끓입니다.", videoTime: 180),
+                    RecipeStep(stepNumber: 2, title: "마무리", description: "간을 맞추고 마무리합니다.", videoTime: 420)
+                ],
+                summaryExists: false,
                 cuisine: .korean,
                 koreanSubCategory: .soupStew,
-                chineseSubCategory: nil,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             ),
             RecipeVideo(
                 id: 5,
                 title: "고석현 존맛 된찌",
+                videoUrl: "",
+                videoId: "J4vEoFVcguw",
                 channelName: "고석현",
                 viewCount: 88_000,
-                thumbnailImageName: "",
-                videoId: "J4vEoFVcguw",
-                videoDuration: "11:40",
                 cookingTimeMinutes: 30,
-                difficulty: 2,
+                level: 2.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 5, name: "된장", amount: 2.0, unit: "큰술", hasIngredient: true),
+                    RecipeIngredient(id: 6, name: "애호박", amount: 0.5, unit: "개", hasIngredient: false)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "재료 넣기", description: "냄비에 재료를 넣습니다.", videoTime: 150),
+                    RecipeStep(stepNumber: 2, title: "끓이기", description: "중불로 끓입니다.", videoTime: 360)
+                ],
+                summaryExists: true,
                 cuisine: .korean,
                 koreanSubCategory: .soupStew,
-                chineseSubCategory: nil,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             ),
             RecipeVideo(
                 id: 2,
                 title: "마라탕 만들기",
+                videoUrl: "",
+                videoId: "EEc7AwJKAuc",
                 channelName: "중식장인",
                 viewCount: 98_000,
-                thumbnailImageName: "thumbnail2",
-                videoId: "EEc7AwJKAuc",
-                videoDuration: "12:05",
                 cookingTimeMinutes: 30,
-                difficulty: 3,
+                level: 3.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 7, name: "마라소스", amount: 1.0, unit: "팩", hasIngredient: true),
+                    RecipeIngredient(id: 8, name: "푸주", amount: 100.0, unit: "g", hasIngredient: false)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "육수 끓이기", description: "육수에 마라소스를 풀어 끓입니다.", videoTime: 240),
+                    RecipeStep(stepNumber: 2, title: "재료 넣기", description: "준비한 재료를 넣고 익힙니다.", videoTime: 480)
+                ],
+                summaryExists: true,
                 cuisine: .chinese,
-                koreanSubCategory: nil,
                 chineseSubCategory: .mara,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             ),
             RecipeVideo(
                 id: 6,
                 title: "고석현표 마라탕",
+                videoUrl: "",
+                videoId: "sHpMVI8wQuk",
                 channelName: "고석현",
                 viewCount: 102_000,
-                thumbnailImageName: "",
-                videoId: "sHpMVI8wQuk",
-                videoDuration: "13:10",
                 cookingTimeMinutes: 35,
-                difficulty: 3,
+                level: 3.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 9, name: "마라소스", amount: 1.0, unit: "팩", hasIngredient: true),
+                    RecipeIngredient(id: 10, name: "청경채", amount: 2.0, unit: "포기", hasIngredient: false)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "소스 풀기", description: "끓는 물에 마라소스를 풉니다.", videoTime: 210),
+                    RecipeStep(stepNumber: 2, title: "완성", description: "재료를 넣고 익힌 뒤 마무리합니다.", videoTime: 510)
+                ],
+                summaryExists: false,
                 cuisine: .chinese,
-                koreanSubCategory: nil,
                 chineseSubCategory: .mara,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             ),
             RecipeVideo(
                 id: 3,
                 title: "연어 덮밥",
+                videoUrl: "",
+                videoId: "evLCCdDt0AA",
                 channelName: "일식요리",
                 viewCount: 76_000,
-                thumbnailImageName: "thumbnail3",
-                videoId: "evLCCdDt0AA",
-                videoDuration: "08:41",
                 cookingTimeMinutes: 15,
-                difficulty: 2,
+                level: 2.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 11, name: "연어", amount: 200.0, unit: "g", hasIngredient: true),
+                    RecipeIngredient(id: 12, name: "밥", amount: 1.0, unit: "공기", hasIngredient: true)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "밥 준비", description: "따뜻한 밥을 준비합니다.", videoTime: 60),
+                    RecipeStep(stepNumber: 2, title: "토핑 올리기", description: "연어를 썰어 밥 위에 올립니다.", videoTime: 240)
+                ],
+                summaryExists: true,
                 cuisine: .japanese,
-                koreanSubCategory: nil,
-                chineseSubCategory: nil,
                 japaneseSubCategory: .riceBowl,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
                 isBookmarked: false
             )
         ]

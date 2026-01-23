@@ -92,24 +92,92 @@ enum SoutheastAsianSubCategory: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-// MARK: - Recipe Video Model (영상 모델)
-struct RecipeVideo: Identifiable {
-    let id: Int
+// MARK: - Recipe Detail Sub Models
+
+struct RecipeIngredient: Identifiable, Equatable {
+
+    let id: Int              // server: ingredientId
+    let name: String
+    let amount: Double
+    let unit: String
+    let hasIngredient: Bool
+
+    init(
+        id: Int,
+        name: String,
+        amount: Double,
+        unit: String,
+        hasIngredient: Bool
+    ) {
+        self.id = id
+        self.name = name
+        self.amount = amount
+        self.unit = unit
+        self.hasIngredient = hasIngredient
+    }
+}
+
+struct RecipeStep: Identifiable, Equatable {
+
+    var id: Int { stepNumber }
+
+    let stepNumber: Int
     let title: String
-    let channelName: String
-    let viewCount: Int
-    let thumbnailImageName: String
+    let description: String
+    /// seconds (server: videoTime)
+    let videoTime: Int
+
+    init(
+        stepNumber: Int,
+        title: String,
+        description: String,
+        videoTime: Int
+    ) {
+        self.stepNumber = stepNumber
+        self.title = title
+        self.description = description
+        self.videoTime = videoTime
+    }
+}
+
+// MARK: - Recipe Model (목록 + 상세 공용)
+struct RecipeVideo: Identifiable {
+
+    // MARK: Identity
+    let id: Int // server: recipeId
+
+    // MARK: Basic
+    let title: String
+
+    // MARK: Video
+    /// Full YouTube URL (server: videoUrl). If your server later removes it, you can keep it empty in dummy.
+    let videoUrl: String
+    /// YouTube video id (server: videoId)
     let videoId: String
+    /// Channel name (server: channel)
+    let channelName: String
+    /// Views (server: views)
+    let viewCount: Int
 
-    // ✅ New: 영상/요리 메타
-    /// 영상 재생 시간 (예: "10:23")
-    let videoDuration: String
-    /// 요리 소요 시간 (분)
+    // MARK: Cooking
+    /// Cooking time minutes (server: cookingTime)
     let cookingTimeMinutes: Int
-    /// 난이도 (1~5)
-    let difficulty: Int
 
-    // Category
+    // MARK: Difficulty / Rating
+    /// Difficulty / level (server: level) - backend uses Double
+    let level: Double
+    /// Rating count (server: ratingCount)
+    let ratingCount: Int
+
+    // MARK: Detail
+    /// Ingredients list (server: ingredients)
+    let ingredients: [RecipeIngredient]
+    /// Steps list (server: steps)
+    let steps: [RecipeStep]
+    /// Summary exists flag (server: summaryExists)
+    let summaryExists: Bool
+
+    // MARK: Categories (Front-defined)
     let cuisine: CuisineCategory
     let koreanSubCategory: KoreanSubCategory?
     let chineseSubCategory: ChineseSubCategory?
@@ -117,36 +185,43 @@ struct RecipeVideo: Identifiable {
     let westernSubCategory: WesternSubCategory?
     let southeastAsianSubCategory: SoutheastAsianSubCategory?
 
+    // MARK: UI State
     var isBookmarked: Bool
 
-   //기본 변수들.
+    // MARK: Init
     init(
         id: Int,
         title: String,
+        videoUrl: String = "",
+        videoId: String,
         channelName: String,
         viewCount: Int,
-        thumbnailImageName: String,
-        videoId: String,
-        videoDuration: String = "",
-        cookingTimeMinutes: Int = 0,
-        difficulty: Int = 1,
+        cookingTimeMinutes: Int,
+        level: Double = 0.0,
+        ratingCount: Int = 0,
+        ingredients: [RecipeIngredient] = [],
+        steps: [RecipeStep] = [],
+        summaryExists: Bool = false,
         cuisine: CuisineCategory,
-        koreanSubCategory: KoreanSubCategory?,
-        chineseSubCategory: ChineseSubCategory?,
-        japaneseSubCategory: JapaneseSubCategory?,
-        westernSubCategory: WesternSubCategory?,
-        southeastAsianSubCategory: SoutheastAsianSubCategory?,
-        isBookmarked: Bool
+        koreanSubCategory: KoreanSubCategory? = nil,
+        chineseSubCategory: ChineseSubCategory? = nil,
+        japaneseSubCategory: JapaneseSubCategory? = nil,
+        westernSubCategory: WesternSubCategory? = nil,
+        southeastAsianSubCategory: SoutheastAsianSubCategory? = nil,
+        isBookmarked: Bool = false
     ) {
         self.id = id
         self.title = title
+        self.videoUrl = videoUrl
+        self.videoId = videoId
         self.channelName = channelName
         self.viewCount = viewCount
-        self.thumbnailImageName = thumbnailImageName
-        self.videoId = videoId
-        self.videoDuration = videoDuration
         self.cookingTimeMinutes = cookingTimeMinutes
-        self.difficulty = difficulty
+        self.level = level
+        self.ratingCount = ratingCount
+        self.ingredients = ingredients
+        self.steps = steps
+        self.summaryExists = summaryExists
         self.cuisine = cuisine
         self.koreanSubCategory = koreanSubCategory
         self.chineseSubCategory = chineseSubCategory

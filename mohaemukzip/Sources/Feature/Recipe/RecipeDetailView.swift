@@ -34,18 +34,33 @@ struct RecipeVideoDetailView: View {
     var body: some View {
         GeometryReader { geometry in
             VStack(spacing: 0) {
-                YouTubePlayerView(player)
-                    .aspectRatio(
-                        verticalSizeClass == .compact ? nil : 16 / 9,
-                        contentMode: verticalSizeClass == .compact ? .fill : .fit
-                    )
-                    .frame(
-                        width: geometry.size.width,
-                        height: verticalSizeClass == .compact
-                            ? geometry.size.height
-                            : geometry.size.width * 9 / 16
-                    )
-                    .clipped()
+                YouTubePlayerView(player) { state in
+                    // Loading / Error overlay driven by YouTubePlayer.State
+                    switch state {
+                    case .idle:
+                        ProgressView()
+                    case .ready:
+                        EmptyView()
+                    case .error:
+                        VStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                            Text("영상을 불러오지 못했어요")
+                                .font(.footnote)
+                        }
+                        .padding(12)
+                    }
+                }
+                .aspectRatio(
+                    verticalSizeClass == .compact ? nil : 16 / 9,
+                    contentMode: verticalSizeClass == .compact ? .fill : .fit
+                )
+                .frame(
+                    width: geometry.size.width,
+                    height: verticalSizeClass == .compact
+                        ? geometry.size.height
+                        : geometry.size.width * 9 / 16
+                )
+                .clipped()
 
                 if verticalSizeClass != .compact {
                     Spacer()
@@ -60,6 +75,3 @@ struct RecipeVideoDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-
-
