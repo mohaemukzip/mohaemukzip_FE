@@ -29,6 +29,9 @@ struct IngredientDetailSearchView: View {
                             .font(.PretendardRegular16)
                             .foregroundStyle(.grey900)
                             .padding(.leading, 14)
+                            .onSubmit {
+                                viewModel.addRecentSearch()
+                            }
                         Spacer()
                         Image("icon-search")
                             .foregroundStyle(.grey500)
@@ -54,7 +57,9 @@ struct IngredientDetailSearchView: View {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 15) {
                                 ForEach(viewModel.recentSearchText) { ingredient in
-                                    RecentSearch(text: ingredient.name, onTap: {print("")}, onDelete: {print("")})
+                                    RecentSearch(text: ingredient.name,
+                                                 onTap: { viewModel.tapRecentSearch(for: ingredient.id)},
+                                                 onDelete: { viewModel.deleteRecentSearch(for: ingredient.id)})
                                 }
                             }
                         }.padding(.vertical, 16)
