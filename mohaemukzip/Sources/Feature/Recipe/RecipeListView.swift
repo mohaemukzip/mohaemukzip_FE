@@ -30,44 +30,84 @@ struct RecipeListView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
-
-                // MARK: - 상위 카테고리 (스크린샷 스타일)
-                HStack(alignment: .top, spacing: 12) {
-                    categoryButton(.korean)
-                    categoryButton(.chinese)
-                    categoryButton(.japanese)
-                    categoryButton(.western)
-                    categoryButton(.southeastAsian)
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 12)
-
-                // MARK: - 하위 카테고리 (상위 선택 후에만 노출)
-                subCategoryGrid
-
-                // MARK: - Category / Content Divider
-                Rectangle()
-                    .fill(Color.black.opacity(0.1))
-                    .frame(height: 8)
-                    .padding(.top, 16)
-
-                // MARK: - 영상 목록 (상위+하위 모두 선택해야 filteredVideos가 생김)
-                ScrollView {
-                    LazyVStack(spacing: 40) {
-                        ForEach(viewModel.filteredVideos) { video in
-                            NavigationLink {
-                                RecipeVideoDetailView(video: video)
-                            } label: {
-                                RecipeVideoCard(video: video)
+            ZStack {
+                VStack(spacing: 0) {
+                    
+                    // MARK: - 최상단 검색창
+                    Button( action: { } ) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .foregroundStyle(.grey100)
+                                .frame(height: 44)
+                            
+                            HStack {
+                                Text("재료, 상황, 메뉴 키워드를 입력하세요.")
+                                    .font(.PretendardRegular16)
+                                    .foregroundStyle(.grey500)
+                                    .padding(.leading, 10)
+                                Spacer()
+                                Image("icon-search")
+                                    .foregroundStyle(.grey500)
+                                    .padding(.trailing, 10)
                             }
-                            .buttonStyle(.plain)
                         }
+                    }.padding(.horizontal, 16)
+                        .padding(.bottom, 16)
+
+                    // MARK: - 상위 카테고리 (스크린샷 스타일)
+                    HStack(alignment: .top, spacing: 12) {
+                        categoryButton(.korean)
+                        categoryButton(.chinese)
+                        categoryButton(.japanese)
+                        categoryButton(.western)
+                        categoryButton(.southeastAsian)
                     }
-                    .padding(.top, 16)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 12)
+
+                    // MARK: - 하위 카테고리 (상위 선택 후에만 노출)
+                    subCategoryGrid
+
+                    // MARK: - Category / Content Divider
+                    Rectangle()
+                        .fill(Color.black.opacity(0.1))
+                        .frame(height: 8)
+                        .padding(.top, 16)
+                    
+                    // MARK: - 요선생과 대화하기 배너 (viewModel의 SubCategory가 하나라도 선택된다면 나타남)
+                    if viewModel.selectedKoreanSubCategory == nil &&
+                        viewModel.selectedChineseSubCategory == nil &&
+                        viewModel.selectedWesternSubCategory == nil &&
+                        viewModel.selectedJapaneseSubCategory == nil &&
+                        viewModel.selectedSoutheastAsianSubCategory == nil { YoTeacher()
+                            .padding(.top, 25)
+                            .padding(.horizontal, 16) }
+
+                    // MARK: - 영상 목록 (상위+하위 모두 선택해야 filteredVideos가 생김)
+                    ScrollView {
+                        LazyVStack(spacing: 40) {
+                            ForEach(viewModel.filteredVideos) { video in
+                                NavigationLink {
+                                    RecipeVideoDetailView(video: video)
+                                } label: {
+                                    RecipeVideoCard(video: video)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .padding(.top, 16)
+                    }
+                    
+                    
                 }
+                .navigationBarHidden(true)
+                // MARK: - 요선생 플로팅 버튼 (viewModel의 filteredVideos가 비어있지 않으면 나타남)
+                if !(viewModel.selectedKoreanSubCategory == nil &&
+                    viewModel.selectedChineseSubCategory == nil &&
+                    viewModel.selectedWesternSubCategory == nil &&
+                    viewModel.selectedJapaneseSubCategory == nil &&
+                     viewModel.selectedSoutheastAsianSubCategory == nil) { YoTeacherFloating() }
             }
-            .navigationBarHidden(true)
         }
     }
 

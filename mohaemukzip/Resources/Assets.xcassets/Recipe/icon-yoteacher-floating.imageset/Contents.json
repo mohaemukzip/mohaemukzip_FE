@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "icon-yoteacher-floating.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

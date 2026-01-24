@@ -56,7 +56,7 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .search) {
-                SearchView()
+                RecipeListView()
             } label: {
                 Label(
                     "검색",
