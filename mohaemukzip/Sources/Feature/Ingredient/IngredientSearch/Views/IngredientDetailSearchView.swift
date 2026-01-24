@@ -127,7 +127,6 @@ struct IngredientDetailSearchView: View {
                     viewModel.sendRequest(name: requestedText)
                 }).presentationDetents([.fraction(0.45), .large])
             }
-            
             .sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
                 IngredientAdditionBottomSheet(ingredient: ingredient,
                                               onAdd: { storage, date, weight in
@@ -139,7 +138,7 @@ struct IngredientDetailSearchView: View {
                     viewModel.toggleIsSaved(for: ingredient.id)
                     viewModel.selectedIngredientForAddition?.isSaved.toggle()
                 },
-                                              onDismiss: { viewModel.selectedIngredientForAddition = nil } ).presentationDetents([.fraction(0.98)])
+                                              onDismiss: { viewModel.selectedIngredientForAddition = nil }).presentationDetents([.fraction(0.98)])
             }
         } // end of ZStack
     } // end of body

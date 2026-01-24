@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct IngredientModel: Identifiable, Hashable {
+struct FridgeIngredientModel: Identifiable, Hashable {
     enum StorageType: String, CaseIterable{
         case frozen
         case chilled

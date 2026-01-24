@@ -9,37 +9,37 @@ import SwiftUI
 import Combine
 
 class FridgeViewModel: ObservableObject {
-    @Published var allIngredients: [IngredientModel] = []
+    @Published var allIngredients: [FridgeIngredientModel] = []
     
     // MARK: 냉동, 냉장, 실온 -> 서버에서 받은 allIngredient를 분기처리할 것
-    var frozenIngredients: [IngredientModel] {
+    var frozenIngredients: [FridgeIngredientModel] {
         allIngredients.filter { $0.ty == .frozen }
     }
-    var chilledIngredients: [IngredientModel] {
+    var chilledIngredients: [FridgeIngredientModel] {
         allIngredients.filter { $0.ty == .chilled }
     }
-    var roomIngredients: [IngredientModel] {
+    var roomIngredients: [FridgeIngredientModel] {
         allIngredients.filter { $0.ty == .room }
     }
     
     init() {
-        self.allIngredients = [IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room)]
+        self.allIngredients = [FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
+                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room)]
     }
     
     func deleteIngredient(at id: UUID) {
@@ -48,8 +48,8 @@ class FridgeViewModel: ObservableObject {
         }
     }
     
-    func addIngredientToFridge(name: String, amount: String, storage: IngredientModel.StorageType) {
-        let newEntry = IngredientModel(name: name,
+    func addIngredientToFridge(name: String, amount: String, storage: FridgeIngredientModel.StorageType) {
+        let newEntry = FridgeIngredientModel(name: name,
                                        amount: amount,
                                        expirationDate: 10,
                                        ty: storage)

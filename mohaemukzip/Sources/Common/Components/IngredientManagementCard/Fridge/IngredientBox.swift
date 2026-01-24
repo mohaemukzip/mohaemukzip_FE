@@ -12,7 +12,7 @@ struct IngredientBox: View {
     @Binding var isEditing: Bool
     let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
     let text: String
-    let ingredients: [IngredientModel]
+    let ingredients: [FridgeIngredientModel]
     var onDelete: (UUID) -> Void
     
     

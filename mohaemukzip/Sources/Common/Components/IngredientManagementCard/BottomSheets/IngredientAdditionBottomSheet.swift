@@ -9,10 +9,10 @@ import SwiftUI
 
 struct IngredientAdditionBottomSheet: View {
     var ingredient: IngredientSearchModel
-    @State private var storageLocation: IngredientModel.StorageType = .chilled
+    @State private var storageLocation: FridgeIngredientModel.StorageType = .chilled
     @State private var expiryDate: Date = Date()
     @State private var amount: String = ""
-    var onAdd: (IngredientModel.StorageType, Date, String) -> Void
+    var onAdd: (FridgeIngredientModel.StorageType, Date, String) -> Void
     var onSave: () -> Void
     var onDismiss: () -> Void
     
@@ -74,6 +74,7 @@ struct IngredientAdditionBottomSheet: View {
                                 Spacer()
                                 Image(showStorageCase ? "icon-chevron-up" : "icon-chevron-down")
                                     .foregroundStyle(showStorageCase ? .main400 : .grey500)
+                                    .padding(.trailing, 10)
                             }
                         }
                         
@@ -84,7 +85,7 @@ struct IngredientAdditionBottomSheet: View {
                                     .foregroundStyle(.grey300)
                                     .frame(height: 159)
                                 VStack(spacing: 0) {
-                                    ForEach(IngredientModel.StorageType.allCases, id: \.self) { type in
+                                    ForEach(FridgeIngredientModel.StorageType.allCases, id: \.self) { type in
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 4)
                                                 .frame(height: 53)
@@ -181,7 +182,7 @@ struct IngredientAdditionBottomSheet: View {
                             .padding(.trailing, 10)
                     }
                 }
-                Spacer()
+                Spacer().padding(.bottom, 100)
             }.padding(.top, 25)
                 .scrollIndicators(.hidden)// end of ScrollView
             
