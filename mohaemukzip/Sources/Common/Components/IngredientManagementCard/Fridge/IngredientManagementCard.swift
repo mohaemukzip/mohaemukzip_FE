@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IngredientManagementCard: View {
-    let ingredientInfo: IngredientModel
+    let ingredientInfo: FridgeIngredientModel
     let color: Color
     @Binding var isEditing: Bool
     let onDelete: () -> Void

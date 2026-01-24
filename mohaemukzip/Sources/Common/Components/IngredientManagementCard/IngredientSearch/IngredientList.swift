@@ -9,6 +9,8 @@ import SwiftUI
 
 struct IngredientList: View {
     var ingredients: [IngredientSearchModel]
+    var onSaveTap: (UUID) -> Void
+    var onPlusTap: (IngredientSearchModel) -> Void
     
     var body: some View {
         if (ingredients.isEmpty) {
@@ -37,7 +39,10 @@ struct IngredientList: View {
                         IngredientListComponent(
                             name: ingredient.name,
                             amount: ingredient.amount,
-                            category: ingredient.category)
+                            category: ingredient.category,
+                            isSaved: ingredient.isSaved,
+                            onSaveTap: {onSaveTap(ingredient.id)},
+                            onPlusTap: {onPlusTap(ingredient)})
                     }
                 }
             }
@@ -46,7 +51,7 @@ struct IngredientList: View {
     }
 }
 
-
+/*
 #Preview {
     IngredientList(ingredients: [
         IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
@@ -69,3 +74,4 @@ struct IngredientList: View {
         IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")
     ])
 }
+*/
