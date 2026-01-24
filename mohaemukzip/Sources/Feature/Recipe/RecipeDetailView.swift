@@ -30,20 +30,13 @@ struct RecipeDetailView: View {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let recipe = viewModel.recipe {
-                RecipeVideoDetailView(video: recipe)
-                    .toolbar {
-                        ToolbarItem(placement: .navigationBarTrailing) {
-                            Button {
-                                viewModel.toggleBookmark()
-                            } label: {
-                                Image(recipe.isBookmarked ? "bookmark_filled" : "bookmark")
-                                    .resizable()
-                                    .scaledToFit()
-                                    .frame(width: 22, height: 22)
-                            }
-                            .accessibilityLabel("북마크")
-                        }
+                RecipeVideoDetailView(
+                    video: recipe,
+                    isBookmarked: recipe.isBookmarked,
+                    onTapBookmark: {
+                        viewModel.toggleBookmark()
                     }
+                )
             } else {
                 VStack(spacing: 10) {
                     Image(systemName: "exclamationmark.triangle.fill")
@@ -59,6 +52,7 @@ struct RecipeDetailView: View {
         .onAppear {
             viewModel.load(recipeId: recipeId, base: base)
         }
+        .navigationBarBackButtonHidden(true)
     }
 }
 
@@ -66,11 +60,21 @@ struct RecipeDetailView: View {
 struct RecipeVideoDetailView: View {
 
     let video: RecipeVideo
+    let isBookmarked: Bool
+    let onTapBookmark: () -> Void
+
+    @Environment(\.dismiss) private var dismiss
 
     @StateObject private var player: YouTubePlayer
 
-    init(video: RecipeVideo) {
+    init(
+        video: RecipeVideo,
+        isBookmarked: Bool = false,
+        onTapBookmark: @escaping () -> Void = {}
+    ) {
         self.video = video
+        self.isBookmarked = isBookmarked
+        self.onTapBookmark = onTapBookmark
         _player = StateObject(
             wrappedValue: YouTubePlayer(
                 source: .video(id: video.videoId),
@@ -83,30 +87,67 @@ struct RecipeVideoDetailView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                playerSection
+        VStack(spacing: 0) {
+            navigationBar
 
-                VStack(alignment: .leading, spacing: 16) {
-                    headerSection
-                    statsSection
-                    channelSection
-                    Divider().opacity(0.6)
-                    ingredientsSection
-                    summarySection
+            ScrollView {
+                VStack(spacing: 0) {
+                    playerSection
+                        .padding(.top, 8)
+
+                    VStack(alignment: .leading, spacing: 16) {
+                        headerSection
+                        statsSection
+                        channelSection
+                        Divider().opacity(0.6)
+                        ingredientsSection
+                        summarySection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
             }
         }
         .safeAreaInset(edge: .bottom) {
             bottomActionBar
         }
-        .navigationBarTitleDisplayMode(.inline)
+        .toolbar(.hidden, for: .navigationBar)
     }
 
     // MARK: - Sections
+
+    private var navigationBar: some View {
+        HStack(spacing: 12) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 17, weight: .semibold))
+                    .foregroundStyle(.primary)
+                    .frame(width: 36, height: 36)
+                    .contentShape(Rectangle())
+            }
+            .accessibilityLabel("뒤로")
+
+            Spacer()
+
+            Button {
+                onTapBookmark()
+            } label: {
+                Image(isBookmarked ? "bookmark.fill" : "bookmark")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 22, height: 22)
+                    .frame(width: 36, height: 36)
+            }
+            .accessibilityLabel("북마크")
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
+        .background(Color(.systemBackground))
+    }
 
     private var playerSection: some View {
         GeometryReader { geometry in
@@ -424,7 +465,11 @@ private struct RecipeStepCard: View {
 
 #Preview("RecipeVideoDetailView (Filled Detail)") {
     NavigationStack {
-        RecipeVideoDetailView(video: .previewDetail)
+        RecipeVideoDetailView(
+            video: .previewDetail,
+            isBookmarked: RecipeVideo.previewDetail.isBookmarked,
+            onTapBookmark: {}
+        )
     }
     .environment(\.verticalSizeClass, .regular)
 }

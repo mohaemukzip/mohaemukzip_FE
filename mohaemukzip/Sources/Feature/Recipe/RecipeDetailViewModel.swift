@@ -11,14 +11,21 @@
 import Foundation
 import Combine
 
-//
-//  RecipeDetailViewModel.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/23/26.
-//
+// MARK: - Bookmark Service
 
-import Foundation
+protocol RecipeBookmarkServicing {
+    /// Server should return the final bookmarked state after applying the request.
+    func setBookmark(recipeId: Int, isBookmarked: Bool) async throws -> Bool
+}
+
+/// Default dummy implementation until real API is wired.
+struct RecipeBookmarkServiceStub: RecipeBookmarkServicing {
+    func setBookmark(recipeId: Int, isBookmarked: Bool) async throws -> Bool {
+        // TODO: Replace with real network request
+        return isBookmarked
+    }
+}
+
 
 @MainActor
 final class RecipeDetailViewModel: ObservableObject {
@@ -28,11 +35,18 @@ final class RecipeDetailViewModel: ObservableObject {
     @Published private(set) var recipe: RecipeVideo?
     @Published private(set) var isLoading: Bool = false
     @Published private(set) var errorMessage: String?
+    @Published private(set) var isBookmarkUpdating: Bool = false
 
     // MARK: - Init
 
-    init(recipe: RecipeVideo? = nil) {
+    private let bookmarkService: RecipeBookmarkServicing
+
+    init(
+        recipe: RecipeVideo? = nil,
+        bookmarkService: RecipeBookmarkServicing = RecipeBookmarkServiceStub()
+    ) {
         self.recipe = recipe
+        self.bookmarkService = bookmarkService
     }
 
     // MARK: - Public
@@ -54,12 +68,45 @@ final class RecipeDetailViewModel: ObservableObject {
     }
 
     /// 북마크 토글 (상세 화면)
+    /// - Note: 현재는 Stub이 즉시 성공을 반환합니다. API 연동 시 `bookmarkService` 내부를 교체하세요.
     func toggleBookmark() {
-        guard var current = recipe else { return }
-        current.isBookmarked.toggle()
-        recipe = current
+        guard !isBookmarkUpdating else { return }
+        guard let current = recipe else { return }
 
-        // TODO: 북마크 API가 있으면 여기에서 호출
+        let recipeId = current.id
+        let previousState = current.isBookmarked
+        let optimisticState = !previousState
+
+        // Optimistic UI update
+        updateBookmarkState(optimisticState)
+        isBookmarkUpdating = true
+
+        Task {
+            do {
+                let serverState = try await bookmarkService.setBookmark(
+                    recipeId: recipeId,
+                    isBookmarked: optimisticState
+                )
+                await MainActor.run {
+                    self.updateBookmarkState(serverState)
+                    self.isBookmarkUpdating = false
+                }
+            } catch {
+                await MainActor.run {
+                    // Revert on failure
+                    self.updateBookmarkState(previousState)
+                    self.isBookmarkUpdating = false
+                    self.errorMessage = "북마크 처리에 실패했습니다. 네트워크 상태를 확인해주세요."
+                }
+            }
+        }
+    }
+
+    /// 현재 recipe의 북마크 상태만 안전하게 갱신
+    private func updateBookmarkState(_ isBookmarked: Bool) {
+        guard var current = recipe else { return }
+        current.isBookmarked = isBookmarked
+        recipe = current
     }
 
     // MARK: - Dummy Builder
