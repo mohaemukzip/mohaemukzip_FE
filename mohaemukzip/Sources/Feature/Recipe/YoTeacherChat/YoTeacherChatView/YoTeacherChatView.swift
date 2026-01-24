@@ -29,7 +29,7 @@ struct YoTeacherChatView: View {
                             HStack {
                                 Image("icon-yoteacher-chatbot")
                                 Spacer()
-                                YoTeacherBubble(text: " 오늘은 어떤 요리가 좋을지  \n      요선생에게 다 말해봐!        ")
+                                YoTeacherBubble(text: "오늘은 어떤 요리가 좋을지\n요선생에게 다 말해봐!")
                             }.padding(.horizontal, 17)
                                 .padding(.top, 40)
                         }

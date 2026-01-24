@@ -65,6 +65,7 @@ struct YoTeacherBubble: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
             .lineSpacing(1.5)
+            .multilineTextAlignment(.center)
             .background(
                 ChatBubble(direction: .left)
                     .fill(.white)
