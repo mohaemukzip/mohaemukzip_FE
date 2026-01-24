@@ -1,0 +1,12 @@
+{
+  "images" : [
+    {
+      "filename" : "selectedIngredient.pdf",
+      "idiom" : "universal"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}
