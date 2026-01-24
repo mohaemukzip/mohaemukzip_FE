@@ -16,7 +16,7 @@ struct RecommendQuestion: View {
             .foregroundStyle(.main400)
             .lineSpacing(1.5)
             .padding(10)
-            .frame(maxWidth: 110)
+            .frame(width: 110)
             .background(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(.main400, lineWidth: 1)
