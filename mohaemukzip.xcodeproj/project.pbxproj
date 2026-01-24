@@ -22,7 +22,6 @@
 				Service/.gitkeep,
 				Sources/.gitkeep,
 				Sources/Common/.gitkeep,
-				Sources/Common/Components/.gitkeep,
 				Sources/Common/Extensions/.gitkeep,
 				Sources/Common/Navigation/.gitkeep,
 				Sources/Common/Utilities/.gitkeep,

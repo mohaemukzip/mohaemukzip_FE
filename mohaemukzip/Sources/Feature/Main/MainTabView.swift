@@ -64,7 +64,7 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .ingredient) {
-                IngredientView()
+                FridgeView()
             } label: {
                 Label(
                     "재료",
