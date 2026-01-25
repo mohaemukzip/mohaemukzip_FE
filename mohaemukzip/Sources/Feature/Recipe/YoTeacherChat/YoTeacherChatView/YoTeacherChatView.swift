@@ -24,58 +24,96 @@ struct YoTeacherChatView: View {
                     .padding(.top, 20)
                 
                 ScrollView {
-                    LazyVStack {
-                        
-                        if viewModel.messages.isEmpty {
-                            HStack {
-                                Image("icon-yoteacher-chatbot")
-                                Spacer()
-                                YoTeacherBubble(text: "오늘은 어떤 요리가 좋을지\n요선생에게 다 말해봐!")
-                            }.padding(.horizontal, 17)
-                                .padding(.top, 40)
-                        }
-                        
-                        if !viewModel.messages.isEmpty  {
-                            ForEach(viewModel.messages) { message in
+                    ScrollViewReader { proxy in
+                        LazyVStack {
+                            
+                            if viewModel.messages.isEmpty {
                                 HStack {
+                                    Image("icon-yoteacher-chatbot")
                                     Spacer()
-                                    UserBubble(text: message.text)
-                                        .padding(.trailing, 34)
-                                }
-                                // TODO: 메시지에 맞는 적절한 응답을 ForEach문 안에 두어야 입력 하나 당 출력이 나옴
+                                    YoTeacherBubble(text: "오늘은 어떤 요리가 좋을지\n요선생에게 다 말해봐!")
+                                }.padding(.horizontal, 17)
+                                    .padding(.top, 40)
                             }
-                        }
-                        
+                            
+                            if !viewModel.messages.isEmpty {
+                                ForEach(viewModel.messages) { message in
+                                    VStack {
+                                        HStack {
+                                            Spacer()
+                                            UserBubble(text: message.text)
+                                                .padding(.trailing, 34)
+                                                .padding(.bottom, 70)
+                                        }
+                                        
+                                        if let videos = message.responseVideos {
+                                            BotResponse(responseVideos: videos)
+                                                .padding(.bottom, 70)
+                                        }
+                                        
+                                        if message.id == viewModel.messages.last?.id {
+                                            // TODO: 메세지 당 응답을 같은 ForEach문에 배치
+                                            if viewModel.responseState == .thinking {
+                                                HStack {
+                                                    Image("icon-thinking")
+                                                    Spacer()
+                                                }
+                                            } else if viewModel.responseState == .skeleton {
+                                                BotResponse(responseVideos: message.responseVideos)
+                                                    .padding(.bottom, 70)
+                                            }
+                                        }
+                                    }.padding(.leading, 17)
+                                        .id(message.id)
+                                }
+                            }
+                        }.padding(.top, 50)
+                            .onChange(of: viewModel.messages.count) {
+                                withAnimation(.easeInOut) {
+                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                                }
+                            }
+                            .onChange(of: viewModel.responseState) {
+                                withAnimation(.easeInOut) {
+                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                                }
+                            }
                     }
+                    
                 }
                 
                 Spacer()
                 VStack {
-                    ScrollView(.horizontal) {
-                        LazyHStack {
-                            ForEach(viewModel.recommendQ) { q in
-                                Button ( action: {} ) {
-                                    RecommendQuestion(text: q.text)
-                                        .padding(.trailing, 2)
+                    
+                    if viewModel.messages.isEmpty {
+                        ScrollView(.horizontal) {
+                            LazyHStack {
+                                ForEach(viewModel.recommendQ) { q in
+                                    Button ( action: {} ) {
+                                        RecommendQuestion(text: q.text)
+                                            .padding(.trailing, 2)
+                                    }
                                 }
                             }
-                        }
-                    }.padding(.leading, 17)
-                        .frame(height: 66)
+                        }.padding(.leading, 17)
+                            .frame(height: 66)
+                    }
+                    
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)
                             .frame(height: 52)
                         HStack {
+                            TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
+                                .padding(.leading)
                             Spacer()
-                            Button ( action: {} ) {
+                            Button ( action: { viewModel.addMessages(text: text )} ) {
                                 Image("icon-chat")
                                     .foregroundStyle(.grey700)
                                     .padding()
                             }
                         }
-                        TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
-                            .padding(.leading)
+                        
                     }.padding(.horizontal, 17)
                         .padding(.bottom, 10)
                 }
