@@ -107,7 +107,7 @@ struct YoTeacherChatView: View {
                             TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
                                 .padding(.leading)
                             Spacer()
-                            Button ( action: { viewModel.addMessages(text: text )} ) {
+                            Button ( action: { viewModel.addMessages(text: text ); text = "" } ) {
                                 Image("icon-chat")
                                     .foregroundStyle(.grey700)
                                     .padding()
