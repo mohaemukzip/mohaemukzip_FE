@@ -57,7 +57,7 @@ struct YoTeacherChatView: View {
                                                 HStack {
                                                     Image("icon-thinking")
                                                     Spacer()
-                                                }
+                                                }.padding(.bottom, 70)
                                             } else if viewModel.responseState == .skeleton {
                                                 BotResponse(responseVideos: message.responseVideos)
                                                     .padding(.bottom, 70)
@@ -89,7 +89,7 @@ struct YoTeacherChatView: View {
                         ScrollView(.horizontal) {
                             LazyHStack {
                                 ForEach(viewModel.recommendQ) { q in
-                                    Button ( action: {} ) {
+                                    Button ( action: { viewModel.addMessages(text: q.text) } ) {
                                         RecommendQuestion(text: q.text)
                                             .padding(.trailing, 2)
                                     }
