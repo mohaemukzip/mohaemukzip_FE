@@ -17,6 +17,9 @@ struct MainTabView: View {
         
     //기본 설정된 상태 -> home
     @State private var selection: TabType = .home
+    @State private var router = NavigationRouter()
+    @State private var fridgeVM = FridgeViewModel()
+    @State private var ingredientSearchVM = IngredientSearchViewModel()
 
     init() {
         let appearance = UITabBarAppearance()
@@ -64,7 +67,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .ingredient) {
-                FridgeView()
+                NavigationStack(path: $router.path) {
+                    FridgeView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "재료",
@@ -78,6 +84,22 @@ struct MainTabView: View {
                     "마이",
                     image: selection == .profile ? "selectedProfile" : "icon-profile"
                 )
+            }
+        }
+        .environment(router)
+        .environment(fridgeVM)
+        .environment(ingredientSearchVM)
+    }
+}
+
+extension View {
+    func setupNavigationDestinations() -> some View {
+        self.navigationDestination(for: Route.self) { route in
+            switch route {
+            case .ingredientSearch:
+                IngredientSearchView()
+            case .ingredientDetailSearch:
+                IngredientDetailSearchView()
             }
         }
     }

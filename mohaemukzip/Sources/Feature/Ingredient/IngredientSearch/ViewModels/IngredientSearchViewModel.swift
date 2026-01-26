@@ -8,10 +8,11 @@
 import SwiftUI
 import Combine
 
+@Observable
 class IngredientSearchViewModel: ObservableObject {
-    @Published var selectedCategory: IngredientCategory = .all
-    @Published var searchText: String = ""
-    @Published var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+    var selectedCategory: IngredientCategory
+    var searchText: String = ""
+    var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "면"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "두바이", amount: "1기본량(100g)", category: "빵/떡"),
@@ -29,10 +30,14 @@ class IngredientSearchViewModel: ObservableObject {
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
                                                               IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")]
-    @Published var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
+    var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
                                                                   IngredientDetailSearchModel(name: "소파"),
                                                                   IngredientDetailSearchModel(name: "중파")]
-    @Published var selectedIngredientForAddition: IngredientSearchModel?
+    var selectedIngredientForAddition: IngredientSearchModel?
+    
+    init(initialCategory: IngredientCategory = .all) {
+        self.selectedCategory = initialCategory
+    }
     
     var filteredIngredients: [IngredientSearchModel] {
         

@@ -8,16 +8,18 @@
 import SwiftUI
 
 struct IngredientDetailSearchView: View {
-    @Binding var selectedCategory: IngredientCategory
-    @StateObject var viewModel = IngredientSearchViewModel()
-    @ObservedObject var fridgeVM: FridgeViewModel
+    @Environment(IngredientSearchViewModel.self) var viewModel
+    @Environment(FridgeViewModel.self) var fridgeVM
+    @Environment(NavigationRouter.self) var router
     @State var isShowingSheet: Bool = false
     
     var body: some View {
+        @Bindable var viewModel = viewModel
+        
         ZStack(alignment: .bottom) {
             VStack {
                 HStack {
-                    Button( action: { } ) {
+                    Button( action: { router.pop(); viewModel.searchText = "" } ) {
                         Image("icon-back-big")
                             .foregroundStyle(.grey700)
                     }
@@ -95,15 +97,15 @@ struct IngredientDetailSearchView: View {
                         HStack {
                             ForEach(IngredientCategory.allCases, id: \.self) { category in
                                 VStack {
-                                    Button( action: { selectedCategory = category } ) {
+                                    Button( action: { viewModel.selectedCategory = category } ) {
                                         Text(category.rawValue)
-                                            .foregroundStyle(selectedCategory == category ? .grey900 : .grey400)
+                                            .foregroundStyle(viewModel.selectedCategory == category ? .grey900 : .grey400)
                                             .font(.PretendardSemibold18)
                                     }.padding(.bottom, 4)
                                     
                                     Rectangle()
                                         .frame(width: 63, height: 2)
-                                        .foregroundStyle(selectedCategory == category ? .grey900 : .clear)
+                                        .foregroundStyle(viewModel.selectedCategory == category ? .grey900 : .clear)
                                 }.padding(.leading)
                             }
                         }
@@ -113,8 +115,6 @@ struct IngredientDetailSearchView: View {
                                    onSaveTap: { id in viewModel.toggleIsSaved(for: id) },
                                    onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                 }
-            }.onChange(of: selectedCategory) {
-                viewModel.selectedCategory = selectedCategory
             } // end of VStack
             Button ( action: { isShowingSheet = true } ) {
                 IngredientRequestButton()
@@ -125,6 +125,7 @@ struct IngredientDetailSearchView: View {
                 RequestBottomSheet(isShowingSheet: $isShowingSheet,
                                    onRequest: { requestedText in
                     viewModel.sendRequest(name: requestedText)
+                    viewModel.searchText = ""
                 }).presentationDetents([.fraction(0.45), .large])
             }
             .sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
@@ -133,18 +134,22 @@ struct IngredientDetailSearchView: View {
                     fridgeVM.addIngredientToFridge(name: ingredient.name,
                                                    amount: weight,
                                                    storage: storage)
-                    viewModel.selectedIngredientForAddition = nil},
+                    viewModel.selectedIngredientForAddition = nil
+                    router.navigateToRoot()
+                },
                                               onSave: {
                     viewModel.toggleIsSaved(for: ingredient.id)
                     viewModel.selectedIngredientForAddition?.isSaved.toggle()
                 },
-                                              onDismiss: { viewModel.selectedIngredientForAddition = nil }).presentationDetents([.fraction(0.98)])
+                                              onDismiss: {
+                    viewModel.selectedIngredientForAddition = nil
+                    viewModel.searchText = ""
+                }).presentationDetents([.fraction(0.98)])
             }
-        } // end of ZStack
+        }.navigationBarBackButtonHidden() // end of ZStack
     } // end of body
 }
 
 #Preview {
-    @Previewable @State var selectedCategory: IngredientCategory = .all
-    IngredientDetailSearchView(selectedCategory: $selectedCategory, fridgeVM: FridgeViewModel())
+    IngredientDetailSearchView()
 }
