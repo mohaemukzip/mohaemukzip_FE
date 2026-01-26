@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct YoTeacher: View {
+    var onTap: () -> Void
     
     var body: some View {
         // MARK: - 세부 카테고리 선택 전 요선생 배너
@@ -27,7 +28,7 @@ struct YoTeacher: View {
                     Spacer()
                     VStack {
                         Spacer()
-                        Button ( action: {} ) {
+                        Button ( action: { onTap() } ) {
                             Image("icon-yoteacher-button")
                         }
                     }
@@ -38,5 +39,5 @@ struct YoTeacher: View {
 }
 
 #Preview {
-    YoTeacher()
+    YoTeacher(onTap: { })
 }

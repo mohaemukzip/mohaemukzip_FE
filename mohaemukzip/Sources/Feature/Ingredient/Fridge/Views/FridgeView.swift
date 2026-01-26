@@ -70,4 +70,6 @@ struct FridgeView: View {
 #Preview {
     FridgeView()
         .environment(NavigationRouter())
+        .environment(FridgeViewModel())
+        .environment(IngredientSearchViewModel())
 }

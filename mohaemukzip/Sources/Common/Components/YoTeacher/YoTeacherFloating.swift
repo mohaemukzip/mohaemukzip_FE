@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct YoTeacherFloating: View {
+    var onTap: () -> Void
     
     var body: some View {
         // MARK: - 세부 카테고리 선택 후 요선생 플로팅 버튼
@@ -15,7 +16,7 @@ struct YoTeacherFloating: View {
             Spacer()
             VStack {
                 Spacer()
-                Button( action: { } ) {
+                Button( action: { onTap() } ) {
                     Image("icon-yoteacher-floating")
                 }
             }
@@ -25,5 +26,5 @@ struct YoTeacherFloating: View {
 }
 
 #Preview {
-    YoTeacherFloating()
+    YoTeacherFloating(onTap: { })
 }

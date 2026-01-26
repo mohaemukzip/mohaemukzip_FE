@@ -20,6 +20,7 @@ struct MainTabView: View {
     @State private var router = NavigationRouter()
     @State private var fridgeVM = FridgeViewModel()
     @State private var ingredientSearchVM = IngredientSearchViewModel()
+    @State private var yoTeacherVM = YoTeacherChatViewModel()
 
     init() {
         let appearance = UITabBarAppearance()
@@ -59,7 +60,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .search) {
-                RecipeListView()
+                NavigationStack(path: $router.path) {
+                    RecipeListView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "검색",
@@ -89,6 +93,7 @@ struct MainTabView: View {
         .environment(router)
         .environment(fridgeVM)
         .environment(ingredientSearchVM)
+        .environment(yoTeacherVM)
     }
 }
 
@@ -100,6 +105,10 @@ extension View {
                 IngredientSearchView()
             case .ingredientDetailSearch:
                 IngredientDetailSearchView()
+            case .yoTeacher:
+                YoTeacherChatView()
+            case .recipeDetail(let video):
+                RecipeVideoDetailView(video: video)
             }
         }
     }

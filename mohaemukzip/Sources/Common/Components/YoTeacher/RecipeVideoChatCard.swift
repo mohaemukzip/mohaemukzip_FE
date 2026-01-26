@@ -9,14 +9,12 @@ import SwiftUI
 
 struct RecipeVideoChatCard: View {
     let video: RecipeVideo
-    
     var body: some View {
         ThumbnailView(videoId: video.videoId, durationText: video.videoDuration ?? "")
             .frame(width: 160, height: 96)
             .cornerRadius(4)
             .clipped()
     }
-    
 }
 
 private struct ThumbnailView: View {

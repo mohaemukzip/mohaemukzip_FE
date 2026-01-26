@@ -8,14 +8,15 @@
 import SwiftUI
 
 struct YoTeacherChatView: View {
-    @StateObject var viewModel = YoTeacherChatViewModel()
+    @Environment(YoTeacherChatViewModel.self) var viewModel
+    @Environment(NavigationRouter.self) var router
     @State var text: String = ""
     
     var body: some View {
         ZStack {
             VStack {
                 HStack {
-                    Button( action: {} ) {
+                    Button( action: { router.pop() } ) {
                         Image("back button")
                             .foregroundStyle(.grey700)
                     }
@@ -117,15 +118,13 @@ struct YoTeacherChatView: View {
                     }.padding(.horizontal, 17)
                         .padding(.bottom, 10)
                 }
-                            
             } // end of VStack
-        }
-        
-        
+        }.navigationBarBackButtonHidden()
     }
-    
 }
 
 #Preview {
     YoTeacherChatView()
+        .environment(NavigationRouter())
+        .environment(YoTeacherChatViewModel())
 }

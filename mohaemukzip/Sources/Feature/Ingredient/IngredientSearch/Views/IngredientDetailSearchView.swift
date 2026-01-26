@@ -152,4 +152,7 @@ struct IngredientDetailSearchView: View {
 
 #Preview {
     IngredientDetailSearchView()
+        .environment(NavigationRouter())
+        .environment(FridgeViewModel())
+        .environment(IngredientSearchViewModel())
 }

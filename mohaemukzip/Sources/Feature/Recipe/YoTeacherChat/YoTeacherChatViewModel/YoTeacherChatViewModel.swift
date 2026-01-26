@@ -15,13 +15,14 @@ enum ResponseState {
     case completed // 렌더링 완료
 }
 
-class YoTeacherChatViewModel: ObservableObject {
-    @Published var messages: [ChatMessage] = []
-    @Published var recommendQ: [ChatMessage] = [ChatMessage(text: "지금 있는 재료로 만들 요리 추천"),
+@Observable
+class YoTeacherChatViewModel {
+    var messages: [ChatMessage] = []
+    var recommendQ: [ChatMessage] = [ChatMessage(text: "지금 있는 재료로 만들 요리 추천"),
                                                 ChatMessage(text: "허니콤보랑 먹을 떡볶이 추천"),
                                                 ChatMessage(text: "엽떡 착한맛 래시피")]
-    @Published var responseState: ResponseState = .idle
-    @Published var responseVideos: [RecipeVideo]? = nil
+    var responseState: ResponseState = .idle
+    var responseVideos: [RecipeVideo]? = nil
     
     func addMessages(text: String) {
         messages.append(ChatMessage(text: text))
