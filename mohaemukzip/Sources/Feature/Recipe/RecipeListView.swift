@@ -36,7 +36,7 @@ struct RecipeListView: View {
             VStack(spacing: 0) {
                 
                 // MARK: - 최상단 검색창
-                Button( action: { } ) {
+                Button( action: { router.push(.recipeSearch) } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)

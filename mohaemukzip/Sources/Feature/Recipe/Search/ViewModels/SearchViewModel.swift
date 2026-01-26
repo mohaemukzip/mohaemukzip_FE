@@ -8,9 +8,10 @@
 import Foundation
 import Combine
 
-class SearchViewModel: ObservableObject {
-    @Published var searchText: String = ""
-    @Published var filteredSuggestion: [String] = []
+@Observable
+class SearchViewModel {
+    var searchText: String = ""
+    var filteredSuggestion: [String] = []
     
     let suggestionDummy = ["김밥", "김치찌개", "김김김", "두바이쫀득쿠키", "두쫀붕", "허니콤보"]
     

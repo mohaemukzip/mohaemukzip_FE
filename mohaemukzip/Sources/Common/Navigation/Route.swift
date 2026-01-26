@@ -8,9 +8,9 @@
 import Foundation
 
 enum Route: Hashable {
-    
     case ingredientSearch
     case ingredientDetailSearch
     case yoTeacher
     case recipeDetail(RecipeVideo)
+    case recipeSearch
 }
