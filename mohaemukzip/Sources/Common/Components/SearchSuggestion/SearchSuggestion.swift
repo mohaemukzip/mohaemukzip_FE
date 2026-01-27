@@ -38,7 +38,7 @@ struct SearchSuggestion: View {
             Rectangle()
                 .frame(height: 1)
                 .foregroundStyle(.grey200)
-        }
+        }.padding(.top)
     }
 }
 
