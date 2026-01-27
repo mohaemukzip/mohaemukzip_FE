@@ -17,6 +17,15 @@ struct MainTabView: View {
         
     //기본 설정된 상태 -> home
     @State private var selection: TabType = .home
+    
+    // MARK: - 각 뷰에서 사용하는 뷰모델은 MainTabView에서 소유(@State)
+    // MARK: - MainTabView에서 소유하는 뷰모델을 환경변수로 각 뷰에 주입
+    // MARK: - 중앙 집중적으로 뷰모델을 관리해야 공통된 데이터로 뷰를 그릴 수 있음
+    @State private var router = NavigationRouter()
+    @State private var fridgeVM = FridgeViewModel()
+    @State private var ingredientSearchVM = IngredientSearchViewModel()
+    @State private var yoTeacherVM = YoTeacherChatViewModel()
+    @State private var searchVM = SearchViewModel()
 
     init() {
         let appearance = UITabBarAppearance()
@@ -56,7 +65,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .search) {
-                SearchView()
+                NavigationStack(path: $router.path) {
+                    RecipeListView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "검색",
@@ -64,7 +76,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .ingredient) {
-                FridgeView()
+                NavigationStack(path: $router.path) {
+                    FridgeView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "재료",
@@ -78,6 +93,30 @@ struct MainTabView: View {
                     "마이",
                     image: selection == .profile ? "selectedProfile" : "icon-profile"
                 )
+            }
+        }
+        .environment(router)
+        .environment(fridgeVM)
+        .environment(ingredientSearchVM)
+        .environment(yoTeacherVM)
+        .environment(searchVM)
+    }
+}
+
+extension View {
+    func setupNavigationDestinations() -> some View {
+        self.navigationDestination(for: Route.self) { route in
+            switch route {
+            case .ingredientSearch:
+                IngredientSearchView()
+            case .ingredientDetailSearch:
+                IngredientDetailSearchView()
+            case .yoTeacher:
+                YoTeacherChatView()
+            case .recipeDetail(let video):
+                RecipeVideoDetailView(video: video)
+            case .recipeSearch:
+                SearchView()
             }
         }
     }
