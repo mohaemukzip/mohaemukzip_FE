@@ -5,11 +5,12 @@
 //  Created by 이한결 on 1/13/26.
 //
 
+
 import SwiftUI
 import Combine
-
+@Observable
 class FridgeViewModel: ObservableObject {
-    @Published var allIngredients: [FridgeIngredientModel] = []
+    var allIngredients: [FridgeIngredientModel] = []
     
     // MARK: 냉동, 냉장, 실온 -> 서버에서 받은 allIngredient를 분기처리할 것
     var frozenIngredients: [FridgeIngredientModel] {
@@ -50,11 +51,11 @@ class FridgeViewModel: ObservableObject {
     
     func addIngredientToFridge(name: String, amount: String, storage: FridgeIngredientModel.StorageType) {
         let newEntry = FridgeIngredientModel(name: name,
-                                       amount: amount,
+                                       amount: amount + "g",
                                        expirationDate: 10,
                                        ty: storage)
         withAnimation {
-            self.allIngredients.insert(newEntry, at: 0)
+            self.allIngredients.append(newEntry)
         }
     }
     

@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct FridgeView: View {
-    @StateObject private var viewModel = FridgeViewModel()
+    @Environment(FridgeViewModel.self) var viewModel
+    @Environment(IngredientSearchViewModel.self) var ingredientSearchVM
     @State var isEditing: Bool = false
+    @Environment(NavigationRouter.self) var router
     
     var body: some View {
         VStack {
@@ -56,7 +58,7 @@ struct FridgeView: View {
                     Spacer()
                     Button ( action: { } ) { OrangeButton(text: "장보기 연동하기", size: .small) }
                     Spacer()
-                    Button ( action: { } ) { OrangeButton(text: "재료 입력하기", size: .small) }
+                    Button ( action: { router.push(.ingredientSearch); ingredientSearchVM.searchText = "" } ) { OrangeButton(text: "재료 입력하기", size: .small) }
                     Spacer()
                 }.padding()
             }.frame(height: 94)
@@ -67,4 +69,7 @@ struct FridgeView: View {
 
 #Preview {
     FridgeView()
+        .environment(NavigationRouter())
+        .environment(FridgeViewModel())
+        .environment(IngredientSearchViewModel())
 }

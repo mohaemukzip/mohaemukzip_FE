@@ -94,7 +94,7 @@ enum SoutheastAsianSubCategory: String, CaseIterable, Identifiable {
 
 // MARK: - Recipe Detail Sub Models
 
-struct RecipeIngredient: Identifiable, Equatable {
+struct RecipeIngredient: Identifiable, Equatable, Hashable {
 
     let id: Int              // server: ingredientId
     let name: String
@@ -117,7 +117,7 @@ struct RecipeIngredient: Identifiable, Equatable {
     }
 }
 
-struct RecipeStep: Identifiable, Equatable {
+struct RecipeStep: Identifiable, Equatable, Hashable {
 
     var id: Int { stepNumber }
 
@@ -141,7 +141,7 @@ struct RecipeStep: Identifiable, Equatable {
 }
 
 // MARK: - Recipe Model (목록 + 상세 공용)
-struct RecipeVideo: Identifiable {
+struct RecipeVideo: Identifiable, Hashable {
 
     // MARK: Identity
     /// List API uses `id`, Detail API uses `recipeId`.
