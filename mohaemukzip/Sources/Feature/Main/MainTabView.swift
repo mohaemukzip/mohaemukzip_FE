@@ -14,7 +14,7 @@ struct MainTabView: View {
         case ingredient
         case profile
     }
-        
+    
     //기본 설정된 상태 -> home
     @State private var selection: TabType = .home
     
@@ -26,38 +26,42 @@ struct MainTabView: View {
     @State private var ingredientSearchVM = IngredientSearchViewModel()
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
-
+    @State private var homeVM = HomeViewModel()
+    
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-
+        
         // 탭 아이템 간 간격 조절 (가운데 정렬 + 간격 촘촘하게)
         UITabBar.appearance().itemPositioning = .centered
-      
-    
+        
+        
         // 각 탭 아이템의 너비를 줄여 전체 간격을 촘촘하게 유지 (좌우 대칭 유지)
-       
-
+        
+        
         // 선택되지 않은 상태 (grey500)
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(named: "grey500")
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor(named: "grey500") as Any
         ]
-
+        
         // 선택된 상태 (grey900)
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(named: "grey900")
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor(named: "grey900") as Any
         ]
-
+        
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
-
+        
     }
     var body: some View {
         TabView(selection: $selection) {
             Tab(value: .home) {
-                HomeView()
+                NavigationStack(path: $router.path) {
+                    HomeView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "홈",
@@ -100,6 +104,7 @@ struct MainTabView: View {
         .environment(ingredientSearchVM)
         .environment(yoTeacherVM)
         .environment(searchVM)
+        .environment(homeVM)
     }
 }
 
@@ -117,6 +122,8 @@ extension View {
                 RecipeVideoDetailView(video: video)
             case .recipeSearch:
                 SearchView()
+            case .home:
+                HomeView()
             }
         }
     }
