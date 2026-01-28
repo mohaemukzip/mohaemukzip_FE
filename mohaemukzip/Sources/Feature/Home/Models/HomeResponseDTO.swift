@@ -1,0 +1,76 @@
+//
+//  HomeResponseDTO.swift
+//  mohaemukzip
+//
+//  Created by 이서현 on 1/27/26.
+//
+
+
+// MARK: - Root
+struct HomeResponseDTO: Decodable {
+    let isSuccess: Bool
+    let code: String
+    let message: String
+    let result: HomeResultDTO
+}
+
+// MARK: - Result
+struct HomeResultDTO: Decodable {
+    let level: Int
+    let title: String
+    let monthlyCooking: Int
+    let score: Int
+    let nextLevelScore: Int
+    let consecutiveDays: Int
+    let weeklyCooking: WeeklyCookingDTO
+    let todayMissions: TodayMissionDTO
+    let recommendedRecipes: [RecommendedRecipeDTO]
+}
+
+// MARK: - WeeklyCooking
+struct WeeklyCookingDTO: Decodable {
+    let monday: Bool
+    let tuesday: Bool
+    let wednesday: Bool
+    let thursday: Bool
+    let friday: Bool
+    let saturday: Bool
+    let sunday: Bool
+    
+    var asArray: [(day: String, isDone: Bool)] {
+        [
+            ("월", monday),
+            ("화", tuesday),
+            ("수", wednesday),
+            ("목", thursday),
+            ("금", friday),
+            ("토", saturday),
+            ("일", sunday)
+        ]
+    }
+}
+
+// MARK: - TodayMission
+struct TodayMissionDTO: Decodable {
+    let missionId: Int
+    let title: String
+    let description: String
+    let reward: Int
+    let isCompleted: Bool
+}
+
+// MARK: - RecommendedRecipe
+struct RecommendedRecipeDTO: Decodable, Identifiable {
+    let recipeId: Int
+    let title: String
+    let videoId: String
+    let videoUrl: String
+    let imageUrl: String
+    let channel: String
+    let channelId: String
+    let views: Int
+    let time: String
+    let cookingTime: Int
+    
+    var id: Int { recipeId }
+}

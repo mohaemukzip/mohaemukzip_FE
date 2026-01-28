@@ -13,4 +13,5 @@ enum Route: Hashable {
     case yoTeacher
     case recipeDetail(RecipeVideo)
     case recipeSearch
+    case home
 }
