@@ -34,16 +34,16 @@ struct FridgeView: View {
                         IngredientBox(isEditing: $isEditing,
                                       text: "냉동",
                                       ingredients: viewModel.frozenIngredients,
-                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
                         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
                         IngredientBox(isEditing: $isEditing,
                                       text: "냉장",
                                       ingredients: viewModel.chilledIngredients,
-                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
                         IngredientBox(isEditing: $isEditing,
                                       text: "실온",
                                       ingredients: viewModel.roomIngredients,
-                                      onDelete: { id in viewModel.deleteIngredient(at: id)})
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
                         .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
                     }.padding()
                 }
@@ -63,6 +63,8 @@ struct FridgeView: View {
                 }.padding()
             }.frame(height: 94)
             
+        }.task {
+            await viewModel.fetchList()
         }
     }
 }

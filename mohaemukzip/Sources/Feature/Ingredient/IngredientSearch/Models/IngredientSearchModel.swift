@@ -24,7 +24,7 @@ enum IngredientCategory: String, CaseIterable {
 }
 
 struct IngredientSearchModel: Identifiable {
-    let id: UUID = UUID()
+    let id: Int
     let name: String
     let amount: String
     let category: String

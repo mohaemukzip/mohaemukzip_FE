@@ -12,24 +12,24 @@ import Combine
 class IngredientSearchViewModel: ObservableObject {
     var selectedCategory: IngredientCategory
     var searchText: String = ""
-    var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "면"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "두바이", amount: "1기본량(100g)", category: "빵/떡"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "커피", amount: "1기본량(100g)", category: "음료"),
-                                                              IngredientSearchModel(name: "대파", amount: "채소", category: "채소"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")]
+    var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(id: 1, name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "면"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "두바이", amount: "1기본량(100g)", category: "빵/떡"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "커피", amount: "1기본량(100g)", category: "음료"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "채소", category: "채소"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
+                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품")]
     var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
                                                                   IngredientDetailSearchModel(name: "소파"),
                                                                   IngredientDetailSearchModel(name: "중파")]
@@ -63,7 +63,7 @@ class IngredientSearchViewModel: ObservableObject {
     }
     
     // 저장 기능 함수
-    func toggleIsSaved(for id: UUID) {
+    func toggleIsSaved(for id: Int) {
         if let index = allIngredients.firstIndex(where: {$0.id == id}) {
             allIngredients[index].isSaved.toggle()
         }

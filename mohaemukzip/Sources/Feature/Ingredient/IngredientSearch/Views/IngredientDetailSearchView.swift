@@ -131,11 +131,15 @@ struct IngredientDetailSearchView: View {
             .sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
                 IngredientAdditionBottomSheet(ingredient: ingredient,
                                               onAdd: { storage, date, weight in
-                    fridgeVM.addIngredientToFridge(name: ingredient.name,
-                                                   amount: weight,
-                                                   storage: storage)
-                    viewModel.selectedIngredientForAddition = nil
-                    router.navigateToRoot()
+                    Task {
+                        await fridgeVM.addIngredient(id: ingredient.id,
+                                                     ty: storage.rawValue,
+                                                     date: date,
+                                                     amount: weight)
+                        viewModel.selectedIngredientForAddition = nil
+                        viewModel.searchText = ""
+                        router.navigateToRoot()
+                    }
                 },
                                               onSave: {
                     viewModel.toggleIsSaved(for: ingredient.id)

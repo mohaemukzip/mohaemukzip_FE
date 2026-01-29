@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		67E1B9DD2F2A033A00EA2875 /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 67E1B9DC2F2A033A00EA2875 /* CombineMoya */; };
+		67E1B9DF2F2A033A00EA2875 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 67E1B9DE2F2A033A00EA2875 /* Moya */; };
 		D775B56D2F21FD980085293A /* YouTubePlayerKit in Frameworks */ = {isa = PBXBuildFile; productRef = D775B56C2F21FD980085293A /* YouTubePlayerKit */; };
 /* End PBXBuildFile section */
 
@@ -46,7 +48,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				67E1B9DD2F2A033A00EA2875 /* CombineMoya in Frameworks */,
 				D775B56D2F21FD980085293A /* YouTubePlayerKit in Frameworks */,
+				67E1B9DF2F2A033A00EA2875 /* Moya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -90,6 +94,8 @@
 			name = mohaemukzip;
 			packageProductDependencies = (
 				D775B56C2F21FD980085293A /* YouTubePlayerKit */,
+				67E1B9DC2F2A033A00EA2875 /* CombineMoya */,
+				67E1B9DE2F2A033A00EA2875 /* Moya */,
 			);
 			productName = mohaemukzip;
 			productReference = 67A031AF2F0FC1BF005E0E39 /* mohaemukzip.app */;
@@ -121,6 +127,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
+				67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 67A031B02F0FC1BF005E0E39 /* Products */;
@@ -155,6 +162,8 @@
 /* Begin XCBuildConfiguration section */
 		67A031B82F0FC1C2005E0E39 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 67A031B12F0FC1BF005E0E39 /* mohaemukzip */;
+			baseConfigurationReferenceRelativePath = Secret.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -218,6 +227,8 @@
 		};
 		67A031B92F0FC1C2005E0E39 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 67A031B12F0FC1BF005E0E39 /* mohaemukzip */;
+			baseConfigurationReferenceRelativePath = Secret.xcconfig;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -364,6 +375,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Moya/Moya";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 15.0.3;
+			};
+		};
 		D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/SvenTiigi/YouTubePlayerKit";
@@ -375,6 +394,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		67E1B9DC2F2A033A00EA2875 /* CombineMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = CombineMoya;
+		};
+		67E1B9DE2F2A033A00EA2875 /* Moya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = Moya;
+		};
 		D775B56C2F21FD980085293A /* YouTubePlayerKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */;

@@ -9,7 +9,7 @@ import SwiftUI
 
 struct IngredientList: View {
     var ingredients: [IngredientSearchModel]
-    var onSaveTap: (UUID) -> Void
+    var onSaveTap: (Int) -> Void
     var onPlusTap: (IngredientSearchModel) -> Void
     
     var body: some View {
