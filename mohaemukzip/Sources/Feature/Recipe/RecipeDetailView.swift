@@ -87,26 +87,27 @@ struct RecipeVideoDetailView: View {
     }
 
     var body: some View {
+        // 상단 네비게이션 + 영상 플레이어는 고정, 아래 컨텐츠만 스크롤
         VStack(spacing: 0) {
             navigationBar
 
-            ScrollView {
-                VStack(spacing: 0) {
-                    playerSection
-                        .padding(.top, 8)
+            // ✅ 스크롤해도 영상이 고정되도록 ScrollView 바깥에 둠
+            playerSection
+                .padding(.top, 8)
 
-                    VStack(alignment: .leading, spacing: 16) {
-                        headerSection
-                        statsSection
-                        channelSection
-                        Divider().opacity(0.6)
-                        ingredientsSection
-                        summarySection
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 16)
-                    .padding(.bottom, 24)
+            // 아래 정보(제목/통계/재료/요약 레시피)는 스크롤 영역
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    headerSection
+                    statsSection
+                    channelSection
+                    Divider().opacity(0.6)
+                    ingredientsSection
+                    summarySection
                 }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 24)
             }
         }
         .safeAreaInset(edge: .bottom) {
@@ -115,14 +116,17 @@ struct RecipeVideoDetailView: View {
         .toolbar(.hidden, for: .navigationBar)
     }
 
-    // MARK: - Sections
+    // MARK: - Sections (화면 구성 단위)
+    // 화면을 구성하는 주요 섹션들을 아래에 모아두었어요.
+    // (네비게이션/플레이어/헤더/통계/채널/재료/요약 레시피/하단 버튼)
 
+    /// 상단 네비게이션 바 (뒤로가기 / 북마크)
     private var navigationBar: some View {
         HStack(spacing: 12) {
             Button {
                 dismiss()
             } label: {
-                Image(systemName: "chevron.left")
+                Image( "backbutton")
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(.primary)
                     .frame(width: 36, height: 36)
@@ -149,6 +153,7 @@ struct RecipeVideoDetailView: View {
         .background(Color(.systemBackground))
     }
 
+    /// 유튜브 플레이어 영역 (16:9 비율 고정)
     private var playerSection: some View {
         GeometryReader { geometry in
             YouTubePlayerView(player) { state in
@@ -172,6 +177,7 @@ struct RecipeVideoDetailView: View {
         .frame(height: UIScreen.main.bounds.width * 9 / 16)
     }
 
+    /// 레시피 제목 + 조회수
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(video.title)
@@ -184,29 +190,30 @@ struct RecipeVideoDetailView: View {
         }
     }
 
+    /// 난이도 / 소요시간 정보
     private var statsSection: some View {
         HStack(spacing: 0) {
             VStack(spacing: 10) {
-                HStack(spacing: 6) {
-                    Image(systemName: "chart.bar")
-                        .font(.subheadline)
+                HStack(spacing: 5) {
+                    Image("difficult")
                     Text("난이도")
-                        .font(.subheadline)
+                        .font(.custom("Pretendard-Regular", size: 14))
+                        .foregroundStyle(Color("grey700"))
                 }
                 difficultyStars(filledCount: video.displayDifficultyStars)
             }
             .frame(maxWidth: .infinity)
 
             VStack(spacing: 10) {
-                HStack(spacing: 6) {
-                    Image(systemName: "clock")
-                        .font(.subheadline)
+                HStack(spacing: 5) {
+                    Image("clock")
                     Text("소요시간")
-                        .font(.subheadline)
+                        .font(.custom("Pretendard-Regular", size: 14))
+                        .foregroundStyle(Color("grey700"))
                 }
                 Text("\(video.cookingTimeMinutes)분")
-                    .font(.headline)
-                    .foregroundStyle(.primary)
+                    .font(.custom("Pretendard-Regular", size: 16))
+                    .foregroundStyle(Color("grey900"))
             }
             .frame(maxWidth: .infinity)
         }
@@ -214,10 +221,11 @@ struct RecipeVideoDetailView: View {
         .padding(.horizontal, 16)
         .background(
             RoundedRectangle(cornerRadius: 14)
-                .fill(Color(.systemGray6))
+                .fill(Color(.grey50))
         )
     }
 
+    /// 채널 정보 (프로필 이미지 + 채널명)
     private var channelSection: some View {
         HStack(spacing: 12) {
             AsyncImage(url: URL(string: video.channelProfileImageUrl ?? "")) { phase in
@@ -249,7 +257,7 @@ struct RecipeVideoDetailView: View {
             .clipShape(Circle())
 
             Text(video.channelName)
-                .font(.body.weight(.semibold))
+                .font(.custom("Pretendard-Regular", size: 14))
                 .foregroundStyle(.primary)
 
             Spacer()
@@ -266,10 +274,11 @@ struct RecipeVideoDetailView: View {
         )
     }
 
+    /// 필요한 재료 (가로 스크롤 칩)
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("필요한 재료")
-                .font(.headline.weight(.bold))
+                .font(.custom("Pretendard-SemiBold", size: 18))
                 .foregroundStyle(.primary)
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -283,16 +292,22 @@ struct RecipeVideoDetailView: View {
         }
     }
 
+    /// 요선생의 요약 레시피 (STEP 카드 리스트)
     private var summarySection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("요선생의 요약 레시피")
-                .font(.headline.weight(.bold))
+                .font(.custom("Pretendard-SemiBold", size: 18))
                 .foregroundStyle(.primary)
 
             if video.hasSummary {
                 VStack(spacing: 12) {
                     ForEach(video.displaySteps) { step in
-                        RecipeStepCard(step: step)
+                        RecipeStepCard(
+                            step: step,
+                            onTapTimestamp: { seconds in
+                                seekToTime(seconds)
+                            }
+                        )
                     }
                 }
             } else {
@@ -314,6 +329,7 @@ struct RecipeVideoDetailView: View {
         .padding(.top, 8)
     }
 
+    /// 하단 고정 버튼 영역 (요리 완성)
     private var bottomActionBar: some View {
         VStack(spacing: 0) {
             Divider().opacity(0.6)
@@ -336,7 +352,26 @@ struct RecipeVideoDetailView: View {
         }
     }
 
-    // MARK: - Small UI Helpers
+    // MARK: - Player Controls (플레이어 제어)
+    // 타임스탬프(초)를 눌렀을 때 해당 시점으로 이동(seek)시키기 위한 함수들
+
+    /// Seek the YouTube player to a specific time (in seconds) and start playing.
+    private func seekToTime(_ seconds: Int) {
+        Task {
+            do {
+                try await player.seek(
+                    to: Measurement(value: Double(max(0, seconds)), unit: UnitDuration.seconds),
+                    allowSeekAhead: true
+                )
+                try await player.play()
+            } catch {
+                // Intentionally ignore errors (e.g., player not ready yet)
+            }
+        }
+    }
+
+    // MARK: - Small UI Helpers (작은 UI 도우미)
+    // 별점 표시, 조회수 포맷 등 화면에서 자주 쓰는 작은 유틸들을 모아둠
 
     private func difficultyStars(filledCount: Int) -> some View {
         let filled = max(0, min(5, filledCount))
@@ -364,21 +399,25 @@ struct RecipeVideoDetailView: View {
     }
 }
 
-// MARK: - Components
+// MARK: - Components (재사용 컴포넌트)
+// 재료 칩, STEP 카드처럼 여러 번 쓰이는 뷰를 분리해둠
 
 private struct RecipeIngredientChip: View {
 
     let ingredient: RecipeIngredient
 
+    // 재료 1개를 보여주는 칩(보유/미보유 배경색 분기)
     var body: some View {
         VStack(spacing: 4) {
             Text(ingredient.name)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
+                .font(
+                Font.custom("Pretendard", size: 14)
+                .weight(.medium)
+                )
 
             Text("분량 (\(formattedAmount(ingredient.amount))\(ingredient.unit))")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+                .font(Font.custom("Pretendard", size: 13))
+                .foregroundColor(Color(red: 0.38, green: 0.38, blue: 0.38))
         }
         .frame(width: 88, height: 64)
         .background(
@@ -396,46 +435,57 @@ private struct RecipeIngredientChip: View {
 
     private var backgroundColor: Color {
         ingredient.hasIngredient
-            ? Color(.systemGray6)
-            : Color(.systemGray4)
+            ? Color(red: 0.98, green: 0.98, blue: 0.98)
+            : Color("grey200")
     }
 }
 
 private struct RecipeStepCard: View {
 
     let step: RecipeStep
+    let onTapTimestamp: (Int) -> Void
 
+    // STEP 카드 1개 (타임스탬프 누르면 해당 시점으로 이동)
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("STEP \(step.stepNumber)")
-                        .font(.caption.weight(.bold))
+                        .font(.custom("Pretendard-Medium", size: 14))
                         .foregroundStyle(Color.orange)
 
                     Text(step.title)
-                        .font(.headline.weight(.bold))
+                        .font(.custom("Pretendard-SemiBold", size: 16))
                         .foregroundStyle(.primary)
                 }
 
                 Spacer()
 
-                HStack(spacing: 6) {
-                    Image(systemName: "play.fill")
-                        .font(.system(size: 10, weight: .bold))
-                    Text(formattedTime(step.videoTime))
-                        .font(.caption.weight(.semibold))
+                Button {
+                    onTapTimestamp(step.videoTime)
+                } label: {
+                    HStack(spacing: 0) {
+                        Image("play.arrow.filled")
+                        Text(formattedTime(step.videoTime))
+                            .font(.custom("Pretendard-Medium", size: 14))
+                            .foregroundStyle(.white)
+                    }
                 }
-                .padding(.vertical, 6)
-                .padding(.horizontal, 10)
-                .background(
-                    Capsule()
-                        .fill(Color(.systemGray5))
-                )
+                .buttonStyle(.plain)
+                .padding(.leading, 4)
+                .padding(.trailing, 8)
+                .padding(.vertical, 2)
+                .background(Color(red: 0.29, green: 0.28, blue: 0.28))
+                .cornerRadius(30)
             }
 
+            Rectangle()
+                .foregroundColor(.clear)
+                .frame(width: 339, height: 1)
+                .background(Color(red: 0.9, green: 0.9, blue: 0.9))
+
             Text(step.description)
-                .font(.subheadline)
+                .font(.custom("Pretendard-Regular", size: 16))
                 .foregroundStyle(.primary)
                 .lineSpacing(2)
         }
@@ -542,3 +592,4 @@ private extension RecipeVideo {
         )
     }
 }
+

@@ -194,26 +194,39 @@ final class RecipeVideoViewModel: ObservableObject {
         videos = [
             // 한식
             RecipeVideo(
-                id: 1,
-                title: "김민우 헬창",
-                videoUrl: nil,
-                videoId: "VgPuT73v5iY",
-                channelId: "UC_KOREAN_001",
-                videoDuration: "10:23",
-                channelName: "한식연구소",
-                viewCount: 120_000,
-                cookingTimeMinutes: 20,
-                difficulty: 2,
-                level: nil,
-                ratingCount: nil,
-                ingredients: nil,
-                steps: nil,
-                summaryExists: nil,
+                id: 12,
+                title: "초간단 제육볶음 레시피",
+                videoUrl: "https://www.youtube.com/watch?v=sHpMVI8wQuk",
+                videoId: "sHpMVI8wQuk",
+                channelId: nil,
+                videoDuration: nil,
+                channelName: "고석현",
+                viewCount: 1_250_000,
+                cookingTimeMinutes: 15,
+                difficulty: nil,
+                level: 3.0,
+                ratingCount: 0,
+                ingredients: [
+                    RecipeIngredient(id: 3, name: "돼지고기", amount: 400.0, unit: "g", hasIngredient: true),
+                    RecipeIngredient(id: 7, name: "양배추", amount: 1.0, unit: "개", hasIngredient: false),
+                    RecipeIngredient(id: 9, name: "양파", amount: 0.5, unit: "개", hasIngredient: true)
+                ],
+                steps: [
+                    RecipeStep(stepNumber: 1, title: "고기와 기본 재료 준비하기", description: "돼지고기와 채소를 손질합니다.", videoTime: 304),
+                    RecipeStep(stepNumber: 2, title: "팬에 고기 볶기", description: "달군 팬에 고기를 볶습니다.", videoTime: 443),
+                    RecipeStep(stepNumber: 3, title: "양념 넣고 볶기", description: "양념을 넣고 1~2분 더 볶습니다.", videoTime: 650)
+                ],
+                summaryExists: true,
                 cuisine: .korean,
                 koreanSubCategory: .soupStew,
-                isBookmarked: false,
-                channelProfileImageUrl: "https://picsum.photos/200"
-            ),
+                chineseSubCategory: nil,
+                japaneseSubCategory: nil,
+                westernSubCategory: nil,
+                southeastAsianSubCategory: nil,
+                isBookmarked: true,
+                channelProfileImageUrl: "https://picsum.photos/seed/goseokhyun/200"
+            )
+        ,
             RecipeVideo(
                 id: 4,
                 title: "초간단 고석현 김치찌개",

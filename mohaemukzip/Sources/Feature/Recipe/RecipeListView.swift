@@ -230,7 +230,7 @@ struct RecipeVideoCard: View {
                 Button {
                     isBookmarked.toggle()
                 } label: {
-                    Image(isBookmarked ? "bookmark_filled" : "bookmark")
+                    Image(isBookmarked ? "bookmark.fill" : "bookmark")
                         .renderingMode(.original)
                 }
             }
