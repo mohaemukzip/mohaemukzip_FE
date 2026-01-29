@@ -1,7 +1,12 @@
 import Foundation
 import SwiftUI
 
-// MARK: - 음식 종류 (상위 카테고리 버튼)
+// MARK: - RecipeModel
+// 레시피 도메인에서 사용하는 핵심 모델 정의 파일
+// 목록 화면과 상세 화면에서 공통으로 사용하는 타입들을 모아둠
+
+// MARK: - 음식 종류 (상위 카테고리)
+// 홈/목록 화면에서 사용하는 상위 음식 카테고리
 enum CuisineCategory: String, CaseIterable, Identifiable {
     case korean = "한식"
     case chinese = "중식"
@@ -9,10 +14,11 @@ enum CuisineCategory: String, CaseIterable, Identifiable {
     case western = "양식"
     case southeastAsian = "동남아"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Korean SubCategory (한식)
+// MARK: - 한식 하위 카테고리
 enum KoreanSubCategory: String, CaseIterable, Identifiable {
     case soupStew = "국·찌개"
     case rice = "밥요리"
@@ -25,10 +31,11 @@ enum KoreanSubCategory: String, CaseIterable, Identifiable {
     case sideDish = "반찬"
     case kimchi = "김치 요리"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Chinese SubCategory (중식)
+// MARK: - 중식 하위 카테고리
 enum ChineseSubCategory: String, CaseIterable, Identifiable {
     case noodle = "면요리"
     case friedRice = "볶음밥"
@@ -41,10 +48,11 @@ enum ChineseSubCategory: String, CaseIterable, Identifiable {
     case seafood = "해물 요리"
     case dumpling = "만두 요리"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Japanese SubCategory (일식)
+// MARK: - 일식 하위 카테고리
 enum JapaneseSubCategory: String, CaseIterable, Identifiable {
     case riceBowl = "덮밥"
     case noodle = "면요리"
@@ -57,10 +65,11 @@ enum JapaneseSubCategory: String, CaseIterable, Identifiable {
     case seafood = "해물 요리"
     case egg = "계란 요리"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Western SubCategory (양식)
+// MARK: - 양식 하위 카테고리
 enum WesternSubCategory: String, CaseIterable, Identifiable {
     case pasta = "파스타"
     case risotto = "리조또"
@@ -73,10 +82,11 @@ enum WesternSubCategory: String, CaseIterable, Identifiable {
     case pizza = "피자"
     case cheese = "치즈 요리"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Southeast Asian SubCategory (동남아)
+// MARK: - 동남아 하위 카테고리
 enum SoutheastAsianSubCategory: String, CaseIterable, Identifiable {
     case rice = "밥요리"
     case riceNoodle = "쌀국수"
@@ -89,14 +99,15 @@ enum SoutheastAsianSubCategory: String, CaseIterable, Identifiable {
     case seafood = "해물 요리"
     case salad = "샐러드"
 
+    /// SwiftUI에서 ForEach 식별을 위해 rawValue를 id로 사용
     var id: String { rawValue }
 }
 
-// MARK: - Recipe Detail Sub Models
-
+// MARK: - 레시피 상세 하위 모델
+// 재료, 조리 단계 등 상세 화면에서만 사용하는 모델들
 struct RecipeIngredient: Identifiable, Equatable {
 
-    let id: Int              // server: ingredientId
+    let id: Int              // 서버에서 내려오는 ingredientId
     let name: String
     let amount: Double
     let unit: String
@@ -124,7 +135,7 @@ struct RecipeStep: Identifiable, Equatable {
     let stepNumber: Int
     let title: String
     let description: String
-    /// seconds (server: videoTime)
+    /// 해당 조리 단계가 시작되는 영상 시점 (초 단위, server: videoTime)
     let videoTime: Int
 
     init(
@@ -140,50 +151,63 @@ struct RecipeStep: Identifiable, Equatable {
     }
 }
 
-// MARK: - Recipe Model (목록 + 상세 공용)
+// MARK: - RecipeVideo 모델 (목록 / 상세 공용)
+// 목록 API와 상세 API에서 공통으로 사용하는 핵심 레시피 모델
 struct RecipeVideo: Identifiable {
 
-    // MARK: Identity
-    /// List API uses `id`, Detail API uses `recipeId`.
+    // MARK: - 식별 정보
+    /// 목록 API에서는 id, 상세 API에서는 recipeId로 내려오지만
+    /// 앱 내부에서는 id 하나로 통합해서 사용함
     let id: Int
 
-    // MARK: Basic
+    // MARK: - 기본 정보
     let title: String
 
-    // MARK: Video
-    /// Detail API: full YouTube URL (`videoUrl`). May be absent in list.
+    // MARK: - 영상 정보
+    /// 상세 API에서 제공되는 유튜브 전체 URL
+    /// 목록 API에서는 내려오지 않을 수 있음
     let videoUrl: String?
-    /// Both APIs: YouTube video id (`videoId`).
+    /// 유튜브 영상 ID (목록/상세 API 공통)
     let videoId: String
-    /// List API: channelId. Detail API may not provide it.
+    /// 유튜브 채널 ID
+    /// 목록 API에서는 제공되지만, 상세 API에서는 없을 수 있음
     let channelId: String?
-    /// List API: video runtime string (e.g., "13:10"). Detail API may not provide it.
+    /// 영상 재생 시간 문자열 (예: "13:10")
+    /// 목록 API에서만 제공될 수 있음
     let videoDuration: String?
 
-    // MARK: Channel / Views
-    /// List API: `channelName`, Detail API: `channel`.
+    // MARK: - 채널 / 조회수 정보
+    /// 채널명
+    /// 목록 API와 상세 API의 필드명이 다를 수 있음
     let channelName: String
-    /// List API: `viewCount`, Detail API: `views`.
+    /// 조회수
+    /// 서버에서는 views 또는 viewCount로 내려올 수 있음
     let viewCount: Int
 
-    // MARK: Cooking
-    /// List API: `cookingTimeMinutes`, Detail API: `cookingTime`.
+    // MARK: - 요리 정보
+    /// 요리 소요 시간 (분 단위)
     let cookingTimeMinutes: Int
 
-    // MARK: Difficulty / Rating
-    /// List API: `difficulty` (Int 0~5 or 1~5 depending on your backend).
+    // MARK: - 난이도 / 평점 정보
+    /// 목록 API 기준 레시피 난이도 (1~5)
+    /// 서버 구현에 따라 0~5로 내려올 수도 있음
     let difficulty: Int?
-    /// Detail API: `level` (Double).
+    /// 상세 API 기준 레시피 난이도 (Double)
+    /// UI 표시 시 정수 별점으로 변환해서 사용함
     let level: Double?
-    /// Detail API: rating count.
+    /// 해당 레시피에 대한 평가 개수
     let ratingCount: Int?
 
-    // MARK: Detail
+    // MARK: - 상세 정보
+    /// 레시피 재료 목록 (상세 화면 전용)
     let ingredients: [RecipeIngredient]?
+    /// 조리 단계 목록 (상세 화면 전용)
     let steps: [RecipeStep]?
+    /// 요약 레시피 제공 여부
     let summaryExists: Bool?
 
-    // MARK: Categories (Front-defined)
+    // MARK: - 카테고리 정보 (프론트 기준 정의)
+    /// 서버 값과 1:1 매칭되지 않을 수 있으며, 앱 내부 분류 기준으로 사용함
     let cuisine: CuisineCategory
     let koreanSubCategory: KoreanSubCategory?
     let chineseSubCategory: ChineseSubCategory?
@@ -194,16 +218,18 @@ struct RecipeVideo: Identifiable {
     
 
 
-    // MARK: UI State
-    /// List API provides it. Detail API may omit it; default to false.
+    // MARK: - UI 상태값
+    /// 북마크 여부
+    /// 목록 API에서는 제공되며, 상세 API에서는 없을 수 있어 기본값 false 처리
     var isBookmarked: Bool
     
-    //채널 프사
+    /// 채널 프로필 이미지 URL
     let channelProfileImageUrl: String?
 
-    // MARK: Computed (UI convenience)
+    // MARK: - UI 편의 계산 프로퍼티
 
-    /// Prefer list `difficulty`, else derive from detail `level`.
+    /// UI에서 사용할 난이도 별점 값
+    /// 목록 난이도를 우선 사용하고, 없으면 상세 난이도(level)로 계산
     var displayDifficultyStars: Int {
         if let difficulty {
             return max(0, min(5, difficulty))
@@ -214,20 +240,22 @@ struct RecipeVideo: Identifiable {
         return 0
     }
 
-    /// Safe arrays for UI.
+    /// 재료 배열이 nil일 경우를 대비한 안전한 접근용 프로퍼티
     var displayIngredients: [RecipeIngredient] {
         ingredients ?? []
     }
 
+    /// 조리 단계 배열이 nil일 경우를 대비한 안전한 접근용 프로퍼티
     var displaySteps: [RecipeStep] {
         steps ?? []
     }
 
+    /// 요약 레시피 제공 여부를 안전하게 판단하기 위한 프로퍼티
     var hasSummary: Bool {
         summaryExists ?? false
     }
 
-    // MARK: Init
+    // MARK: - 초기화
     init(
         id: Int,
         title: String,

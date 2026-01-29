@@ -1,5 +1,6 @@
-//MARK: - 중요 !!! RecipeViewModel > RecipeListView 를 위한 뷰모델, RecipeDetailViewModel > RecipeDetailView를 위한 뷰모델 두개 분리 ! but
-//MARK: - 두 viewModel이 같은 모델 사용함 ~~~~~~~
+// MARK: - RecipeVideoViewModel
+// 레시피 목록 화면(RecipeListView)을 위한 전용 ViewModel
+// 상세 화면용 ViewModel과 분리되어 있지만, 동일한 RecipeVideo 모델을 공유함
 
 import Foundation
 import Combine
@@ -8,30 +9,33 @@ import Combine
 
 final class RecipeVideoViewModel: ObservableObject {
 
-    // MARK: Selection State (View → ViewModel)
+    // MARK: - 카테고리 선택 상태 (View → ViewModel)
+    // 사용자가 선택한 상위 / 하위 카테고리를 관리함
 
-    /// 선택된 상위 카테고리 (한식 / 중식 / 일식 / 양식 / 동남아)
+    /// 선택된 상위 음식 카테고리 (한식 / 중식 / 일식 / 양식 / 동남아)
     @Published var selectedCuisine: CuisineCategory? = nil
 
-    /// 선택된 하위 카테고리들 (상위 카테고리에 따라 하나만 사용됨)
+    /// 선택된 하위 카테고리
+    /// 상위 카테고리에 따라 하나의 값만 사용됨
     @Published var selectedKoreanSubCategory: KoreanSubCategory? = nil
     @Published var selectedChineseSubCategory: ChineseSubCategory? = nil
     @Published var selectedJapaneseSubCategory: JapaneseSubCategory? = nil
     @Published var selectedWesternSubCategory: WesternSubCategory? = nil
     @Published var selectedSoutheastAsianSubCategory: SoutheastAsianSubCategory? = nil
 
-    // MARK: Data Source
+    // MARK: - 데이터 소스
 
-    /// 전체 레시피 영상 목록 (추후 API 응답으로 교체)
+    /// 전체 레시피 영상 목록
+    /// API 연동 전까지는 더미 데이터를 사용함
     @Published private(set) var videos: [RecipeVideo] = []
 
-    // MARK: Computed - Filtered Result
+    // MARK: - 필터링된 결과 (Computed)
 
-    /// 상위 카테고리 + 하위 카테고리 기준으로 필터링된 영상 목록
-    /// - Note:
-    ///   1) 상위 카테고리가 선택되지 않으면([])
-    ///   2) 상위만 선택되고 하위가 선택되지 않아도([])
-    ///   3) 상위 + 하위가 모두 선택되면 해당 조건으로 필터링
+    /// 선택된 상위 + 하위 카테고리를 기준으로 필터링된 영상 목록
+    /// - 동작 규칙:
+    ///   1) 상위 카테고리가 선택되지 않으면 빈 배열 반환
+    ///   2) 상위만 선택되고 하위가 선택되지 않아도 빈 배열 반환
+    ///   3) 상위와 하위가 모두 선택된 경우에만 결과 반환
     var filteredVideos: [RecipeVideo] {
         guard let selectedCuisine else { return [] }
 
@@ -68,13 +72,12 @@ final class RecipeVideoViewModel: ObservableObject {
         }
     }
 
-    // MARK: Detail Dummy (상세 화면용 임시 데이터)
+    // MARK: - 상세 화면용 더미 데이터 생성
 
-    /// 목록에서 선택한 레시피(id)로 상세 화면을 띄울 때, API 연동 전 임시로 상세 데이터를 채워 넣기 위한 헬퍼
-    /// - Note: 실제 구현 시에는 `RecipeDetailService`의 응답을 DTO로 받은 뒤 `RecipeVideo`로 매핑하면 됨.
+    /// 목록 화면에서 선택한 레시피로 상세 화면을 구성하기 위한 더미 데이터 생성
+    /// API 연동 전까지 임시로 사용하며, 추후 상세 API 응답으로 대체 예정
     func makeDummyDetailVideo(recipeId: Int) -> RecipeVideo {
-        // 목록 더미에서 기본 정보(제목/채널/조회수 등)는 가져오고,
-        // 상세 전용 필드(재료/스텝/요약여부 등)만 임의로 채워 넣습니다.
+        // 목록 더미 데이터 중 동일한 레시피를 찾아 기본 정보로 사용
         let base = videos.first(where: { $0.id == recipeId })
 
         let ingredients: [RecipeIngredient] = [
@@ -116,11 +119,10 @@ final class RecipeVideoViewModel: ObservableObject {
         )
     }
 
-    // MARK: Init
+    // MARK: - 초기화
 
-
-
-    /// ✅ 기본 진입: 아무 버튼도 선택되지 않은 상태
+    /// 기본 진입 시 사용
+    /// 상위 / 하위 카테고리가 모두 선택되지 않은 초기 상태
     init() {
         self.selectedCuisine = nil
         self.selectedKoreanSubCategory = nil
@@ -132,7 +134,8 @@ final class RecipeVideoViewModel: ObservableObject {
         loadDummyData()
     }
 
-    /// 기존 호출부 호환용: category가 들어와도 '기본 선택 없음' 정책 유지
+    /// 기존 호출부 호환을 위한 초기화
+    /// category 값이 들어와도 기본 정책은 "선택 없음" 상태를 유지함
     init(category: CuisineCategory) {
         self.selectedCuisine = nil
         self.selectedKoreanSubCategory = nil
@@ -144,13 +147,14 @@ final class RecipeVideoViewModel: ObservableObject {
         loadDummyData()
     }
 
-    // MARK: Category Selection (View → VM API)
+    // MARK: - 카테고리 선택 처리 (View → ViewModel)
 
     /// 상위 카테고리 선택 시 호출
+    /// 하위 카테고리는 모두 초기화됨
     func selectCuisine(_ cuisine: CuisineCategory) {
         selectedCuisine = cuisine
 
-        // 상위 선택 단계: 하위는 아직 선택하지 않은 상태로 초기화
+        // 상위 선택 시 하위는 초기화
         selectedKoreanSubCategory = nil
         selectedChineseSubCategory = nil
         selectedJapaneseSubCategory = nil
@@ -158,38 +162,45 @@ final class RecipeVideoViewModel: ObservableObject {
         selectedSoutheastAsianSubCategory = nil
     }
 
-    /// 한식 하위 카테고리 선택
+    /// 해당 상위 카테고리의 하위 카테고리 선택 시 호출
+    /// 상위 카테고리도 함께 설정됨
     func selectKoreanSubCategory(_ subCategory: KoreanSubCategory) {
         selectedCuisine = .korean
         selectedKoreanSubCategory = subCategory
     }
 
-    /// 중식 하위 카테고리 선택
+    /// 해당 상위 카테고리의 하위 카테고리 선택 시 호출
+    /// 상위 카테고리도 함께 설정됨
     func selectChineseSubCategory(_ subCategory: ChineseSubCategory) {
         selectedCuisine = .chinese
         selectedChineseSubCategory = subCategory
     }
 
-    /// 일식 하위 카테고리 선택
+    /// 해당 상위 카테고리의 하위 카테고리 선택 시 호출
+    /// 상위 카테고리도 함께 설정됨
     func selectJapaneseSubCategory(_ subCategory: JapaneseSubCategory) {
         selectedCuisine = .japanese
         selectedJapaneseSubCategory = subCategory
     }
 
-    /// 양식 하위 카테고리 선택
+    /// 해당 상위 카테고리의 하위 카테고리 선택 시 호출
+    /// 상위 카테고리도 함께 설정됨
     func selectWesternSubCategory(_ subCategory: WesternSubCategory) {
         selectedCuisine = .western
         selectedWesternSubCategory = subCategory
     }
 
-    /// 동남아 하위 카테고리 선택
+    /// 해당 상위 카테고리의 하위 카테고리 선택 시 호출
+    /// 상위 카테고리도 함께 설정됨
     func selectSoutheastAsianSubCategory(_ subCategory: SoutheastAsianSubCategory) {
         selectedCuisine = .southeastAsian
         selectedSoutheastAsianSubCategory = subCategory
     }
 
-    // MARK: Dummy Data (API 연동 전 임시 데이터)
+    // MARK: - 더미 데이터 로드 (API 연동 전)
 
+    /// 목록 화면에 표시할 더미 레시피 데이터 로드
+    /// API 연동 시 이 메서드는 제거될 예정
     private func loadDummyData() {
         videos = [
             // 한식
@@ -199,7 +210,7 @@ final class RecipeVideoViewModel: ObservableObject {
                 videoUrl: "https://www.youtube.com/watch?v=sHpMVI8wQuk",
                 videoId: "sHpMVI8wQuk",
                 channelId: nil,
-                videoDuration: nil,
+                videoDuration: "12:05",
                 channelName: "고석현",
                 viewCount: 1_250_000,
                 cookingTimeMinutes: 15,
@@ -339,8 +350,10 @@ final class RecipeVideoViewModel: ObservableObject {
         ]
     }
 
-    // MARK: Bookmark (북마크 기능)
+    // MARK: - 북마크 처리 (UI 전용)
 
+    /// 목록 화면에서 북마크 버튼 클릭 시 호출
+    /// 현재는 UI 상태만 토글하며, API 연동 시 서버 요청으로 교체 예정
     func toggleBookmark(videoId: Int) {
         guard let index = videos.firstIndex(where: { $0.id == videoId }) else { return }
         videos[index].isBookmarked.toggle()

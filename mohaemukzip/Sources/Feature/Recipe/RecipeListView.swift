@@ -7,11 +7,17 @@
 
 import SwiftUI
 
+// MARK: - RecipeListView
+// 카테고리(상위/하위) 선택을 통해 레시피 영상을 탐색하는 목록 화면
+// 선택된 카테고리에 따라 ViewModel에서 필터링된 영상 목록을 표시함
 
 struct RecipeListView: View {
 
+    /// 레시피 목록 화면 전용 ViewModel
+    /// 카테고리 선택 상태 및 필터링된 영상 목록을 관리함
     @StateObject private var viewModel: RecipeVideoViewModel
 
+    // MARK: - 초기화
     // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.     
     init() {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
@@ -21,9 +27,13 @@ struct RecipeListView: View {
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel(category: category))
     }
 
+    // MARK: - 카테고리 버튼 색상 정의
+    // 선택 / 비선택 상태를 명확히 구분하기 위한 컬러
     private let selectedOrange = Color(red: 1, green: 0.55, blue: 0.14)
     private let unselectedGray = Color(red: 0.96, green: 0.96, blue: 0.96)
 
+    /// 하위 카테고리 그리드 레이아웃
+    /// 스크린샷 기준으로 고정 너비(64) 버튼을 1줄에 5개 배치
     private var subCategoryColumns: [GridItem] {
         Array(repeating: GridItem(.fixed(64), spacing: 12, alignment: .center), count: 5)
     }
@@ -32,6 +42,7 @@ struct RecipeListView: View {
         NavigationStack {
             VStack(spacing: 0) {
 
+                // 상위 음식 카테고리 선택 영역 (한식/중식/일식/양식/동남아)
                 // MARK: - 상위 카테고리 (스크린샷 스타일)
                 HStack(alignment: .top, spacing: 12) {
                     categoryButton(.korean)
@@ -43,15 +54,20 @@ struct RecipeListView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
 
-                // MARK: - 하위 카테고리 (상위 선택 후에만 노출)
+                // 선택된 상위 카테고리에 따라 하위 카테고리를 노출
+                // 상위 카테고리가 선택되지 않은 경우에는 표시하지 않음
+                // MARK: - 하위 카테고리 그리드
+                // 상위 카테고리 선택 이후에만 노출되며, 선택 결과에 따라 영상 목록이 갱신됨
                 subCategoryGrid
 
+                // 카테고리 영역과 콘텐츠 영역을 시각적으로 구분하기 위한 디바이더
                 // MARK: - Category / Content Divider
                 Rectangle()
                     .fill(Color.black.opacity(0.1))
                     .frame(height: 8)
                     .padding(.top, 16)
 
+                // 선택된 상위 + 하위 카테고리를 기준으로 필터링된 영상 목록
                 // MARK: - 영상 목록 (상위+하위 모두 선택해야 filteredVideos가 생김)
                 ScrollView {
                     LazyVStack(spacing: 40) {
@@ -72,8 +88,9 @@ struct RecipeListView: View {
     }
 
     // MARK: - 상위 카테고리 버튼
-
+    // 선택 시 ViewModel의 selectedCuisine 상태를 갱신함
     private func categoryButton(_ cuisine: CuisineCategory) -> some View {
+        // 현재 카테고리가 선택된 상태인지 여부
         let isSelected = (viewModel.selectedCuisine == cuisine)
 
         return Button {
@@ -102,6 +119,7 @@ struct RecipeListView: View {
         .buttonStyle(.plain)
     }
 
+    /// 상위 카테고리에 대응하는 에셋 이미지 이름 반환
     private func categoryAssetName(for cuisine: CuisineCategory) -> String {
         switch cuisine {
         case .korean: return "korean"
@@ -111,8 +129,6 @@ struct RecipeListView: View {
         case .southeastAsian: return "southeastasian"
         }
     }
-
-    // MARK: - SubCategory Grid
 
     @ViewBuilder
     private var subCategoryGrid: some View {
@@ -172,6 +188,8 @@ struct RecipeListView: View {
         }
     }
 
+    /// 하위 카테고리 버튼
+    /// 선택 시 해당 하위 카테고리를 기준으로 영상 목록을 필터링함
     private func subCategoryButton(
         title: String,
         isSelected: Bool,
@@ -197,12 +215,14 @@ struct RecipeListView: View {
     }
 }
 
-// MARK: - Recipe Video Card (Thumbnail Only)
-
+// MARK: - 레시피 영상 카드
+// 영상 제목, 채널 정보, 북마크 버튼, 썸네일을 표시하는 카드 UI
 struct RecipeVideoCard: View {
 
     let video: RecipeVideo
 
+    /// 카드 내부에서만 사용하는 북마크 상태
+    /// 현재는 UI용 상태이며, 서버 연동 시 ViewModel로 이동 예정
     @State private var isBookmarked: Bool
 
     init(video: RecipeVideo) {
@@ -227,6 +247,7 @@ struct RecipeVideoCard: View {
 
                 Spacer()
 
+                // 북마크 버튼 (현재는 UI 토글만 처리)
                 Button {
                     isBookmarked.toggle()
                 } label: {
@@ -247,13 +268,14 @@ struct RecipeVideoCard: View {
     }
 }
 
-// MARK: - Thumbnail View (maxres → hq fallback)
-
+// MARK: - 유튜브 썸네일 뷰
+// maxres 이미지 우선 사용, 실패 시 hq 이미지로 fallback
 private struct ThumbnailView: View {
 
     let videoId: String
     let durationText: String
 
+    /// maxres 썸네일 실패 시 hq 썸네일로 전환하기 위한 상태값
     @State private var useFallbackHQ = false
 
     private var maxResURL: URL? {
@@ -281,7 +303,7 @@ private struct ThumbnailView: View {
                         .scaledToFill()
 
                 case .failure:
-                    // maxres가 없는 영상들이 많아서 실패하면 hq로 fallback
+                    // maxres 썸네일이 없는 영상이 많아 실패 시 hq 이미지로 대체
                     Color.black.opacity(0.12)
                         .onAppear {
                             if !useFallbackHQ {
@@ -347,11 +369,12 @@ private struct ThumbnailView: View {
 //    }
 //}
 //
+ // MARK: - Preview
 #Preview {
     RecipeListView()
 }
 
-// MARK: - 영상 조회수 포맷팅 확장.
+// MARK: - 조회수 포맷팅 유틸
 
 private extension Int {
     /// 조회수 포맷팅

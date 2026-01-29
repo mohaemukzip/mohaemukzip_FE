@@ -67,6 +67,15 @@ struct RecipeVideoDetailView: View {
 
     @StateObject private var player: YouTubePlayer
 
+    // 네비게이션바 북마크는 즉시 반응해야 해서 UI용 상태를 따로 둠
+    @State private var isBookmarkedUI: Bool
+
+    // 요리 완료 모달 표시 여부
+    @State private var isCookingCompleteModalPresented: Bool = false
+
+    // 사용자가 선택한 체감 난이도(별점). 0이면 미선택 상태
+    @State private var selectedRating: Int = 0
+
     init(
         video: RecipeVideo,
         isBookmarked: Bool = false,
@@ -75,6 +84,7 @@ struct RecipeVideoDetailView: View {
         self.video = video
         self.isBookmarked = isBookmarked
         self.onTapBookmark = onTapBookmark
+        _isBookmarkedUI = State(initialValue: isBookmarked)
         _player = StateObject(
             wrappedValue: YouTubePlayer(
                 source: .video(id: video.videoId),
@@ -87,33 +97,55 @@ struct RecipeVideoDetailView: View {
     }
 
     var body: some View {
-        // 상단 네비게이션 + 영상 플레이어는 고정, 아래 컨텐츠만 스크롤
-        VStack(spacing: 0) {
-            navigationBar
+        ZStack {
+            // 상단 네비게이션 + 영상 플레이어는 고정, 아래 컨텐츠만 스크롤
+            VStack(spacing: 0) {
+                navigationBar
 
-            // ✅ 스크롤해도 영상이 고정되도록 ScrollView 바깥에 둠
-            playerSection
-                .padding(.top, 8)
+                // ✅ 스크롤해도 영상이 고정되도록 ScrollView 바깥에 둠
+                playerSection
+                    .padding(.top, 8)
 
-            // 아래 정보(제목/통계/재료/요약 레시피)는 스크롤 영역
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    headerSection
-                    statsSection
-                    channelSection
-                    Divider().opacity(0.6)
-                    ingredientsSection
-                    summarySection
+                // 아래 정보(제목/통계/재료/요약 레시피)는 스크롤 영역
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 16) {
+                        headerSection
+                        statsSection
+                        channelSection
+                        Divider().opacity(0.6)
+                        ingredientsSection
+                        summarySection
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 16)
+                    .padding(.bottom, 24)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 16)
-                .padding(.bottom, 24)
+            }
+
+            // ✅ 요리 완료 확인 모달 (별점 선택 후 제출)
+            if isCookingCompleteModalPresented {
+                CookingCompleteReviewModalView(
+                    isPresented: $isCookingCompleteModalPresented,
+                    selectedRating: $selectedRating,
+                    onSubmit: { rating in
+                        // TODO: 서버 연결 시 여기에서 요리 완료 API 호출
+                        // - recipeId: video.id (path)
+                        // - rating: rating (query)
+                        // - 완료 후 홈/통계 갱신 트리거
+                    }
+                )
+                .transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.2), value: isCookingCompleteModalPresented)
         .safeAreaInset(edge: .bottom) {
             bottomActionBar
         }
         .toolbar(.hidden, for: .navigationBar)
+        .onChange(of: isBookmarked) { newValue in
+            // 외부(뷰모델)에서 북마크 상태가 갱신되면 UI 상태도 맞춰줌
+            isBookmarkedUI = newValue
+        }
     }
 
     // MARK: - Sections (화면 구성 단위)
@@ -137,15 +169,31 @@ struct RecipeVideoDetailView: View {
             Spacer()
 
             Button {
+                // UI는 즉시 반응, 실제 상태는 ViewModel에서 동기화
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    isBookmarkedUI.toggle()
+                }
                 onTapBookmark()
             } label: {
-                Image(isBookmarked ? "bookmark.fill" : "bookmark")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 22, height: 22)
-                    .frame(width: 36, height: 36)
+                ZStack {
+                    // 북마크 기본 아이콘 (에셋)
+                    Image("bigbookmark")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 24, height: 24)
+
+                    // 북마크 활성화 시, 아이콘 형태 그대로 노란색으로 채움
+                    if isBookmarkedUI {
+                       Image("bookmark.fill")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 24, height: 24)
+                    }
+                }
+                .frame(width: 36, height: 36)
             }
             .accessibilityLabel("북마크")
+            .accessibilityHint("북마크 상태를 변경합니다")
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
@@ -334,9 +382,12 @@ struct RecipeVideoDetailView: View {
         VStack(spacing: 0) {
             Divider().opacity(0.6)
             Button {
-                // TODO: 완료 액션 연결
+                // 요리 완료 버튼을 누르면 확인 모달을 띄움
+                // (별점 선택 후에만 제출 가능)
+                selectedRating = 0
+                isCookingCompleteModalPresented = true
             } label: {
-                Text("요리 완성")
+                Text("요리 완료")
                     .font(.headline.weight(.bold))
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
@@ -398,6 +449,8 @@ struct RecipeVideoDetailView: View {
         return "\(string)만회"
     }
 }
+
+
 
 // MARK: - Components (재사용 컴포넌트)
 // 재료 칩, STEP 카드처럼 여러 번 쓰이는 뷰를 분리해둠
