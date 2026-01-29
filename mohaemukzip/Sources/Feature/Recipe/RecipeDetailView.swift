@@ -421,7 +421,7 @@ struct RecipeVideoDetailView: View {
         }
     }
 
-    // MARK: - Small UI Helpers (작은 UI 도우미)
+    
     // 별점 표시, 조회수 포맷 등 화면에서 자주 쓰는 작은 유틸들을 모아둠
 
     private func difficultyStars(filledCount: Int) -> some View {
