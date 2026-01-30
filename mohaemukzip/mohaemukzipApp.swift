@@ -11,8 +11,7 @@ import SwiftUI
 struct mohaemukzipApp: App {
     var body: some Scene {
         WindowGroup {
-//            MainTabView()
-            RecipeListView()
+            RootView()
         }
     }
 }

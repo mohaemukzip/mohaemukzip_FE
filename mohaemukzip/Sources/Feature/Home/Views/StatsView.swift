@@ -42,8 +42,8 @@ private extension StatsView {
             }
             
             HStack(spacing: 12) {
-                statItem(icon: "statIcon3", title: "냉장고 점수", value: "75", suffix: "/100점")
-                statItem(icon: "statIcon3", title: "누적 요리 횟수", value: "42", suffix: "회")
+                statItem(icon: "statIcon1", title: "냉장고 점수", value: "75", suffix: "/100점")
+                statItem(icon: "statIcon2", title: "누적 요리 횟수", value: "42", suffix: "회")
                 statItem(icon: "statIcon3", title: "도전 난이도", value: "3.8", suffix: "/5점")
             }
             .padding(16)
