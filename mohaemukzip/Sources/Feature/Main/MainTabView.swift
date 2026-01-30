@@ -27,6 +27,7 @@ struct MainTabView: View {
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
+    //@State private var loginVM = LoginViewModel()
     
     init() {
         let appearance = UITabBarAppearance()
@@ -59,7 +60,7 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             Tab(value: .home) {
                 NavigationStack(path: $router.path) {
-                    HomeView()
+                    OnboardingView()
                         .setupNavigationDestinations()
                 }
             } label: {
@@ -124,6 +125,18 @@ extension View {
                 SearchView()
             case .home:
                 HomeView()
+            case .agree:
+                AgreeView()
+            case .signup:
+                SignupView()
+            case .login:
+                LoginView()
+            case .onboarding:
+                OnboardingView()
+            case .start:
+                StartView()
+            case .signupFinish:
+                SignupFinishView()
             }
         }
     }

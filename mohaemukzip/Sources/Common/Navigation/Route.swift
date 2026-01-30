@@ -14,4 +14,10 @@ enum Route: Hashable {
     case recipeDetail(RecipeVideo)
     case recipeSearch
     case home
+    case agree
+    case signup
+    case login
+    case onboarding
+    case start
+    case signupFinish
 }
