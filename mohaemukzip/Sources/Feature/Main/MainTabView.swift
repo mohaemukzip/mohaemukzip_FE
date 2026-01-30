@@ -60,7 +60,7 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             Tab(value: .home) {
                 NavigationStack(path: $router.path) {
-                    OnboardingView()
+                    HomeView()
                         .setupNavigationDestinations()
                 }
             } label: {
@@ -125,18 +125,6 @@ extension View {
                 SearchView()
             case .home:
                 HomeView()
-            case .agree:
-                AgreeView()
-            case .signup:
-                SignupView()
-            case .login:
-                LoginView()
-            case .onboarding:
-                OnboardingView()
-            case .start:
-                StartView()
-            case .signupFinish:
-                SignupFinishView()
             }
         }
     }
