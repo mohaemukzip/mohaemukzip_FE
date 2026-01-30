@@ -103,9 +103,9 @@ enum SoutheastAsianSubCategory: String, CaseIterable, Identifiable {
     var id: String { rawValue }
 }
 
-// MARK: - 레시피 상세 하위 모델
-// 재료, 조리 단계 등 상세 화면에서만 사용하는 모델들
-struct RecipeIngredient: Identifiable, Equatable {
+// MARK: - Recipe Detail Sub Models
+
+struct RecipeIngredient: Identifiable, Equatable, Hashable {
 
     let id: Int              // 서버에서 내려오는 ingredientId
     let name: String
@@ -128,7 +128,7 @@ struct RecipeIngredient: Identifiable, Equatable {
     }
 }
 
-struct RecipeStep: Identifiable, Equatable {
+struct RecipeStep: Identifiable, Equatable, Hashable {
 
     var id: Int { stepNumber }
 
@@ -151,9 +151,8 @@ struct RecipeStep: Identifiable, Equatable {
     }
 }
 
-// MARK: - RecipeVideo 모델 (목록 / 상세 공용)
-// 목록 API와 상세 API에서 공통으로 사용하는 핵심 레시피 모델
-struct RecipeVideo: Identifiable {
+// MARK: - Recipe Model (목록 + 상세 공용)
+struct RecipeVideo: Identifiable, Hashable {
 
     // MARK: - 식별 정보
     /// 목록 API에서는 id, 상세 API에서는 recipeId로 내려오지만

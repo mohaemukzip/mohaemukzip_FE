@@ -14,41 +14,54 @@ struct MainTabView: View {
         case ingredient
         case profile
     }
-        
+    
     //기본 설정된 상태 -> home
     @State private var selection: TabType = .home
-
+    
+    // MARK: - 각 뷰에서 사용하는 뷰모델은 MainTabView에서 소유(@State)
+    // MARK: - MainTabView에서 소유하는 뷰모델을 환경변수로 각 뷰에 주입
+    // MARK: - 중앙 집중적으로 뷰모델을 관리해야 공통된 데이터로 뷰를 그릴 수 있음
+    @State private var router = NavigationRouter()
+    @State private var fridgeVM = FridgeViewModel()
+    @State private var ingredientSearchVM = IngredientSearchViewModel()
+    @State private var yoTeacherVM = YoTeacherChatViewModel()
+    @State private var searchVM = SearchViewModel()
+    @State private var homeVM = HomeViewModel()
+    
     init() {
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-
+        
         // 탭 아이템 간 간격 조절 (가운데 정렬 + 간격 촘촘하게)
         UITabBar.appearance().itemPositioning = .centered
-      
-    
+        
+        
         // 각 탭 아이템의 너비를 줄여 전체 간격을 촘촘하게 유지 (좌우 대칭 유지)
-       
-
+        
+        
         // 선택되지 않은 상태 (grey500)
         appearance.stackedLayoutAppearance.normal.iconColor = UIColor(named: "grey500")
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [
             .foregroundColor: UIColor(named: "grey500") as Any
         ]
-
+        
         // 선택된 상태 (grey900)
         appearance.stackedLayoutAppearance.selected.iconColor = UIColor(named: "grey900")
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [
             .foregroundColor: UIColor(named: "grey900") as Any
         ]
-
+        
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
-
+        
     }
     var body: some View {
         TabView(selection: $selection) {
             Tab(value: .home) {
-                HomeView()
+                NavigationStack(path: $router.path) {
+                    HomeView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "홈",
@@ -56,7 +69,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .search) {
-                SearchView()
+                NavigationStack(path: $router.path) {
+                    RecipeListView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "검색",
@@ -64,7 +80,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .ingredient) {
-                FridgeView()
+                NavigationStack(path: $router.path) {
+                    FridgeView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "재료",
@@ -78,6 +97,33 @@ struct MainTabView: View {
                     "마이",
                     image: selection == .profile ? "selectedProfile" : "icon-profile"
                 )
+            }
+        }
+        .environment(router)
+        .environment(fridgeVM)
+        .environment(ingredientSearchVM)
+        .environment(yoTeacherVM)
+        .environment(searchVM)
+        .environment(homeVM)
+    }
+}
+
+extension View {
+    func setupNavigationDestinations() -> some View {
+        self.navigationDestination(for: Route.self) { route in
+            switch route {
+            case .ingredientSearch:
+                IngredientSearchView()
+            case .ingredientDetailSearch:
+                IngredientDetailSearchView()
+            case .yoTeacher:
+                YoTeacherChatView()
+            case .recipeDetail(let video):
+                RecipeVideoDetailView(video: video)
+            case .recipeSearch:
+                SearchView()
+            case .home:
+                HomeView()
             }
         }
     }

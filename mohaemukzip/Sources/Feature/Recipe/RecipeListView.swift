@@ -37,10 +37,34 @@ struct RecipeListView: View {
     private var subCategoryColumns: [GridItem] {
         Array(repeating: GridItem(.fixed(64), spacing: 12, alignment: .center), count: 5)
     }
+    
+    @Environment(NavigationRouter.self) var router
+    @Environment(YoTeacherChatViewModel.self) var yoTeacherVM
 
     var body: some View {
-        NavigationStack {
+        ZStack {
             VStack(spacing: 0) {
+                
+                // MARK: - 최상단 검색창
+                Button( action: { router.push(.recipeSearch) } ) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .foregroundStyle(.grey100)
+                            .frame(height: 44)
+                        
+                        HStack {
+                            Text("재료, 상황, 메뉴 키워드를 입력하세요.")
+                                .font(.PretendardRegular16)
+                                .foregroundStyle(.grey500)
+                                .padding(.leading, 10)
+                            Spacer()
+                            Image("icon-search")
+                                .foregroundStyle(.grey500)
+                                .padding(.trailing, 10)
+                        }
+                    }
+                }.padding(.horizontal, 16)
+                    .padding(.bottom, 16)
 
                 // 상위 음식 카테고리 선택 영역 (한식/중식/일식/양식/동남아)
                 // MARK: - 상위 카테고리 (스크린샷 스타일)
@@ -66,15 +90,23 @@ struct RecipeListView: View {
                     .fill(Color.black.opacity(0.1))
                     .frame(height: 8)
                     .padding(.top, 16)
+                
+                // MARK: - 요선생과 대화하기 배너 (viewModel의 SubCategory가 하나라도 선택된다면 나타남)
+                if viewModel.selectedKoreanSubCategory == nil &&
+                    viewModel.selectedChineseSubCategory == nil &&
+                    viewModel.selectedWesternSubCategory == nil &&
+                    viewModel.selectedJapaneseSubCategory == nil &&
+                    viewModel.selectedSoutheastAsianSubCategory == nil {
+                    YoTeacher(onTap: {router.push(.yoTeacher)} )
+                        .padding(.top, 25)
+                        .padding(.horizontal, 16) }
 
                 // 선택된 상위 + 하위 카테고리를 기준으로 필터링된 영상 목록
                 // MARK: - 영상 목록 (상위+하위 모두 선택해야 filteredVideos가 생김)
                 ScrollView {
                     LazyVStack(spacing: 40) {
                         ForEach(viewModel.filteredVideos) { video in
-                            NavigationLink {
-                                RecipeVideoDetailView(video: video)
-                            } label: {
+                            NavigationLink(value: Route.recipeDetail(video)) {
                                 RecipeVideoCard(video: video)
                             }
                             .buttonStyle(.plain)
@@ -82,9 +114,19 @@ struct RecipeListView: View {
                     }
                     .padding(.top, 16)
                 }
+                
+                
             }
             .navigationBarHidden(true)
+            // MARK: - 요선생 플로팅 버튼 (viewModel의 filteredVideos가 비어있지 않으면 나타남)
+            if !(viewModel.selectedKoreanSubCategory == nil &&
+                viewModel.selectedChineseSubCategory == nil &&
+                viewModel.selectedWesternSubCategory == nil &&
+                viewModel.selectedJapaneseSubCategory == nil &&
+                 viewModel.selectedSoutheastAsianSubCategory == nil) {
+                YoTeacherFloating( onTap: {router.push(.yoTeacher)} ) }
         }
+        
     }
 
     // MARK: - 상위 카테고리 버튼
@@ -337,7 +379,13 @@ private struct ThumbnailView: View {
 
  // MARK: - Preview
 #Preview {
-    RecipeListView()
+    NavigationStack {
+        RecipeListView()
+            .setupNavigationDestinations()
+    }
+        .environment(NavigationRouter())
+        .environment(YoTeacherChatViewModel())
+        
 }
 
 // MARK: - 조회수 포맷팅 유틸
