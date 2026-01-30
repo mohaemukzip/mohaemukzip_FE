@@ -43,7 +43,7 @@ struct IngredientSearchView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
-                    ForEach(IngredientCategory.allCases, id: \.self) { category in
+                    ForEach(Category.allCases, id: \.self) { category in
                         VStack {
                             Button( action: { viewModel.selectedCategory = category } ) {
                                 Text(category.rawValue)
@@ -60,9 +60,14 @@ struct IngredientSearchView: View {
             }.padding(.vertical, 10)
             
             IngredientList(ingredients: viewModel.filteredIngredients,
-                           onSaveTap: { id in viewModel.toggleIsSaved(for: id)},
-                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item})
-            
+                           onSaveTap: { id in
+                Task { await viewModel.toggleSaved(id: id) }},
+                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item},
+                           // MARK: 무한스크롤 구현 - 마지막 item 나타나면 fetchNextPage() 호출
+                           onLastAppear: { item in
+                                            if item.id == viewModel.allIngredients.last?.id {
+                                                Task { await viewModel.fetchNextPage() } }})
+                            
         }.sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
             IngredientAdditionBottomSheet(ingredient: ingredient,
                                           onAdd: { storage, date, weight in
@@ -76,8 +81,8 @@ struct IngredientSearchView: View {
                     viewModel.searchText = ""
                 }
             },
-                                          onSave: {
-                viewModel.toggleIsSaved(for: ingredient.id)
+                                          onSave: { id in
+                Task { await viewModel.toggleSaved(id: ingredient.id) }
                 viewModel.selectedIngredientForAddition?.isSaved.toggle()
             },
                                           onDismiss: {
@@ -86,6 +91,9 @@ struct IngredientSearchView: View {
             }).presentationDetents([.fraction(0.98)])
         }
         .navigationBarBackButtonHidden()
+        .task {
+            await viewModel.fetchIngredients()
+        }
         
     }
 }

@@ -21,4 +21,11 @@ enum Config {
         }
         return baseURL
     }()
+    
+    static let accessTK: String = {
+        guard let accessTK = Config.infoDictionary["ACCESS_TOKEN"] as? String else {
+            fatalError()
+        }
+        return accessTK
+    }()
 }

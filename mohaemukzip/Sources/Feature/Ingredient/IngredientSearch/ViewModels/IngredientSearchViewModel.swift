@@ -10,40 +10,34 @@ import Combine
 
 @Observable
 class IngredientSearchViewModel: ObservableObject {
-    var selectedCategory: IngredientCategory
-    var searchText: String = ""
-    var allIngredients: [IngredientSearchModel] = [IngredientSearchModel(id: 1, name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "면"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "두바이", amount: "1기본량(100g)", category: "빵/떡"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "커피", amount: "1기본량(100g)", category: "음료"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "채소", category: "채소"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-                                                              IngredientSearchModel(id: 1,name: "대파", amount: "1기본량(100g)", category: "가공/유제품")]
-    var recentSearchText: [IngredientDetailSearchModel] = [IngredientDetailSearchModel(name: "대파"),
-                                                                  IngredientDetailSearchModel(name: "소파"),
-                                                                  IngredientDetailSearchModel(name: "중파")]
-    var selectedIngredientForAddition: IngredientSearchModel?
+    var service = IngredientService()
     
-    init(initialCategory: IngredientCategory = .all) {
-        self.selectedCategory = initialCategory
+    var selectedCategory: Category
+    var searchText: String = ""
+    
+    var allIngredients: [IngredientForAddition] = []
+    var pageNum: Int = -1
+    var isLast: Bool
+    var isLoading: Bool
+    
+    var savedIngredients: [IngredientForAddition] {
+            allIngredients.filter { $0.isSaved }
+        }
+    
+    var recentSearchTexts: [RecentSearchIngredient] = []
+    
+    var selectedIngredientForAddition: IngredientForAddition?
+    
+    init() {
+        self.selectedCategory = .all
+        self.isLast = false
+        self.isLoading = false
     }
     
-    var filteredIngredients: [IngredientSearchModel] {
-        
+    var filteredIngredients: [IngredientForAddition] {
         // 카테고리 필터링
         let categoryFiltered = allIngredients.filter { ingredient in
-            selectedCategory == .all || ingredient.category == selectedCategory.rawValue
+            selectedCategory == .all || ingredient.category.rawValue == selectedCategory.rawValue
         }
         
         // 검색어 필터링
@@ -56,9 +50,82 @@ class IngredientSearchViewModel: ObservableObject {
         }
     }
     
-    var savedIngredient: [IngredientSearchModel] {
+    var savedIngredient: [IngredientForAddition] {
         return allIngredients.filter { ingredient in
             ingredient.isSaved
+        }
+    }
+    
+    func fetchIngredients() async {
+        pageNum = 0
+        isLast = false
+        await fetchNextPage()
+    }
+    
+    func fetchNextPage() async {
+        guard !isLoading && !isLast else { return }
+        
+        isLoading = true
+        do {
+            let (newItems, page, isLast) = try await service.getIngredients(page: self.pageNum)
+            
+            self.allIngredients.append(contentsOf: newItems)
+            self.pageNum = page + 1
+            self.isLast = isLast
+        } catch {
+            print("재료 목록 조회 불가: \(error)")
+        }
+        
+        isLoading = false
+    }
+    
+    func fetchSavedList() async {
+        do {
+            let savedLists = try await service.getSaved()
+            for newItem in savedLists {
+                if let index = allIngredients.firstIndex(where: { $0.id == newItem.id }) {
+                    allIngredients[index].isSaved = true
+                } else {
+                    allIngredients.append(newItem)
+                }
+            }
+        } catch {
+            print("즐겨찾기 목록 가져올 수 없음: \(error)")
+        }
+    }
+    
+    func toggleSaved(id: Int) async {
+        do {
+            try await service.addSaved(id: id)
+            if let index = allIngredients.firstIndex(where: {$0.id == id}) {
+                allIngredients[index].isSaved.toggle()
+            }
+        } catch {
+            print("즐겨찾기 목록 수정할 수 없음: \(error)")
+        }
+    }
+    
+    func getRecent() async {
+        do {
+            self.recentSearchTexts = try await service.getRecent()
+        } catch {
+            print("최근 검색어 목록 조회할 수 없음: \(error)")
+        }
+    }
+    
+    func deleteRecent(name: String) async {
+        do {
+            try await service.deleteRecent(name: name)
+        } catch {
+            print("최근 검색어 삭제할 수 없음: \(error)")
+        }
+    }
+    
+    func ingredientRequest(name: String) async {
+        do {
+            try await service.ingredientRequest(name: name)
+        } catch {
+            print("재료 추가 요청할 수 없음: \(error)")
         }
     }
     
@@ -70,31 +137,16 @@ class IngredientSearchViewModel: ObservableObject {
     }
     
     // 최근 검색어 삭제 함수
-    func deleteRecentSearch(for id: UUID) {
+    func deleteRecentSearch(for id: Int) {
         withAnimation(.spring()) {
-            recentSearchText.removeAll { $0.id == id }
+            recentSearchTexts.removeAll { $0.id == id }
         }
     }
     
     // 최근 검색어를 검색창으로 올리는 함수
-    func tapRecentSearch(for id: UUID) {
-        if let tappedItem = recentSearchText.first(where: {$0.id == id}) {
-            self.searchText = tappedItem.name
-        }
-    }
-    
-    // 검색창에서 검색 시 최근 검색어에 추가하는 함수
-    func addRecentSearch() {
-        let trimmedSearch = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
-        
-        if !trimmedSearch.isEmpty && !recentSearchText.contains(where: {$0.name == trimmedSearch}) {
-            withAnimation {
-                recentSearchText.insert(IngredientDetailSearchModel(name: trimmedSearch), at: 0)
-            }
-            
-            if recentSearchText.count > 10 {
-                recentSearchText.removeLast()
-            }
+    func tapRecentSearch(for id: Int) {
+        if let tappedItem = recentSearchTexts.first(where: {$0.id == id}) {
+            self.searchText = tappedItem.keyword
         }
     }
     

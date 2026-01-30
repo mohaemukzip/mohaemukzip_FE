@@ -34,9 +34,7 @@ struct IngredientDetailSearchView: View {
                                 .font(.PretendardRegular16)
                                 .foregroundStyle(.grey900)
                                 .padding(.leading, 14)
-                                .onSubmit {
-                                    viewModel.addRecentSearch()
-                                }
+                            
                             Spacer()
                             Image("icon-search")
                                 .foregroundStyle(.grey500)
@@ -54,17 +52,18 @@ struct IngredientDetailSearchView: View {
                                 .foregroundStyle(.grey900)
                             Spacer()
                         }
-                        if (viewModel.recentSearchText.isEmpty) {
+                        if (viewModel.recentSearchTexts.isEmpty) {
                             Text("최근 검색어가 없어요.")
                                 .font(.PretendardRegular16)
                                 .foregroundStyle(.grey500)
                         } else {
                             ScrollView(.horizontal, showsIndicators: false) {
                                 HStack(spacing: 15) {
-                                    ForEach(viewModel.recentSearchText) { ingredient in
-                                        RecentSearch(text: ingredient.name,
-                                                     onTap: { viewModel.tapRecentSearch(for: ingredient.id)},
-                                                     onDelete: { viewModel.deleteRecentSearch(for: ingredient.id)})
+                                    ForEach(viewModel.recentSearchTexts) { ingredient in
+                                        RecentSearch(text: ingredient.keyword,
+                                                     onTap: { viewModel.searchText = ingredient.keyword},
+                                                     onDelete: { viewModel.deleteRecentSearch(for: ingredient.id);
+                                                                 Task { await viewModel.deleteRecent(name: ingredient.keyword) } })
                                     }
                                 }
                             }.padding(.vertical, 16)
@@ -76,7 +75,7 @@ struct IngredientDetailSearchView: View {
                                 .foregroundStyle(.grey900)
                             Spacer()
                         }.padding(.top, 30)
-                        if (viewModel.savedIngredient.isEmpty) {
+                        if (viewModel.savedIngredients.isEmpty) {
                             ZStack {
                                 Rectangle()
                                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -86,8 +85,9 @@ struct IngredientDetailSearchView: View {
                                     .foregroundStyle(.grey500)
                             }
                         } else {
-                            IngredientList(ingredients: viewModel.savedIngredient,
-                                           onSaveTap: { id in viewModel.toggleIsSaved(for: id) },
+                            IngredientList(ingredients: viewModel.savedIngredients,
+                                           onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
+                                                        Task { await viewModel.toggleSaved(id: id)} },
                                            onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                         }
                         
@@ -95,7 +95,7 @@ struct IngredientDetailSearchView: View {
                 } else { // 검색 텍스트 있는 경우
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                            ForEach(IngredientCategory.allCases, id: \.self) { category in
+                            ForEach(Category.allCases, id: \.self) { category in
                                 VStack {
                                     Button( action: { viewModel.selectedCategory = category } ) {
                                         Text(category.rawValue)
@@ -112,7 +112,8 @@ struct IngredientDetailSearchView: View {
                     }.padding(.vertical, 10)
                     
                     IngredientList(ingredients: viewModel.filteredIngredients,
-                                   onSaveTap: { id in viewModel.toggleIsSaved(for: id) },
+                                   onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
+                                                Task { await viewModel.toggleSaved(id: id)} },
                                    onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                 }
             } // end of VStack
@@ -124,7 +125,7 @@ struct IngredientDetailSearchView: View {
             .sheet(isPresented: $isShowingSheet) {
                 RequestBottomSheet(isShowingSheet: $isShowingSheet,
                                    onRequest: { requestedText in
-                    viewModel.sendRequest(name: requestedText)
+                    Task { await viewModel.ingredientRequest(name: requestedText) }
                     viewModel.searchText = ""
                 }).presentationDetents([.fraction(0.45), .large])
             }
@@ -141,9 +142,9 @@ struct IngredientDetailSearchView: View {
                         router.navigateToRoot()
                     }
                 },
-                                              onSave: {
-                    viewModel.toggleIsSaved(for: ingredient.id)
+                                              onSave: { id in
                     viewModel.selectedIngredientForAddition?.isSaved.toggle()
+                    Task { await viewModel.toggleSaved(id: ingredient.id) }
                 },
                                               onDismiss: {
                     viewModel.selectedIngredientForAddition = nil
@@ -151,6 +152,10 @@ struct IngredientDetailSearchView: View {
                 }).presentationDetents([.fraction(0.98)])
             }
         }.navigationBarBackButtonHidden() // end of ZStack
+            .task {
+                await viewModel.fetchSavedList()
+                await viewModel.getRecent()
+            }
     } // end of body
 }
 

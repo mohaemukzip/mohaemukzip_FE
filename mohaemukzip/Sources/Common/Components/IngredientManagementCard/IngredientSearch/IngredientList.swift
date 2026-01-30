@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct IngredientList: View {
-    var ingredients: [IngredientSearchModel]
+    var ingredients: [IngredientForAddition]
     var onSaveTap: (Int) -> Void
-    var onPlusTap: (IngredientSearchModel) -> Void
+    var onPlusTap: (IngredientForAddition) -> Void
+    var onLastAppear: ((IngredientForAddition) -> Void)?
     
     var body: some View {
         if (ingredients.isEmpty) {
@@ -38,11 +39,15 @@ struct IngredientList: View {
                     ForEach(ingredients) { ingredient in
                         IngredientListComponent(
                             name: ingredient.name,
-                            amount: ingredient.amount,
-                            category: ingredient.category,
+                            amount: "\(ingredient.amount)\(ingredient.unit)",
+                            category: ingredient.category.rawValue,
                             isSaved: ingredient.isSaved,
                             onSaveTap: {onSaveTap(ingredient.id)},
-                            onPlusTap: {onPlusTap(ingredient)})
+                            onPlusTap: {onPlusTap(ingredient)}
+                        )
+                        .onAppear {
+                            onLastAppear?(ingredient)
+                        }
                     }
                 }
             }

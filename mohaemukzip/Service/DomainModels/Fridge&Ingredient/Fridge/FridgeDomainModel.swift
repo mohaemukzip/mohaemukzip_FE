@@ -7,10 +7,10 @@
 
 import SwiftUI
 
-enum StorageType: String {
-    case frozen = "FROZEN"
-    case chilled = "REFRIGERATED"
-    case room = "ROOM"
+enum StorageType: String, CaseIterable {
+    case frozen = "FREEZER"
+    case chilled = "REFRIGERATOR"
+    case room = "ROOM_TEMPERATURE"
     
     var displayName: String {
         switch self {

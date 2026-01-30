@@ -7,15 +7,8 @@
 
 import Foundation
 
-struct FridgeResponseDTO: Decodable {
-    let isSuccess: Bool
-    let code: String
-    let message: String
-    let result: FridgeListDTO
-}
-
 struct FridgeListDTO: Decodable {
-    let Fridge: [IngredientDTO]
+    let fridgeList: [IngredientDTO]
 }
 
 struct IngredientDTO: Decodable {

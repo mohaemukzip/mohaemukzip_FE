@@ -9,7 +9,7 @@ import Foundation
 import Moya
 
 class FridgeService {
-    private let provider = MoyaProvider<FridgeAPI>(plugins: [NetworkLoggerPlugin()])
+    private let provider = NetworkManager.shared.makeProvider(for: FridgeAPI.self)
     
     func getIngredients() async throws -> [FridgeIngredient] {
         return try await withCheckedThrowingContinuation { continuation in
@@ -17,8 +17,8 @@ class FridgeService {
                 switch result {
                 case .success(let response):
                     do {
-                        let decoded = try response.map(FridgeResponseDTO.self)
-                        let domainModels = decoded.result.Fridge.map { $0.toDomain() }
+                        let decoded = try response.mapResult(FridgeListDTO.self)
+                        let domainModels = decoded.fridgeList.map { $0.toDomain() }
                         continuation.resume(returning: domainModels)
                     } catch {
                         continuation.resume(throwing: error)

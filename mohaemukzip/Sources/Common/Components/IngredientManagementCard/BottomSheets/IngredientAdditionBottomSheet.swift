@@ -8,12 +8,12 @@
 import SwiftUI
 
 struct IngredientAdditionBottomSheet: View {
-    var ingredient: IngredientSearchModel
-    @State private var storageLocation: FridgeIngredientModel.StorageType = .chilled
+    var ingredient: IngredientForAddition
+    @State private var storageLocation: StorageType = .chilled
     @State private var expiryDate: Date = Date()
     @State private var amount: String = ""
-    var onAdd: (FridgeIngredientModel.StorageType, Date, Int) -> Void
-    var onSave: () -> Void
+    var onAdd: (StorageType, Date, Int) -> Void
+    var onSave: (Int) -> Void
     var onDismiss: () -> Void
     
     @State private var showStorageCase: Bool = false
@@ -31,7 +31,7 @@ struct IngredientAdditionBottomSheet: View {
                     Text(ingredient.name)
                         .foregroundStyle(.grey900)
                         .font(.PretendardSemibold20)
-                    Button( action: { onSave() } ) {
+                    Button( action: { onSave(ingredient.id) } ) {
                         Image("icon-star")
                             .foregroundStyle(ingredient.isSaved ? .main300 : .grey300)
                     }
@@ -67,7 +67,7 @@ struct IngredientAdditionBottomSheet: View {
                                 .foregroundStyle(showStorageCase ? .main400 : .grey300)
                                 .frame(height: 45)
                             HStack {
-                                Text(storageLocation.description)
+                                Text(storageLocation.displayName)
                                     .font(.PretendardRegular16)
                                     .foregroundStyle(.grey900)
                                     .padding(.leading, 10)
@@ -85,7 +85,7 @@ struct IngredientAdditionBottomSheet: View {
                                     .foregroundStyle(.grey300)
                                     .frame(height: 159)
                                 VStack(spacing: 0) {
-                                    ForEach(FridgeIngredientModel.StorageType.allCases, id: \.self) { type in
+                                    ForEach(StorageType.allCases, id: \.self) { type in
                                         ZStack {
                                             RoundedRectangle(cornerRadius: 4)
                                                 .frame(height: 53)
@@ -93,7 +93,7 @@ struct IngredientAdditionBottomSheet: View {
                                             HStack {
                                                 Button( action: {storageLocation = type;
                                                     withAnimation(.easeInOut(duration: 0.3)) { showStorageCase.toggle() } } ) {
-                                                    Text(type.description)
+                                                    Text(type.displayName)
                                                         .font(.PretendardRegular16)
                                                         .foregroundStyle(.grey900)
                                                         .padding(.leading, 10)

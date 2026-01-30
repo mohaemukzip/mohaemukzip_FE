@@ -22,8 +22,10 @@ extension FridgeAPI: TargetType {
     
     var path: String {
         switch self {
-        case .fetchIngredients, .addIngredients, .deleteIngredient:
+        case .fetchIngredients, .addIngredients:
             return "/me/ingredients"
+        case .deleteIngredient(let id):
+            return "/me/ingredients/\(id)"
         }
     }
     
@@ -50,7 +52,7 @@ extension FridgeAPI: TargetType {
     var headers: [String: String]? {
         return [
             "Content-Type" : "application/json",
-            "Authorization" : "Bearer YOUR_TOKEN"
+            "Authorization" : "Bearer \(Config.accessTK)"
         ]
     }
 }

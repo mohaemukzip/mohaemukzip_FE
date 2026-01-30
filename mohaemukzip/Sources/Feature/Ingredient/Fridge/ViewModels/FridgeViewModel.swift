@@ -14,8 +14,6 @@ class FridgeViewModel: ObservableObject {
     
     var allIngredients: [FridgeIngredient] = []
     
-    //var allIngredients: [FridgeIngredientModel] = []
-    
     // MARK: 냉동, 냉장, 실온 -> 서버에서 받은 allIngredient를 분기처리할 것
     var frozenIngredients: [FridgeIngredient] {
         allIngredients.filter { $0.storage == .frozen }
@@ -26,32 +24,12 @@ class FridgeViewModel: ObservableObject {
     var roomIngredients: [FridgeIngredient] {
         allIngredients.filter { $0.storage == .room }
     }
-    /*
-    init() {
-        self.allIngredients = [FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .chilled),
-                               FridgeIngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .room)]
-    }*/
     
     func fetchList() async {
         do {
             self.allIngredients = try await service.getIngredients()
         } catch {
-            print("재료 목록을 불러올 수 없습니다.")
+            print("재료 목록을 불러올 수 없음: \(error)")
         }
     }
     
@@ -81,7 +59,7 @@ class FridgeViewModel: ObservableObject {
     
     private var dateFormatter: DateFormatter {
         let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy. MM. dd"
+        formatter.dateFormat = "yyyy-MM-dd"
         return formatter
     }
 }
