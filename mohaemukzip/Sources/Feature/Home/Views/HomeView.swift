@@ -86,18 +86,13 @@ private extension HomeView {
     
     func characterSection(_ home: HomeModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            // 캐릭터(임시) - 실제론 level에 따라 다른 이미지로 교체
-            
             // lv 주는 값에 따라 캐릭터 이미지 다르게
             HStack(spacing: 20) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 18)
-                        .fill(Color(.secondarySystemBackground))
-                    Image(systemName: "figure.cooking")
-                        .font(.system(size: 34, weight: .semibold))
-                        .foregroundStyle(.orange)
-                }
-                .frame(width: 110, height: 110)
+                Image(levelImageName(home.level))
+                    .resizable()
+                    .scaledToFit()
+                    .padding(12)
+                    .frame(width: 170, height: 167)
                 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
@@ -120,7 +115,6 @@ private extension HomeView {
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
                 }
-                
             }
             .padding(.bottom, 28)
             ProgressView(value: home.progressRatio)
@@ -255,6 +249,16 @@ private extension HomeView {
         }
         .padding(.horizontal, 17)
     }
+    
+    func levelImageName(_ level: Int) -> String {
+        switch level {
+        case 0: return "icnLv0"
+        case 1: return "icnLv1"
+        case 2: return "icnLv2"
+        case 3: return "icnLv3"
+        default: return "icnLv4"
+        }
+    }
 }
 
 // MARK: - Recipe Card 추후 수정!! 석현오빠 뷰 재사용하기
@@ -335,22 +339,19 @@ private struct HomePowerInfoModalView: View {
                 
                 VStack(spacing: 18) {
                     infoRow(
-                        icon: "doc.text",
-                        iconTint: .grey700,
+                        icon: "statIcon1",
                         title: "냉장고 점수",
                         description: "냉장고 속 재료를 얼마나 잘 관리하고 있는지를 보여줘요. 유통기한을 잘 지킬수록 점수가 유지돼요."
                     )
                     
                     infoRow(
-                        icon: "fork.knife",
-                        iconTint: .grey700,
+                        icon: "statIcon2",
                         title: "누적 요리 수",
                         description: "집밥을 얼마나 꾸준히 이어오고 있는지를 보여줘요. 요리를 완료할 때마다 기록이 쌓여요."
                     )
                     
                     infoRow(
-                        icon: "star.fill",
-                        iconTint: .main400,
+                        icon: "statIcon3",
                         title: "도전 난이도",
                         description: "지금까지 도전한 요리들의 난이도 평균을 보여줘요. 어려운 요리를 끝까지 해낼수록 점수가 올라가요."
                     )
@@ -386,18 +387,14 @@ private struct HomePowerInfoModalView: View {
     
     private func infoRow(
         icon: String,
-        iconTint: Color,
         title: String,
         description: String
     ) -> some View {
         HStack(alignment: .top, spacing: 14) {
             ZStack {
-                Circle()
-                    .fill(Color(.secondarySystemBackground))
+                Image(icon)
+                    .resizable()
                     .frame(width: 64, height: 64)
-                Image(systemName: icon)
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(iconTint)
             }
             
             VStack(alignment: .leading, spacing: 6) {
