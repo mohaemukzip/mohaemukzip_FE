@@ -9,7 +9,7 @@ import SwiftUI
 
 struct AgreeView: View {
 
-    @Environment(NavigationRouter.self) var router
+    @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = AgreeViewModel()
 
     var body: some View {
@@ -132,9 +132,4 @@ private struct AgreeCheckRow: View {
         }
         .buttonStyle(.plain)
     }
-}
-
-#Preview {
-    AgreeView()
-        .environment(NavigationRouter())
 }

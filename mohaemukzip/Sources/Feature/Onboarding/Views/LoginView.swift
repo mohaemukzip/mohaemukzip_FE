@@ -9,7 +9,8 @@
 import SwiftUI
 
 struct LoginView: View {
-    @Environment(NavigationRouter.self) private var router
+    @EnvironmentObject private var appState: AppState
+    @EnvironmentObject private var router: AuthRouter
 
     @State private var email: String = ""
     @State private var password: String = ""
@@ -55,7 +56,6 @@ struct LoginView: View {
                             )
                     )
 
-                // 비밀번호
                 SecureField("비밀번호", text: $password)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
@@ -93,7 +93,8 @@ struct LoginView: View {
                 // TODO: 실제 로그인 API 연동 후 성공 시에만 push
                 showError = false
                 focusedField = nil
-                router.push(.home)
+                // ✅ 실제 로그인 API 성공 후 토큰 넣어주면 됨
+                appState.loginSucceeded(token: "dummy_token")
             } label: {
                 Text("로그인")
                     .foregroundStyle(.white)
@@ -144,5 +145,6 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
-        .environment(NavigationRouter())
+        .environmentObject(AppState())
+        .environmentObject(AuthRouter())
 }

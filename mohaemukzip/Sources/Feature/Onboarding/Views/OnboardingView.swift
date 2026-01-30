@@ -49,7 +49,7 @@ struct OnboardingView: View {
 
     // MARK: - State
     @State private var selection: Int = 0
-    @Environment(NavigationRouter.self) private var router
+    @EnvironmentObject private var router: AuthRouter
     
     var body: some View {
         TabView(selection: $selection) {

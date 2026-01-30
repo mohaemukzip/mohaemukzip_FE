@@ -8,23 +8,24 @@
 import SwiftUI
 
 struct SplashView: View {
-    @Environment(NavigationRouter.self) private var router
-
+    @EnvironmentObject private var appState: AppState
+    
     var body: some View {
         ZStack {
-            Color.main400
-                .ignoresSafeArea()
-
-            Image("loginLogo")
-                .resizable()
+            Color.main400.ignoresSafeArea()
+            Image(.loginLogo)
                 .renderingMode(.template)
-                .foregroundStyle(Color.white)
+                .resizable()
                 .scaledToFit()
-                .frame(width: 64, height: 64)
+                .frame(width: 69)
+                .foregroundStyle(.white)
         }
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                router.push(.onboarding)
+        .task {
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            if appState.accessToken == nil {
+                appState.root = .auth
+            } else {
+                appState.root = .main
             }
         }
     }

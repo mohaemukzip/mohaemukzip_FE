@@ -154,13 +154,13 @@ final class SignupViewModel {
 
 struct SignupView: View {
 
-    @Environment(NavigationRouter.self) private var router
+    @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = SignupViewModel()
 
     var body: some View {
         VStack(spacing: 0) {
             topBar
-                VStack(alignment: .leading, spacing: 18) {
+                VStack(alignment: .leading, spacing: 32) {
                     header
                     nicknameSection
                     idSection
@@ -235,15 +235,15 @@ struct SignupView: View {
     }
 
     private var idSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("아이디")
                 .font(.PretendardMedium14)
-                .foregroundStyle(Color.black.opacity(0.8))
+                .foregroundStyle(.grey600)
 
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(.grey700)
+                        .fill(.grey100)
                         .frame(height: 44)
 
                     HStack(spacing: 10) {
@@ -343,7 +343,7 @@ struct SignupView: View {
     private var passwordConfirmSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("비밀번호 확인")
-            font(.PretendardRegular16)
+                .font(.PretendardRegular16)
                 .foregroundStyle(.grey600)
 
             ZStack(alignment: .leading) {
@@ -358,7 +358,7 @@ struct SignupView: View {
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .padding(.horizontal, 14)
-                font(.PretendardRegular16)
+                .font(.PretendardRegular16)
             }
 
             if viewModel.isPasswordMismatch {
@@ -391,9 +391,4 @@ struct SignupView: View {
         }
         .disabled(!viewModel.isReadyToStart)
     }
-}
-
-#Preview {
-    SignupView()
-        .environment(NavigationRouter())
 }

@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StartView: View {
-    @Environment(NavigationRouter.self) private var router
+    @EnvironmentObject private var router: AuthRouter
 
     var body: some View {
         VStack(spacing: 0) {
