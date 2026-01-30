@@ -12,8 +12,8 @@ struct IngredientBox: View {
     @Binding var isEditing: Bool
     let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
     let text: String
-    let ingredients: [FridgeIngredientModel]
-    var onDelete: (UUID) -> Void
+    let ingredients: [FridgeIngredient]
+    var onDelete: (Int) -> Void
     
     
     var body: some View {
@@ -42,7 +42,10 @@ struct IngredientBox: View {
                     
                     ForEach(0..<displayCount, id: \.self) { index in
                         if index < ingredients.count {
-                            IngredientManagementCard(ingredientInfo: ingredients[index], color: .green, isEditing: $isEditing, onDelete: { onDelete(ingredients[index].id) } )
+                            IngredientManagementCard(ingredientInfo: ingredients[index],
+                                                     color: ingredients[index].color.displayColor,
+                                                     isEditing: $isEditing,
+                                                     onDelete: { onDelete(ingredients[index].id) } )
                         } else {
                             Rectangle()
                                 .frame(width: 76, height: 80)

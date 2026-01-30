@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct IngredientManagementCard: View {
-    let ingredientInfo: FridgeIngredientModel
+    let ingredientInfo: FridgeIngredient
     let color: Color
     @Binding var isEditing: Bool
     let onDelete: () -> Void
@@ -34,7 +34,7 @@ struct IngredientManagementCard: View {
                         .foregroundStyle(Color.clear)
                         .frame(width: 44, height: 18)
                     
-                    Text("D-\(ingredientInfo.expirationDate)")
+                    Text(ingredientInfo.dDay)
                         .font(.PretendardMedium13)
                         .foregroundStyle(color)
                 }
