@@ -17,16 +17,38 @@ enum ResponseState {
 
 @Observable
 class YoTeacherChatViewModel {
-    var messages: [ChatMessage] = []
+    var messages1: [ChatMessages] = []
+    
+    //var messages: [ChatMessage] = []
     var recommendQ: [ChatMessage] = [ChatMessage(text: "지금 있는 재료로 만들 요리 추천"),
                                                 ChatMessage(text: "허니콤보랑 먹을 떡볶이 추천"),
                                                 ChatMessage(text: "엽떡 착한맛 래시피")]
     var responseState: ResponseState = .idle
     var responseVideos: [RecipeVideo]? = nil
     
-    func addMessages(text: String) {
+    var service = YoTeacherService()
+    
+    /*func addMessages(text: String) {
         messages.append(ChatMessage(text: text))
         simulateAIResponse(index: messages.count - 1)
+    }*/
+    
+    func sendMessage(message: String) async {
+        messages1.append(ChatMessages(text: message))
+        self.responseState = .thinking
+        
+        do {
+            let chatBotResponse = try await service.getResponse(message: message)
+            
+            if let lastIndex = messages1.indices.last {
+                messages1[lastIndex].chatBotResponse = chatBotResponse
+            }
+            
+            self.responseState = .completed
+        } catch {
+            print("챗봇 응답을 불러올 수 없습니다: \(error)")
+            self.responseState = .idle
+        }
     }
     
     func simulateAIResponse(index: Int) {
@@ -47,7 +69,7 @@ class YoTeacherChatViewModel {
                 ]
                 
                 // MARK: - 해당 인덱스의 ChatMessage 모델의 responseVideos를 수정
-                self.messages[index].responseVideos = dummyVideos
+                //self.messages[index].responseVideos = dummyVideos
                 
                 self.responseState = .idle
             }

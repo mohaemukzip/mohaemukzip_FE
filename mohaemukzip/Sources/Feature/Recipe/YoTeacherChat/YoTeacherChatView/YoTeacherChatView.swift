@@ -11,13 +11,16 @@ struct YoTeacherChatView: View {
     @Environment(YoTeacherChatViewModel.self) var viewModel
     @Environment(NavigationRouter.self) var router
     @State var text: String = ""
+    var isSendButtonDisabled: Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     
     var body: some View {
         ZStack {
             VStack {
                 HStack {
                     Button( action: { router.pop() } ) {
-                        Image("back button")
+                        Image("backbutton")
                             .foregroundStyle(.grey700)
                     }
                     Spacer()
@@ -28,7 +31,7 @@ struct YoTeacherChatView: View {
                     ScrollViewReader { proxy in
                         LazyVStack {
                             
-                            if viewModel.messages.isEmpty {
+                            if viewModel.messages1.isEmpty {
                                 HStack {
                                     Image("icon-yoteacher-chatbot")
                                     Spacer()
@@ -37,8 +40,8 @@ struct YoTeacherChatView: View {
                                     .padding(.top, 40)
                             }
                             
-                            if !viewModel.messages.isEmpty {
-                                ForEach(viewModel.messages) { message in
+                            if !viewModel.messages1.isEmpty {
+                                ForEach(viewModel.messages1) { message in
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -47,36 +50,34 @@ struct YoTeacherChatView: View {
                                                 .padding(.bottom, 70)
                                         }
                                         
-                                        if let videos = message.responseVideos {
-                                            BotResponse(responseVideos: videos)
+                                        if message.id != viewModel.messages1.last?.id {
+                                            BotResponse(response: message.chatBotResponse)
                                                 .padding(.bottom, 70)
-                                        }
-                                        
-                                        if message.id == viewModel.messages.last?.id {
-                                            // TODO: 메세지 당 응답을 같은 ForEach문에 배치
+                                        } else {
                                             if viewModel.responseState == .thinking {
                                                 HStack {
                                                     Image("icon-thinking")
                                                     Spacer()
                                                 }.padding(.bottom, 70)
-                                            } else if viewModel.responseState == .skeleton {
-                                                BotResponse(responseVideos: message.responseVideos)
+                                            } else if viewModel.responseState == .completed {
+                                                BotResponse(response: message.chatBotResponse)
                                                     .padding(.bottom, 70)
                                             }
                                         }
+                                        
                                     }.padding(.leading, 17)
                                         .id(message.id)
                                 }
                             }
                         }.padding(.top, 50)
-                            .onChange(of: viewModel.messages.count) {
+                            .onChange(of: viewModel.messages1.count) {
                                 withAnimation(.easeInOut) {
-                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                                    proxy.scrollTo(viewModel.messages1.last?.id, anchor: .bottom)
                                 }
                             }
                             .onChange(of: viewModel.responseState) {
                                 withAnimation(.easeInOut) {
-                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                                    proxy.scrollTo(viewModel.messages1.last?.id, anchor: .bottom)
                                 }
                             }
                     }
@@ -86,11 +87,11 @@ struct YoTeacherChatView: View {
                 Spacer()
                 VStack {
                     
-                    if viewModel.messages.isEmpty {
+                    if viewModel.messages1.isEmpty {
                         ScrollView(.horizontal) {
                             LazyHStack {
                                 ForEach(viewModel.recommendQ) { q in
-                                    Button ( action: { viewModel.addMessages(text: q.text) } ) {
+                                    Button ( action: { Task {await viewModel.sendMessage(message: q.text)} } ) {
                                         RecommendQuestion(text: q.text)
                                             .padding(.trailing, 2)
                                     }
@@ -108,11 +109,12 @@ struct YoTeacherChatView: View {
                             TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
                                 .padding(.leading)
                             Spacer()
-                            Button ( action: { viewModel.addMessages(text: text ); text = "" } ) {
+                            Button ( action: { let messageToSend = text; text = "";
+                                Task {await viewModel.sendMessage(message: messageToSend)} } ) {
                                 Image("icon-chat")
-                                    .foregroundStyle(.grey700)
+                                        .foregroundStyle(isSendButtonDisabled ? .grey300 : .grey700)
                                     .padding()
-                            }
+                                }.disabled(isSendButtonDisabled)
                         }
                         
                     }.padding(.horizontal, 17)

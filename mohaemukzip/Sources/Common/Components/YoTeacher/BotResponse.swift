@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BotResponse: View {
-    var responseVideos: [RecipeVideo]? = nil
+    var response: [YoTeacherMessage]? = nil
     
     var body: some View {
         VStack {
@@ -26,14 +26,10 @@ struct BotResponse: View {
             }.padding(.bottom)
             ScrollView(.horizontal) {
                 LazyHStack {
-                    if let videos = responseVideos {
+                    if let videos = response {
                         ForEach(videos) { video in
                             // TODO: 응답으로 온 영상 카드를 나열
-                            RecipeVideoChatCard(video: video)
-                        }
-                    } else {
-                        ForEach(0..<3) { _ in
-                            YoSkeleton()
+                            RecipeVideoChatCard(url: video.thumbnailURL)
                         }
                     }
                 }
@@ -44,9 +40,13 @@ struct BotResponse: View {
 }
 
 #Preview {
-    BotResponse(responseVideos: [
-        RecipeVideo(id: 1, title: "추천 레시피", videoId: "sHpMVI8wQuk", channelName: "요선생", viewCount: 1000, cookingTimeMinutes: 15, cuisine: .korean),
-        RecipeVideo(id: 2, title: "추천 레시피", videoId: "sHpMVI8wQuk", channelName: "요선생", viewCount: 1000, cookingTimeMinutes: 15, cuisine: .korean),
-        RecipeVideo(id: 3, title: "추천 레시피", videoId: "sHpMVI8wQuk", channelName: "요선생", viewCount: 1000, cookingTimeMinutes: 15, cuisine: .korean)
-    ])
+    BotResponse(response: [YoTeacherMessage(id: 1,
+                                            title: "",
+                                            thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!),
+                           YoTeacherMessage(id: 2,
+                                                                   title: "",
+                                                                   thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!),
+                           YoTeacherMessage(id: 3,
+                                                                   title: "",
+                                                                   thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)])
 }
