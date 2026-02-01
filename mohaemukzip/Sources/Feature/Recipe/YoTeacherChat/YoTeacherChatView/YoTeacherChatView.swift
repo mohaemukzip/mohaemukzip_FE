@@ -52,6 +52,7 @@ struct YoTeacherChatView: View {
                                         
                                         if message.id != viewModel.messages1.last?.id {
                                             BotResponse(response: message.chatBotResponse,
+                                                        title: message.chatBotTitle,
                                                         text: message.chatBotText)
                                                 .padding(.bottom, 70)
                                         } else {
@@ -62,6 +63,7 @@ struct YoTeacherChatView: View {
                                                 }.padding(.bottom, 70)
                                             } else if viewModel.responseState == .completed {
                                                 BotResponse(response: message.chatBotResponse,
+                                                            title: message.chatBotTitle,
                                                             text: message.chatBotText)
                                                     .padding(.bottom, 70)
                                             }

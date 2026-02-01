@@ -10,6 +10,7 @@ import Foundation
 struct YoTeacherResponseDTO: Decodable {
     let id: Int
     let senderType: String
+    let title: String
     let message: String
     let createdAt: String
     let formattedTime: String

@@ -9,6 +9,7 @@ import SwiftUI
 
 struct BotResponse: View {
     var response: [YoTeacherMessage]? = nil
+    var title: String? = nil
     var text: String? = nil
     
     var body: some View {
@@ -26,11 +27,17 @@ struct BotResponse: View {
             } else {
                 VStack {
                     HStack {
-                        Text(text ?? "")
-                            .font(.PretendardMedium16)
+                        Text(title ?? "")
+                            .font(.PretendardSemibold18)
                             .foregroundStyle(.grey900)
                         Spacer()
-                    }.padding(.bottom)
+                    }.padding(.bottom, 5)
+                    HStack {
+                        Text(text ?? "")
+                            .font(.PretendardRegular16)
+                            .foregroundStyle(.grey900)
+                        Spacer()
+                    }.padding(.bottom, 5)
                     ScrollView(.horizontal) {
                         LazyHStack {
                             ForEach(unwrappedResponse) { image in
@@ -54,5 +61,7 @@ struct BotResponse: View {
                                                                    thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!),
                            YoTeacherMessage(id: 3,
                                                                    title: "",
-                                            thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)], text: "메롱")
+                                            thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)],
+                title: "제목",
+                text: "내용")
 }

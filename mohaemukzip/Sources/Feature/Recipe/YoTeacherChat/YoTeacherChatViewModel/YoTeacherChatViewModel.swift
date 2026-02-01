@@ -38,9 +38,10 @@ class YoTeacherChatViewModel {
         self.responseState = .thinking
         
         do {
-            let (chatBotText, chatBotResponse) = try await service.getResponse(message: message)
+            let (chatBotTitle, chatBotText, chatBotResponse) = try await service.getResponse(message: message)
             
             if let lastIndex = messages1.indices.last {
+                messages1[lastIndex].chatBotTitle = chatBotTitle
                 messages1[lastIndex].chatBotText = chatBotText
                 messages1[lastIndex].chatBotResponse = chatBotResponse
             }
