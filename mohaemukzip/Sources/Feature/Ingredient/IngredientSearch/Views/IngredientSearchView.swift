@@ -67,6 +67,7 @@ struct IngredientSearchView: View {
                            onLastAppear: { item in
                                             if item.id == viewModel.allIngredients.last?.id {
                                                 Task { await viewModel.fetchNextPage() } }})
+            .padding(.horizontal)
                             
         }.sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
             IngredientAdditionBottomSheet(ingredient: ingredient,

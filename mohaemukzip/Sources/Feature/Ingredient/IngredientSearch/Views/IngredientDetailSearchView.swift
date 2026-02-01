@@ -90,7 +90,7 @@ struct IngredientDetailSearchView: View {
                                            onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                         }
                         
-                    }.padding()
+                    }.padding(.horizontal)
                 } else { // 검색 텍스트 있는 경우
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -113,6 +113,7 @@ struct IngredientDetailSearchView: View {
                     IngredientList(ingredients: viewModel.filteredIngredients,
                                    onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                    onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
+                    .padding(.horizontal)
                 }
             } // end of VStack
             Button ( action: { isShowingSheet = true } ) {
