@@ -7,12 +7,6 @@
 
 import Foundation
 
-struct ChatMessage: Identifiable {
-    let id: UUID = UUID()
-    let text: String
-    var responseVideos: [RecipeVideo]? = nil
-}
-
 struct ChatMessages: Identifiable {
     let id: UUID = UUID()
     let text: String

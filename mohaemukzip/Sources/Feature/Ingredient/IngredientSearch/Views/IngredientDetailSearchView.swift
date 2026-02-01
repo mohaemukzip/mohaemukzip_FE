@@ -86,8 +86,7 @@ struct IngredientDetailSearchView: View {
                             }
                         } else {
                             IngredientList(ingredients: viewModel.savedIngredients,
-                                           onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
-                                                        Task { await viewModel.toggleSaved(id: id)} },
+                                           onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                            onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                         }
                         
@@ -112,8 +111,7 @@ struct IngredientDetailSearchView: View {
                     }.padding(.vertical, 10)
                     
                     IngredientList(ingredients: viewModel.filteredIngredients,
-                                   onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
-                                                Task { await viewModel.toggleSaved(id: id)} },
+                                   onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                    onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                 }
             } // end of VStack

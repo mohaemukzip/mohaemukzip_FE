@@ -31,7 +31,7 @@ struct YoTeacherChatView: View {
                     ScrollViewReader { proxy in
                         LazyVStack {
                             
-                            if viewModel.messages1.isEmpty {
+                            if viewModel.messages.isEmpty {
                                 HStack {
                                     Image("icon-yoteacher-chatbot")
                                     Spacer()
@@ -40,8 +40,8 @@ struct YoTeacherChatView: View {
                                     .padding(.top, 40)
                             }
                             
-                            if !viewModel.messages1.isEmpty {
-                                ForEach(viewModel.messages1) { message in
+                            if !viewModel.messages.isEmpty {
+                                ForEach(viewModel.messages) { message in
                                     VStack {
                                         HStack {
                                             Spacer()
@@ -50,7 +50,7 @@ struct YoTeacherChatView: View {
                                                 .padding(.bottom, 70)
                                         }
                                         
-                                        if message.id != viewModel.messages1.last?.id {
+                                        if message.id != viewModel.messages.last?.id {
                                             BotResponse(response: message.chatBotResponse,
                                                         title: message.chatBotTitle,
                                                         text: message.chatBotText)
@@ -74,14 +74,14 @@ struct YoTeacherChatView: View {
                                 }
                             }
                         }.padding(.top, 50)
-                            .onChange(of: viewModel.messages1.count) {
+                            .onChange(of: viewModel.messages.count) {
                                 withAnimation(.easeInOut) {
-                                    proxy.scrollTo(viewModel.messages1.last?.id, anchor: .bottom)
+                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
                                 }
                             }
                             .onChange(of: viewModel.responseState) {
                                 withAnimation(.easeInOut) {
-                                    proxy.scrollTo(viewModel.messages1.last?.id, anchor: .bottom)
+                                    proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
                                 }
                             }
                     }
@@ -91,7 +91,7 @@ struct YoTeacherChatView: View {
                 Spacer()
                 VStack {
                     
-                    if viewModel.messages1.isEmpty {
+                    if viewModel.messages.isEmpty {
                         ScrollView(.horizontal) {
                             LazyHStack {
                                 ForEach(viewModel.recommendQ) { q in
