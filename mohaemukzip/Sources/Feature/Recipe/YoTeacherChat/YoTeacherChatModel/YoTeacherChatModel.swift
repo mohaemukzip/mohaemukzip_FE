@@ -16,5 +16,6 @@ struct ChatMessage: Identifiable {
 struct ChatMessages: Identifiable {
     let id: UUID = UUID()
     let text: String
+    var chatBotText: String? = nil
     var chatBotResponse: [YoTeacherMessage]? = nil
 }

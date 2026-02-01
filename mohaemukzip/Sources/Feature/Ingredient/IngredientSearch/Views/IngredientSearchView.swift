@@ -91,8 +91,8 @@ struct IngredientSearchView: View {
             }).presentationDetents([.fraction(0.98)])
         }
         .navigationBarBackButtonHidden()
-        .task {
-            await viewModel.fetchIngredients()
+        .task(id: viewModel.selectedCategory) {
+            await viewModel.resetAndFetchIngredients()
         }
         
     }

@@ -10,7 +10,7 @@ import Moya
 import Alamofire
 
 enum IngredientAPI {
-    case fetchIngredients(Int)
+    case fetchIngredients(String, String, Int)
     case getRecent
     case getSaved
     case addSaved(Int)
@@ -52,8 +52,10 @@ extension IngredientAPI: TargetType {
     
     var task: Task {
         switch self {
-        case .fetchIngredients(let page):
-            return .requestParameters(parameters: ["page": page], encoding: URLEncoding.queryString)
+        case .fetchIngredients(let query, let category, let page):
+            return .requestParameters(parameters: ["query": query,
+                                                   "category": category,
+                                                   "page": page], encoding: URLEncoding.queryString)
         case .deleteRecent(let name):
             return .requestParameters(parameters: ["keyword": name], encoding: URLEncoding.queryString)
         case .getRecent, .getSaved, .addSaved, .deleteSaved:
