@@ -62,6 +62,7 @@ fastlane/screenshots/**/*.png
 fastlane/test_output
 # Secrets
 Secret.xcconfig
-mohaemukzip/Secret.xcconfig
+mohaemukzip/Secrets.xcconfig
+
 mohaemukzip/Secret.xcconfig
 mohaemukzip/Secret.xcconfig

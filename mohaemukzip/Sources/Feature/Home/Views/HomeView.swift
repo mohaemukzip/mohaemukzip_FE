@@ -158,11 +158,11 @@ private extension HomeView {
                             Circle()
                                 .fill(item.isDone ? Color.clear : Color(.systemGray4))
                             
-                            if item.isDone {
-                                Image(.icnBab)
-                                    .resizable()
-                                    .scaledToFit()
-                            }
+//                            if item.isDone {
+//                                Image(.icnBab)
+//                                    .resizable()
+//                                    .scaledToFit()
+//                            }
                         }
                         .frame(width: 40, height: 40)
                     }

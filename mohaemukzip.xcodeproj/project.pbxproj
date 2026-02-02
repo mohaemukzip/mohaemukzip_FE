@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		67E1B9DD2F2A033A00EA2875 /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = 67E1B9DC2F2A033A00EA2875 /* CombineMoya */; };
-		67E1B9DF2F2A033A00EA2875 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = 67E1B9DE2F2A033A00EA2875 /* Moya */; };
+		D7119FD62F305F550072BBC9 /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD52F305F550072BBC9 /* CombineMoya */; };
+		D7119FD82F305F550072BBC9 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD72F305F550072BBC9 /* Moya */; };
+		D7119FDA2F305F550072BBC9 /* ReactiveMoya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD92F305F550072BBC9 /* ReactiveMoya */; };
+		D7119FDC2F305F550072BBC9 /* RxMoya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FDB2F305F550072BBC9 /* RxMoya */; };
+		D7119FEE2F3070AD0072BBC9 /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FED2F3070AD0072BBC9 /* KeychainSwift */; };
 		D775B56D2F21FD980085293A /* YouTubePlayerKit in Frameworks */ = {isa = PBXBuildFile; productRef = D775B56C2F21FD980085293A /* YouTubePlayerKit */; };
 /* End PBXBuildFile section */
 
@@ -47,9 +50,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				67E1B9DD2F2A033A00EA2875 /* CombineMoya in Frameworks */,
+				D7119FEE2F3070AD0072BBC9 /* KeychainSwift in Frameworks */,
+				D7119FDC2F305F550072BBC9 /* RxMoya in Frameworks */,
+				D7119FD62F305F550072BBC9 /* CombineMoya in Frameworks */,
+				D7119FDA2F305F550072BBC9 /* ReactiveMoya in Frameworks */,
 				D775B56D2F21FD980085293A /* YouTubePlayerKit in Frameworks */,
-				67E1B9DF2F2A033A00EA2875 /* Moya in Frameworks */,
+				D7119FD82F305F550072BBC9 /* Moya in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -93,8 +99,11 @@
 			name = mohaemukzip;
 			packageProductDependencies = (
 				D775B56C2F21FD980085293A /* YouTubePlayerKit */,
-				67E1B9DC2F2A033A00EA2875 /* CombineMoya */,
-				67E1B9DE2F2A033A00EA2875 /* Moya */,
+				D7119FD52F305F550072BBC9 /* CombineMoya */,
+				D7119FD72F305F550072BBC9 /* Moya */,
+				D7119FD92F305F550072BBC9 /* ReactiveMoya */,
+				D7119FDB2F305F550072BBC9 /* RxMoya */,
+				D7119FED2F3070AD0072BBC9 /* KeychainSwift */,
 			);
 			productName = mohaemukzip;
 			productReference = 67A031AF2F0FC1BF005E0E39 /* mohaemukzip.app */;
@@ -126,7 +135,8 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
-				67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */,
+				D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */,
+				D7119FEC2F3070AD0072BBC9 /* XCRemoteSwiftPackageReference "keychain-swift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 67A031B02F0FC1BF005E0E39 /* Products */;
@@ -284,6 +294,8 @@
 		};
 		67A031BB2F0FC1C2005E0E39 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 67A031B12F0FC1BF005E0E39 /* mohaemukzip */;
+			baseConfigurationReferenceRelativePath = Secret.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -318,6 +330,8 @@
 		};
 		67A031BC2F0FC1C2005E0E39 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 67A031B12F0FC1BF005E0E39 /* mohaemukzip */;
+			baseConfigurationReferenceRelativePath = Secret.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -374,12 +388,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */ = {
+		D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Moya/Moya";
 			requirement = {
 				kind = upToNextMajorVersion;
 				minimumVersion = 15.0.3;
+			};
+		};
+		D7119FEC2F3070AD0072BBC9 /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
 			};
 		};
 		D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */ = {
@@ -393,15 +415,30 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		67E1B9DC2F2A033A00EA2875 /* CombineMoya */ = {
+		D7119FD52F305F550072BBC9 /* CombineMoya */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */;
+			package = D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */;
 			productName = CombineMoya;
 		};
-		67E1B9DE2F2A033A00EA2875 /* Moya */ = {
+		D7119FD72F305F550072BBC9 /* Moya */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 67E1B9DB2F2A033900EA2875 /* XCRemoteSwiftPackageReference "Moya" */;
+			package = D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */;
 			productName = Moya;
+		};
+		D7119FD92F305F550072BBC9 /* ReactiveMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = ReactiveMoya;
+		};
+		D7119FDB2F305F550072BBC9 /* RxMoya */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */;
+			productName = RxMoya;
+		};
+		D7119FED2F3070AD0072BBC9 /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D7119FEC2F3070AD0072BBC9 /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
 		};
 		D775B56C2F21FD980085293A /* YouTubePlayerKit */ = {
 			isa = XCSwiftPackageProductDependency;
