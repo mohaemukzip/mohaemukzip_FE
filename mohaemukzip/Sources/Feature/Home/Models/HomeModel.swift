@@ -54,11 +54,11 @@ extension HomeResultDTO {
             consecutiveDays: consecutiveDays,
             weekly: weeklyCooking.asArray,
             todayMission: .init(
-                missionId: todayMissions.missionId,
-                title: todayMissions.title,
-                description: todayMissions.description,
-                reward: todayMissions.reward,
-                isCompleted: todayMissions.isCompleted
+                missionId: todayMission.missionId,
+                title: todayMission.title,
+                description: todayMission.description,
+                reward: todayMission.reward,
+                isCompleted: todayMission.isCompleted
             ),
             recipes: recommendedRecipes.map {
                 .init(
