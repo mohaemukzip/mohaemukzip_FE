@@ -56,7 +56,7 @@ class IngredientSearchViewModel: ObservableObject {
         }
     }
     
-    func fetchIngredients() async {
+    func resetAndFetchIngredients() async {
         pageNum = 0
         isLast = false
         await fetchNextPage()
@@ -67,9 +67,15 @@ class IngredientSearchViewModel: ObservableObject {
         
         isLoading = true
         do {
-            let (newItems, page, isLast) = try await service.getIngredients(page: self.pageNum)
+            let (newItems, page, isLast) = try await service.getIngredients(query: self.searchText,
+                                                                            category: self.selectedCategory.forApi,
+                                                                            page: self.pageNum)
             
-            self.allIngredients.append(contentsOf: newItems)
+            let uniqueNewItem = newItems.filter { newItem in
+                !allIngredients.contains(where: { $0.id == newItem.id} )
+            }
+            
+            self.allIngredients.append(contentsOf: uniqueNewItem)
             self.pageNum = page + 1
             self.isLast = isLast
         } catch {

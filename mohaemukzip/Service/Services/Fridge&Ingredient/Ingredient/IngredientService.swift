@@ -11,9 +11,9 @@ import Moya
 class IngredientService {
     private let provider = NetworkManager.shared.makeProvider(for: IngredientAPI.self)
     
-    func getIngredients(page: Int) async throws -> ([IngredientForAddition], Int, Bool) {
+    func getIngredients(query: String, category: String, page: Int) async throws -> ([IngredientForAddition], Int, Bool) {
         return try await withCheckedThrowingContinuation { continuation in
-            provider.request(.fetchIngredients(page)) { result in
+            provider.request(.fetchIngredients(query, category, page)) { result in
                 switch result {
                 case .success(let response):
                     do {

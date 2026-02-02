@@ -40,7 +40,7 @@ struct IngredientListComponent: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: 96)
-        .padding()
+        .padding(.bottom, 30)
     }
 }
 
