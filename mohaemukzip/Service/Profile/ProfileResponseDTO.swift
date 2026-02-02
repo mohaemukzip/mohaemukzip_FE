@@ -24,14 +24,19 @@ enum ProfileResponseDTO {
     /// 마이페이지 / 최근 본 레시피 / 저장된 레시피 목록에서 공통으로 사용
     struct RecipeCard: Decodable {
         let id: Int
-        let title: String
-        let channelName: String
-        let viewCount: Int
+
+        // 마이페이지 프리뷰에서는 누락될 수 있음 → Optional
+        let title: String?
+        let channelName: String?
+        let viewCount: Int?
+
         let videoId: String
-        let channelId: String
+        let channelId: String?
         let videoDuration: String
-        let cookingTimeMinutes: Int
-        let difficulty: Int
+
+        let cookingTimeMinutes: Int?
+        let difficulty: Int?
+
         let isBookmarked: Bool
     }
 

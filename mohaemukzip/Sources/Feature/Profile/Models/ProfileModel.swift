@@ -139,14 +139,14 @@ extension ProfileRecipeCard {
     static func from(dto: ProfileResponseDTO.RecipeCard) -> ProfileRecipeCard {
         return ProfileRecipeCard(
             id: dto.id,
-            title: dto.title,
-            channelName: dto.channelName,
-            viewCount: dto.viewCount,
+            title: dto.title ?? "",                // 없으면 빈값
+            channelName: dto.channelName ?? "",
+            viewCount: dto.viewCount ?? 0,
             videoId: dto.videoId,
-            channelId: dto.channelId,
+            channelId: dto.channelId ?? "",
             videoDuration: dto.videoDuration,
-            cookingTimeMinutes: dto.cookingTimeMinutes,
-            difficulty: dto.difficulty,
+            cookingTimeMinutes: dto.cookingTimeMinutes ?? 0,
+            difficulty: dto.difficulty ?? 0,
             isBookmarked: dto.isBookmarked
         )
     }
