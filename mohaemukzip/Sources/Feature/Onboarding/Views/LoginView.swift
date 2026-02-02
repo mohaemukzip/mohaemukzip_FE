@@ -12,13 +12,10 @@ struct LoginView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AuthRouter
 
-    @State private var email: String = ""
-    @State private var password: String = ""
+    @State private var viewModel = LoginViewModel()
     
-    @State private var showError: Bool = false
-
     private enum Field {
-        case email
+        case loginId
         case password
     }
 
@@ -37,26 +34,26 @@ struct LoginView: View {
 
             VStack(spacing: 12) {
                 // 아이디
-                TextField("아이디", text: $email)
+                TextField("아이디", text: $viewModel.loginId)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
-                    .focused($focusedField, equals: .email)
+                    .focused($focusedField, equals: .loginId)
                     .padding(.horizontal, 14)
                     .frame(height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(focusedField == .email ? .grey50 : Color.grey100)
+                            .fill(focusedField == .loginId ? .grey50 : Color.grey100)
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(
-                                showError ? Color.red : (focusedField == .email ? Color.main400 : Color.clear),
+                                viewModel.showError ? Color.red : (focusedField == .loginId ? Color.main400 : Color.clear),
                                 lineWidth: 1
                             )
                     )
 
-                SecureField("비밀번호", text: $password)
+                SecureField("비밀번호", text: $viewModel.password)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
                     .focused($focusedField, equals: .password)
@@ -69,7 +66,7 @@ struct LoginView: View {
                     .overlay(
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(
-                                showError ? Color.red : (focusedField == .password ? Color.main400 : Color.clear),
+                                viewModel.showError ? Color.red : (focusedField == .password ? Color.main400 : Color.clear),
                                 lineWidth: 1
                             )
                     )
@@ -80,21 +77,23 @@ struct LoginView: View {
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle")
                     .font(.PretendardRegular13)
-                Text("아이디 또는 비밀번호가 잘못 되었습니다. 다시 입력해주세요.")
+                Text(viewModel.errorMessage ?? "아이디 또는 비밀번호가 잘못 되었습니다. 다시 입력해주세요.")
                     .font(.PretendardRegular13)
             }
             .foregroundStyle(Color.red)
             .padding(.top, 10)
             .padding(.horizontal, 20)
-            .opacity(showError ? 1 : 0)
+            .opacity(viewModel.showError ? 1 : 0)
 
             // 로그인 버튼
             Button {
-                // TODO: 실제 로그인 API 연동 후 성공 시에만 push
-                showError = false
                 focusedField = nil
-                // ✅ 실제 로그인 API 성공 후 토큰 넣어주면 됨
-                appState.loginSucceeded(token: "dummy_token")
+                Task {
+                    let ok = await viewModel.login()
+                    if ok, let token = viewModel.tokens?.accessToken {
+                        appState.loginSucceeded(token: token)
+                    }
+                }
             } label: {
                 Text("로그인")
                     .foregroundStyle(.white)
@@ -103,11 +102,12 @@ struct LoginView: View {
                     .frame(height: 57)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.main400)
+                            .fill((viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty) ? Color.grey400 : Color.main400)
                     )
             }
             .padding(.horizontal, 20)
             .padding(.top, 18)
+            .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
 
             HStack(spacing: 18) {
                 Button { }
@@ -134,11 +134,11 @@ struct LoginView: View {
         }
         .navigationBarBackButtonHidden()
         .background(Color.white)
-        .onChange(of: email) { _, _ in
-            if showError { showError = false }
+        .onChange(of: viewModel.loginId) { _, _ in
+            viewModel.clearErrorIfNeeded()
         }
-        .onChange(of: password) { _, _ in
-            if showError { showError = false }
+        .onChange(of: viewModel.password) { _, _ in
+            viewModel.clearErrorIfNeeded()
         }
     }
 }
