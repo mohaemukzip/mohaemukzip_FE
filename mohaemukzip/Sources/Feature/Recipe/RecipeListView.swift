@@ -15,17 +15,9 @@ struct RecipeListView: View {
 
     /// 레시피 목록 화면 전용 ViewModel
     /// 카테고리 선택 상태 및 필터링된 영상 목록을 관리함
-    @StateObject private var viewModel: RecipeVideoViewModel
-
-    // MARK: - 초기화
-    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.     
-    init() {
-        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
-    }
-
-    init(category: CuisineCategory) {
-        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel(category: category))
-    }
+    
+    // MARK: MainTabView에서 환경변수로 주입받는 viewModel
+    @Environment(RecipeVideoViewModel.self) var viewModel
 
     // MARK: - 카테고리 버튼 색상 정의
     // 선택 / 비선택 상태를 명확히 구분하기 위한 컬러
@@ -385,6 +377,7 @@ private struct ThumbnailView: View {
     }
         .environment(NavigationRouter())
         .environment(YoTeacherChatViewModel())
+        .environment(RecipeVideoViewModel())
         
 }
 
