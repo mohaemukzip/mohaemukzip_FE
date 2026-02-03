@@ -90,8 +90,9 @@ struct LoginView: View {
                 focusedField = nil
                 Task {
                     let ok = await viewModel.login()
-                    if ok, let token = viewModel.tokens?.accessToken {
-                        appState.loginSucceeded(token: token)
+                    if ok, let access = viewModel.tokens?.accessToken {
+                        let refresh = viewModel.tokens?.refreshToken
+                        appState.loginSucceeded(accessToken: access, refreshToken: refresh)
                     }
                 }
             } label: {
