@@ -92,7 +92,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .profile) {
-                ProfileView()
+                NavigationStack(path: $router.path) {
+                    ProfileView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "마이",
@@ -125,6 +128,23 @@ extension View {
                 SearchView()
             case .home:
                 HomeView()
+
+            // ✅ 추가
+            case .profileSettings:
+                ProfileSettingsView()
+
+            case .profileChange:
+                ProfileChangeView()
+
+            case .recentlyViewedRecipes:
+                RecentlyViewedRecipesView()
+
+            case .bookmarkedRecipes:
+                BookmarkedRecipesView()
+
+//            case .recipeDetailNoComplete(let video):
+//                // TODO: 여기만 나중에 “요리 완료 모달 없는 RecipeDetailView”로 교체
+//                RecipeVideoDetailView(video: video)
             }
         }
     }

@@ -14,48 +14,53 @@ struct ProfileView: View {
     // MARK: - Properties
 
     @StateObject private var viewModel = ProfileViewModel()
+    @Environment(NavigationRouter.self) private var router
 
     // MARK: - Body
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    headerSection
-                    profileSection
-                    pointBannerSection
-                    Divider().padding(.top, 14)
-                    activitySection
-                    Divider().padding(.top, 20)
-                    supportSection
-                }
-                .padding(.bottom, 24)
+        ScrollView {
+            VStack(spacing: 0) {
+                headerSection
+                profileSection
+                pointBannerSection
+                Rectangle()
+                    .fill(Color(.systemGray6))
+                    .frame(height: 8)
+                    .padding(.top, 14)
+                activitySection
+                Rectangle()
+                    .fill(Color(.systemGray6))
+                    .frame(height: 8)
+                    .padding(.top, 12)
+                supportSection
             }
-            .background(Color.white)
-            .navigationBarHidden(true)
-            .task {
-                // ✅ 화면 진입 시 마이페이지 데이터 로드
-                // - 탭 이동/재진입 등으로 여러 번 호출될 수 있어서,
-                //   ViewModel 내부에서 isLoading으로 중복 호출을 막고 있습니다.
-                // - 빌드 시 콘솔 로그: [ProfileViewModel] fetchMyPage START/SUCCESS/FAIL
-                viewModel.fetchMyPage()
+            .padding(.bottom, 12)
+        }
+        .background(Color.white)
+        .navigationBarHidden(true)
+        .task {
+            // ✅ 화면 진입 시 마이페이지 데이터 로드
+            // - 탭 이동/재진입 등으로 여러 번 호출될 수 있어서,
+            //   ViewModel 내부에서 isLoading으로 중복 호출을 막음
+            // - 빌드 시 콘솔 로그: [ProfileViewModel] fetchMyPage START/SUCCESS/FAIL
+            viewModel.fetchMyPage()
+        }
+        .overlay {
+            if viewModel.isLoading {
+                loadingOverlay
             }
-            .overlay {
-                if viewModel.isLoading {
-                    loadingOverlay
-                }
-            }
-            .alert(
-                "오류",
-                isPresented: Binding(
-                    get: { viewModel.errorMessage != nil },
-                    set: { if !$0 { viewModel.errorMessage = nil } }
-                )
-            ) {
-                Button("확인", role: .cancel) { }
-            } message: {
-                Text(viewModel.errorMessage ?? "")
-            }
+        }
+        .alert(
+            "오류",
+            isPresented: Binding(
+                get: { viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button("확인", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
     }
 }
@@ -69,15 +74,17 @@ private extension ProfileView {
     var headerSection: some View {
         HStack {
             Text("마이페이지")
-                .font(.system(size: 24, weight: .bold))
+                .font(.custom("Pretendard-SemiBold", size: 24))
 
             Spacer()
 
-            NavigationLink {
-                ProfileSettingsView()
+            Button {
+                router.push(.profileSettings)
             } label: {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 20, weight: .semibold))
+                Image("setting")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
                     .foregroundStyle(Color.black)
             }
             .accessibilityLabel("설정")
@@ -92,16 +99,16 @@ private extension ProfileView {
             ProfileAvatarView(imageUrl: viewModel.myPage.profile.profileImageUrl)
 
             VStack(alignment: .leading, spacing: 6) {
-                HStack(spacing: 8) {
+                HStack(alignment: .center, spacing: 8) {
                     Text(viewModel.myPage.profile.nickname.isEmpty ? "닉네임" : viewModel.myPage.profile.nickname)
-                        .font(.system(size: 18, weight: .bold))
+                        .font(.custom("Pretendard-SemiBold", size: 18))
 
                     Text(viewModel.myPage.profile.levelText)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(.custom("Pretendard-Medium", size: 14))
                         .foregroundStyle(Color.white)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .background(Color.black.opacity(0.75))
+                        .background(Color("grey700"))
                         .clipShape(Capsule())
                 }
 
@@ -115,13 +122,14 @@ private extension ProfileView {
 
             // NOTE: 닉네임/프로필 사진 수정 화면은 다음 단계에서 구현할 예정
             Button {
-                print("[ProfileView] ✏️ 닉네임/프로필 수정 화면은 추후 연결")
+                router.push(.profileChange)
             } label: {
-                Image(systemName: "pencil")
-                    .font(.system(size: 18, weight: .semibold))
+                Image("pencil")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 30, height: 30)
                     .foregroundStyle(Color.gray)
             }
-            .disabled(true)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
@@ -129,9 +137,12 @@ private extension ProfileView {
     // 다음 레벨까지 남은 집밥 포인트 배너 영역
     var pointBannerSection: some View {
         HStack {
+            Spacer()
+
             Text(viewModel.myPage.pointInfo.remainingScoreText)
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundStyle(Color.black.opacity(0.75))
+                .multilineTextAlignment(.center)
 
             Spacer()
         }
@@ -146,36 +157,47 @@ private extension ProfileView {
     var activitySection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("나의 활동")
-                .font(.system(size: 18, weight: .bold))
+                .font(.custom("Pretendard-SemiBold", size: 18))
                 .padding(.horizontal, 20)
                 .padding(.top, 18)
+                .padding(.bottom, 20)
 
             activityRowTitle(
                 title: "최근 조회한 레시피",
-                destination: RecentlyViewedRecipesView()
+                route: .recentlyViewedRecipes,
+                verticalPadding: 10
             )
-            .padding(.top, 14)
+            .padding(.top, 0)
 
             if viewModel.myPage.activity.isRecentlyViewedEmpty {
                 emptyActivityText("최근 조회한 레시피가 없습니다.")
-                    .padding(.top, 18)
+                    .padding(.top, 8)
             } else {
                 recipePreviewScroll(recipes: viewModel.recentlyViewedPreview)
-                    .padding(.top, 12)
+                    .padding(.top, 0)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        router.push(.recentlyViewedRecipes)
+                    }
             }
 
             activityRowTitle(
                 title: "저장한 레시피",
-                destination: BookmarkedRecipesView()
+                route: .bookmarkedRecipes,
+                verticalPadding: 10
             )
-            .padding(.top, 18)
+            .padding(.top, 0)
 
             if viewModel.myPage.activity.isBookmarkedEmpty {
                 emptyActivityText("저장한 레시피가 없습니다.")
-                    .padding(.top, 18)
+                    .padding(.top, 8)
             } else {
                 recipePreviewScroll(recipes: viewModel.bookmarkedPreview)
-                    .padding(.top, 12)
+                    .padding(.top, 0)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        router.push(.bookmarkedRecipes)
+                    }
             }
         }
     }
@@ -183,25 +205,29 @@ private extension ProfileView {
     var supportSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("지원")
-                .font(.system(size: 18, weight: .bold))
+                .font(.custom("Pretendard-SemiBold", size: 18))
                 .padding(.horizontal, 20)
-                .padding(.top, 18)
+                .padding(.top, 12)
 
             // NOTE: 지원 섹션은 추후 실제 화면/링크로 연결
             ProfileSimpleRow(title: "서비스 이용약관")
             ProfileSimpleRow(title: "개인정보 처리방침")
-            ProfileSimpleRow(title: "고객센터")
+            ProfileSimpleRow(title: "1:1 문의하기")
         }
     }
 
-    func activityRowTitle<Destination: View>(title: String, destination: Destination) -> some View {
-        NavigationLink {
-            destination
+    func activityRowTitle(
+        title: String,
+        route: Route,
+        verticalPadding: CGFloat = 10
+    ) -> some View {
+        Button {
+            router.push(route)
         } label: {
             // 우측 '>' 버튼 포함한 라인 전체가 탭 영역
             HStack {
                 Text(title)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.custom("Pretendard-Medium", size: 16))
                     .foregroundStyle(Color.black)
 
                 Spacer()
@@ -211,8 +237,10 @@ private extension ProfileView {
                     .foregroundStyle(Color.gray)
             }
             .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            .padding(.vertical, verticalPadding)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     func recipePreviewScroll(recipes: [ProfileRecipeCard]) -> some View {
@@ -222,16 +250,17 @@ private extension ProfileView {
                     ProfileRecipePreviewCard(recipe: recipe)
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal,20)
         }
     }
 
     func emptyActivityText(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13, weight: .medium))
-            .foregroundStyle(Color.gray)
-            .frame(maxWidth: .infinity, minHeight: 84)
-            .padding(.horizontal, 20)
+            .font(.PretendardMedium16)
+            .foregroundStyle(Color.grey500)
+            .frame(maxWidth: .infinity, minHeight: 40)
+            .padding(.horizontal,40)
+            .padding(.bottom,20)
     }
 
     var loadingOverlay: some View {
@@ -257,8 +286,9 @@ private struct ProfileAvatarView: View {
         AsyncImage(url: URL(string: imageUrl)) { phase in
             switch phase {
             case .empty:
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
+                Image("realprofile")
+                    .resizable()
+                    .scaledToFill()
                     .overlay {
                         ProgressView()
                     }
@@ -269,16 +299,14 @@ private struct ProfileAvatarView: View {
                     .scaledToFill()
 
             case .failure:
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
-                    .overlay {
-                        Image(systemName: "person.fill")
-                            .foregroundStyle(Color.gray)
-                    }
+                Image("realprofile")
+                    .resizable()
+                    .scaledToFill()
 
             @unknown default:
-                Circle()
-                    .fill(Color.gray.opacity(0.2))
+                Image("realprofile")
+                    .resizable()
+                    .scaledToFill()
             }
         }
         .frame(width: 72, height: 72)
@@ -300,7 +328,7 @@ private struct ProfileRecipePreviewCard: View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack(alignment: .bottomTrailing) {
                 ProfileYouTubeThumbnailView(videoId: recipe.videoId)
-                    .frame(width: 154, height: 90)
+                    .frame(width: 160, height: 96)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
 
                 Text(recipe.videoDurationText)
@@ -323,7 +351,7 @@ private struct ProfileRecipePreviewCard: View {
                 .foregroundStyle(Color.gray)
                 .lineLimit(1)
         }
-        .frame(width: 154)
+        .frame(width: 160)
     }
 }
 
@@ -382,7 +410,7 @@ private struct ProfileSimpleRow: View {
         } label: {
             HStack {
                 Text(title)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.custom("Pretendard-Regular", size: 16))
                     .foregroundStyle(Color.black)
 
                 Spacer()
@@ -397,82 +425,7 @@ private struct ProfileSimpleRow: View {
     }
 }
 
-// MARK: - 설정 상세 화면
 
-struct ProfileSettingsView: View {
-
-    // MARK: - Properties
-
-    @Environment(\.dismiss) private var dismiss
-
-    // NOTE: 버전 문자열은 Info.plist에서 읽는 방식으로 교체해도 됩니다.
-    private let appVersionText: String = {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
-        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
-        return "v\(version) (\(build))"
-    }()
-
-    // MARK: - Body
-
-    var body: some View {
-        VStack(spacing: 0) {
-            header
-
-            List {
-                Section(header: Text("계정")) {
-                    NavigationLink {
-                        Text("계정 설정 화면은 추후 구현")
-                    } label: {
-                        Text("계정 설정")
-                    }
-                }
-
-                Section {
-                    Button(role: .none) {
-                        print("[ProfileSettingsView] 🚪 로그아웃 탭")
-                    } label: {
-                        Text("로그아웃")
-                    }
-
-                    Button(role: .destructive) {
-                        print("[ProfileSettingsView] 🧨 회원탈퇴 탭")
-                    } label: {
-                        Text("회원탈퇴")
-                    }
-
-                    Text(appVersionText)
-                        .font(.system(size: 12))
-                        .foregroundStyle(Color.gray)
-                }
-            }
-            .listStyle(.insetGrouped)
-        }
-        .navigationBarHidden(true)
-        .background(Color.white)
-    }
-
-    private var header: some View {
-        HStack {
-            Button {
-                dismiss()
-            } label: {
-                Image(systemName: "chevron.left")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundStyle(Color.black)
-                    .padding(8)
-            }
-
-            Text("설정")
-                .font(.system(size: 18, weight: .bold))
-                .padding(.leading, 2)
-
-            Spacer()
-        }
-        .padding(.horizontal, 16)
-        .padding(.top, 12)
-        .padding(.bottom, 6)
-    }
-}
 
 // MARK: - 최근 조회한 레시피 목록 화면
 
@@ -766,7 +719,7 @@ private struct RecipeListRow: View {
         HStack(spacing: 12) {
             ZStack(alignment: .bottomTrailing) {
                 ProfileYouTubeThumbnailView(videoId: recipe.videoId)
-                    .frame(width: 120, height: 68)
+                    .frame(width: 160, height: 96)
                     .clipShape(RoundedRectangle(cornerRadius: 8))
 
                 Text(recipe.videoDurationText)
@@ -805,5 +758,17 @@ private struct RecipeListRow: View {
 }
 
 #Preview {
-    ProfileView()
+    PreviewWrapper()
+}
+
+private struct PreviewWrapper: View {
+    @State private var router = NavigationRouter()
+
+    var body: some View {
+        NavigationStack(path: $router.path) {
+            ProfileView()
+                .setupNavigationDestinations()
+        }
+        .environment(router)
+    }
 }
