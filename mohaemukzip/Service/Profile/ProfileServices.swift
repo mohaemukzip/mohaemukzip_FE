@@ -82,6 +82,32 @@ final class ProfileService {
     ) {
         request(target: .patchProfile(dto: dto), decodingType: ProfileResponseDTO.EmptyResult.self, completion: completion)
     }
+
+    /// 닉네임만 수정
+    /// PATCH /members/me/profile
+    func patchNickname(
+        _ nickname: String,
+        completion: @escaping (Result<ProfileResponseDTO.EmptyResult, Error>) -> Void
+    ) {
+        let dto = ProfileRequestDTO.UpdateProfileRequest(
+            profileImageKey: nil,
+            nickname: nickname
+        )
+        patchProfile(dto: dto, completion: completion)
+    }
+
+    /// 프로필 이미지 키만 수정
+    /// PATCH /members/me/profile
+    func patchProfileImageKey(
+        _ profileImageKey: String,
+        completion: @escaping (Result<ProfileResponseDTO.EmptyResult, Error>) -> Void
+    ) {
+        let dto = ProfileRequestDTO.UpdateProfileRequest(
+            profileImageKey: profileImageKey,
+            nickname: nil
+        )
+        patchProfile(dto: dto, completion: completion)
+    }
     // MARK: - Presigned Upload (URLSession)
 
     /// presignedUrl로 프로필 이미지를 PUT 업로드합니다.
@@ -155,16 +181,27 @@ final class ProfileService {
 
     // MARK: - 프로필 이미지 변경 플로우 (발급 → PUT → PATCH)
 
-    /// 프로필 이미지 변경 전체 플로우
-    /// 1) 업로드 URL 발급 (key, presignedUrl)
-    /// 2) presignedUrl로 이미지 PUT 업로드 (토큰 없이)
-    /// 3) 서버에 프로필 수정 PATCH (profileImageKey=key, nickname)
+    /// 프로필 이미지 변경 전체 플로우 (호환용)
+    /// - NOTE: 기존 호출부 호환을 위해 유지합니다.
     func changeProfileImage(
         imageData: Data,
         nickname: String,
         completion: @escaping (Result<ProfileResponseDTO.EmptyResult, Error>) -> Void
     ) {
-        // S3 업로드 파일명은 중복 방지를 위해 uuid 사용
+        changeProfileImage(imageData: imageData, nickname: Optional(nickname), completion: completion)
+    }
+
+    /// 프로필 이미지 변경 전체 플로우
+    /// 1) 업로드 URL 발급 (key, presignedUrl)
+    /// 2) presignedUrl로 이미지 PUT 업로드 (토큰 없이)
+    /// 3) 서버에 프로필 수정 PATCH
+    ///    - 이미지+닉네임 모두 변경: { profileImageKey, nickname }
+    ///    - 이미지만 변경: { profileImageKey }
+    func changeProfileImage(
+        imageData: Data,
+        nickname: String?,
+        completion: @escaping (Result<ProfileResponseDTO.EmptyResult, Error>) -> Void
+    ) {
         let fileName = "profile_\(UUID().uuidString).png"
         let contentType = "image/png"
 
@@ -196,7 +233,7 @@ final class ProfileService {
                 ) { uploadResult in
                     switch uploadResult {
                     case .success:
-                        // 3) 업로드 성공 시 key로 PATCH
+                        // 3) 업로드 성공 시 key로 PATCH (부분 업데이트)
                         let patchDTO = ProfileRequestDTO.UpdateProfileRequest(
                             profileImageKey: presigned.key,
                             nickname: nickname

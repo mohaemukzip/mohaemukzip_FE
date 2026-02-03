@@ -13,7 +13,7 @@ struct ProfileView: View {
 
     // MARK: - Properties
 
-    @StateObject private var viewModel = ProfileViewModel()
+    @EnvironmentObject private var viewModel: ProfileViewModel
     @Environment(NavigationRouter.self) private var router
 
     // MARK: - Body
@@ -40,11 +40,19 @@ struct ProfileView: View {
         .background(Color.white)
         .navigationBarHidden(true)
         .task {
-            // ✅ 화면 진입 시 마이페이지 데이터 로드
-            // - 탭 이동/재진입 등으로 여러 번 호출될 수 있어서,
-            //   ViewModel 내부에서 isLoading으로 중복 호출을 막음
-            // - 빌드 시 콘솔 로그: [ProfileViewModel] fetchMyPage START/SUCCESS/FAIL
-            viewModel.fetchMyPage()
+            // ✅ 최초 진입(또는 데이터 비어있을 때)만 로드
+            // - 프로필 수정 화면에서 돌아온 직후에는 ViewModel이 이미 최신 상태일 수 있어
+            //   불필요한 재호출로 placeholder가 잠깐 보이는 걸 방지
+            let nicknameEmpty = viewModel.myPage.profile.nickname
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+            let imageEmpty = viewModel.myPage.profile.profileImageUrl
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .isEmpty
+
+            if nicknameEmpty || imageEmpty {
+                viewModel.fetchMyPage()
+            }
         }
         .overlay {
             if viewModel.isLoading {
@@ -763,6 +771,7 @@ private struct RecipeListRow: View {
 
 private struct PreviewWrapper: View {
     @State private var router = NavigationRouter()
+    @StateObject private var viewModel = ProfileViewModel()
 
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -770,5 +779,6 @@ private struct PreviewWrapper: View {
                 .setupNavigationDestinations()
         }
         .environment(router)
+        .environmentObject(viewModel)
     }
 }

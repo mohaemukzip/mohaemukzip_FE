@@ -1,4 +1,3 @@
-
 //
 //  ProfileViewModel.swift
 //  mohaemukzip
@@ -21,6 +20,9 @@ final class ProfileViewModel: ObservableObject {
 
     /// 마이페이지 화면 데이터
     @Published var myPage: ProfileMyPageModel = .empty
+
+    /// 닉네임만 수정할 때도 기존 이미지가 유지되도록 key를 캐시
+    @Published private(set) var cachedProfileImageKey: String = ""
 
     /// 로딩 상태
     @Published var isLoading: Bool = false
@@ -71,6 +73,10 @@ final class ProfileViewModel: ObservableObject {
 
                 DispatchQueue.main.async {
                     self.myPage = model
+                    let key = self.extractProfileImageKey(from: model.profile.profileImageUrl)
+                    if !key.isEmpty {
+                        self.cachedProfileImageKey = key
+                    }
                     self.isLoading = false
                 }
 
@@ -147,27 +153,30 @@ final class ProfileViewModel: ObservableObject {
         errorMessage = nil
 
         let currentNickname = myPage.profile.nickname
-        let nextNickname = (nickname?.isEmpty == false) ? nickname! : currentNickname
+        let trimmedNickname = nickname?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let nicknameChanged = (trimmedNickname != nil && trimmedNickname != currentNickname)
 
-        // 1) 이미지 변경 없음 → PATCH만
+        // 1) 이미지 변경 없음 → 닉네임만 변경이면 nickname만 PATCH
         if imageData == nil {
-            let key = extractProfileImageKey(from: myPage.profile.profileImageUrl)
+            guard nicknameChanged, let newNickname = trimmedNickname, !newNickname.isEmpty else {
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                }
+                print("[ProfileViewModel] ⚠️ updateProfile(NICKNAME) SKIP | no changes")
+                completion(.success(()))
+                return
+            }
 
-            print("[ProfileViewModel] ✅ updateProfile(NICKNAME) START | nickname=\(nextNickname), key=\(key)")
+            print("[ProfileViewModel] ✅ updateProfile(NICKNAME) START | nickname=\(newNickname)")
 
-            let dto = ProfileRequestDTO.UpdateProfileRequest(
-                profileImageKey: key,
-                nickname: nextNickname
-            )
-
-            profileService.patchProfile(dto: dto) { [weak self] result in
+            profileService.patchNickname(newNickname) { [weak self] result in
                 guard let self else { return }
 
                 switch result {
                 case .success:
                     DispatchQueue.main.async {
                         self.isLoading = false
-                        self.myPage.profile.nickname = nextNickname
+                        self.myPage.profile.nickname = newNickname
                     }
 
                     print("[ProfileViewModel] ✅ updateProfile(NICKNAME) SUCCESS")
@@ -198,7 +207,7 @@ final class ProfileViewModel: ObservableObject {
             contentType: contentType
         )
 
-        print("[ProfileViewModel] ✅ updateProfile(IMAGE) START | nickname=\(nextNickname), bytes=\(uploadData.count)")
+        print("[ProfileViewModel] ✅ updateProfile(IMAGE) START | nickname=\(trimmedNickname ?? ""), bytes=\(uploadData.count)")
 
         profileService.postProfileUploadURL(dto: issueDTO) { [weak self] issueResult in
             guard let self else { return }
@@ -216,9 +225,16 @@ final class ProfileViewModel: ObservableObject {
                     case .success:
                         print("[ProfileViewModel] ✅ uploadProfileImage SUCCESS")
 
+                        let nicknameToSend: String? = {
+                            let t = trimmedNickname
+                            guard let t, !t.isEmpty, t != currentNickname else { return nil }
+                            return t
+                        }()
+
+                        // 이미지 키는 항상 전송, 닉네임은 변경된 경우에만 전송
                         let patchDTO = ProfileRequestDTO.UpdateProfileRequest(
                             profileImageKey: presigned.key,
-                            nickname: nextNickname
+                            nickname: nicknameToSend
                         )
 
                         self.profileService.patchProfile(dto: patchDTO) { [weak self] patchResult in
@@ -228,7 +244,10 @@ final class ProfileViewModel: ObservableObject {
                             case .success:
                                 DispatchQueue.main.async {
                                     self.isLoading = false
-                                    self.myPage.profile.nickname = nextNickname
+                                    if let nicknameToSend {
+                                        self.myPage.profile.nickname = nicknameToSend
+                                    }
+                                    self.cachedProfileImageKey = presigned.key
                                 }
 
                                 print("[ProfileViewModel] ✅ updateProfile(IMAGE) SUCCESS | key=\(presigned.key)")
@@ -277,13 +296,20 @@ final class ProfileViewModel: ObservableObject {
     /// profileImageUrl에서 key(profiles/uuid.png) 추출
     private func extractProfileImageKey(from profileImageUrl: String) -> String {
         let trimmed = profileImageUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+
+        // 이미 key 형태로 내려오는 경우
+        if trimmed.hasPrefix("profiles/") {
+            return trimmed
+        }
+
         guard let url = URL(string: trimmed) else {
-            return "profiles/default.png"
+            return ""
         }
 
         let path = url.path
         let cleaned = path.hasPrefix("/") ? String(path.dropFirst()) : path
-        return cleaned.isEmpty ? "profiles/default.png" : cleaned
+        return cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     /// 프리뷰에서만 쓰는 유틸

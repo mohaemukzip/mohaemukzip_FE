@@ -156,7 +156,7 @@ private struct ProfileChangeDestinationView: View {
     @EnvironmentObject private var profileVM: ProfileViewModel
 
     var body: some View {
-        ProfileChangeView(viewModel: profileVM)
+        ProfileChangeView()
     }
 }
 
