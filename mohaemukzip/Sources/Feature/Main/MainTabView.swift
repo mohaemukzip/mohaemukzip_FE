@@ -27,6 +27,7 @@ struct MainTabView: View {
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
+    @State private var profileVM = ProfileViewModel()
     //@State private var loginVM = LoginViewModel()
     
     init() {
@@ -109,6 +110,7 @@ struct MainTabView: View {
         .environment(yoTeacherVM)
         .environment(searchVM)
         .environment(homeVM)
+        .environmentObject(profileVM)
     }
 }
 
@@ -134,7 +136,7 @@ extension View {
                 ProfileSettingsView()
 
             case .profileChange:
-                ProfileChangeView()
+                ProfileChangeDestinationView()
 
             case .recentlyViewedRecipes:
                 RecentlyViewedRecipesView()
@@ -147,6 +149,14 @@ extension View {
 //                RecipeVideoDetailView(video: video)
             }
         }
+    }
+}
+
+private struct ProfileChangeDestinationView: View {
+    @EnvironmentObject private var profileVM: ProfileViewModel
+
+    var body: some View {
+        ProfileChangeView(viewModel: profileVM)
     }
 }
 

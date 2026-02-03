@@ -20,10 +20,10 @@ final class ProfileViewModel: ObservableObject {
     // MARK: - Published (View State)
 
     /// 마이페이지 화면 데이터
-    @Published private(set) var myPage: ProfileMyPageModel = .empty
+    @Published var myPage: ProfileMyPageModel = .empty
 
     /// 로딩 상태
-    @Published private(set) var isLoading: Bool = false
+    @Published var isLoading: Bool = false
 
     /// 에러 메시지(간단 표시용)
     @Published var errorMessage: String? = nil
@@ -129,5 +129,165 @@ final class ProfileViewModel: ObservableObject {
                 print("[ProfileViewModel] ❌ changeProfileImage FAIL | error=\(error)")
             }
         }
+    }
+    // MARK: - Profile Update (nickname / image / both)
+
+    /// 닉네임만 변경, 이미지(키)만 변경, 둘 다 변경을 모두 처리하는 단일 엔트리
+    /// - Parameters:
+    ///   - nickname: 변경할 닉네임 (nil이면 닉네임은 유지)
+    ///   - imageData: 변경할 이미지 데이터 (nil이면 이미지는 유지)
+    func updateProfile(
+        nickname: String?,
+        imageData: Data?,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        guard !isLoading else { return }
+
+        isLoading = true
+        errorMessage = nil
+
+        let currentNickname = myPage.profile.nickname
+        let nextNickname = (nickname?.isEmpty == false) ? nickname! : currentNickname
+
+        // 1) 이미지 변경 없음 → PATCH만
+        if imageData == nil {
+            let key = extractProfileImageKey(from: myPage.profile.profileImageUrl)
+
+            print("[ProfileViewModel] ✅ updateProfile(NICKNAME) START | nickname=\(nextNickname), key=\(key)")
+
+            let dto = ProfileRequestDTO.UpdateProfileRequest(
+                profileImageKey: key,
+                nickname: nextNickname
+            )
+
+            profileService.patchProfile(dto: dto) { [weak self] result in
+                guard let self else { return }
+
+                switch result {
+                case .success:
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.myPage.profile.nickname = nextNickname
+                    }
+
+                    print("[ProfileViewModel] ✅ updateProfile(NICKNAME) SUCCESS")
+                    self.fetchMyPage()
+                    completion(.success(()))
+
+                case let .failure(error):
+                    DispatchQueue.main.async {
+                        self.isLoading = false
+                        self.errorMessage = error.localizedDescription
+                    }
+
+                    print("[ProfileViewModel] ❌ updateProfile(NICKNAME) FAIL | error=\(error)")
+                    completion(.failure(error))
+                }
+            }
+
+            return
+        }
+
+        // 2) 이미지 변경 있음 → presigned 발급 → PUT → PATCH
+        let uploadData = imageData!
+        let fileName = "profile_\(UUID().uuidString).png"
+        let contentType = "image/png"
+
+        let issueDTO = ProfileRequestDTO.IssueUploadURLRequest(
+            fileName: fileName,
+            contentType: contentType
+        )
+
+        print("[ProfileViewModel] ✅ updateProfile(IMAGE) START | nickname=\(nextNickname), bytes=\(uploadData.count)")
+
+        profileService.postProfileUploadURL(dto: issueDTO) { [weak self] issueResult in
+            guard let self else { return }
+
+            switch issueResult {
+            case let .success(presigned):
+                print("[ProfileViewModel] ✅ postProfileUploadURL SUCCESS | key=\(presigned.key)")
+
+                self.profileService.uploadProfileImage(
+                    to: presigned.presignedUrl,
+                    imageData: uploadData,
+                    contentType: contentType
+                ) { uploadResult in
+                    switch uploadResult {
+                    case .success:
+                        print("[ProfileViewModel] ✅ uploadProfileImage SUCCESS")
+
+                        let patchDTO = ProfileRequestDTO.UpdateProfileRequest(
+                            profileImageKey: presigned.key,
+                            nickname: nextNickname
+                        )
+
+                        self.profileService.patchProfile(dto: patchDTO) { [weak self] patchResult in
+                            guard let self else { return }
+
+                            switch patchResult {
+                            case .success:
+                                DispatchQueue.main.async {
+                                    self.isLoading = false
+                                    self.myPage.profile.nickname = nextNickname
+                                }
+
+                                print("[ProfileViewModel] ✅ updateProfile(IMAGE) SUCCESS | key=\(presigned.key)")
+                                self.fetchMyPage()
+                                completion(.success(()))
+
+                            case let .failure(error):
+                                DispatchQueue.main.async {
+                                    self.isLoading = false
+                                    self.errorMessage = error.localizedDescription
+                                }
+
+                                print("[ProfileViewModel] ❌ updateProfile(IMAGE) PATCH FAIL | error=\(error)")
+                                completion(.failure(error))
+                            }
+                        }
+
+                    case let .failure(error):
+                        DispatchQueue.main.async {
+                            self.isLoading = false
+                            self.errorMessage = error.localizedDescription
+                        }
+
+                        print("[ProfileViewModel] ❌ uploadProfileImage FAIL | error=\(error)")
+                        completion(.failure(error))
+                    }
+                }
+
+            case let .failure(error):
+                DispatchQueue.main.async {
+                    self.isLoading = false
+                    self.errorMessage = error.localizedDescription
+                }
+
+                print("[ProfileViewModel] ❌ postProfileUploadURL FAIL | error=\(error)")
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// 닉네임만 변경 (편의 메서드)
+    func updateNickname(to newNickname: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        updateProfile(nickname: newNickname, imageData: nil, completion: completion)
+    }
+
+    /// profileImageUrl에서 key(profiles/uuid.png) 추출
+    private func extractProfileImageKey(from profileImageUrl: String) -> String {
+        let trimmed = profileImageUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed) else {
+            return "profiles/default.png"
+        }
+
+        let path = url.path
+        let cleaned = path.hasPrefix("/") ? String(path.dropFirst()) : path
+        return cleaned.isEmpty ? "profiles/default.png" : cleaned
+    }
+
+    /// 프리뷰에서만 쓰는 유틸
+    func setNicknameForPreview(_ nickname: String) {
+        myPage.profile.nickname = nickname
     }
 }

@@ -13,9 +13,9 @@ import Foundation
 /// 마이페이지 화면에서 사용하는 최상위 모델
 /// - NOTE: ResponseDTO(서버 응답)와 View에서 쓰는 값을 분리하기 위해 Domain Model을 둡니다.
 struct ProfileMyPageModel: Equatable {
-    let profile: ProfileUserProfile
-    let pointInfo: ProfilePointInfo
-    let activity: ProfileActivityPreview
+    var profile: ProfileUserProfile
+    var pointInfo: ProfilePointInfo
+    var activity: ProfileActivityPreview
 
     static let empty: ProfileMyPageModel = .init(
         profile: .empty,
@@ -28,9 +28,9 @@ struct ProfileMyPageModel: Equatable {
 
 /// 사용자 프로필 정보(이미지/닉네임/레벨)
 struct ProfileUserProfile: Equatable {
-    let profileImageUrl: String
-    let nickname: String
-    let level: Int
+    var profileImageUrl: String
+    var nickname: String
+    var level: Int
 
     /// UI에서 표시하는 형태: "Lv.N"
     var levelText: String {
@@ -49,7 +49,7 @@ struct ProfileUserProfile: Equatable {
 /// 다음 레벨까지 남은 포인트 정보
 struct ProfilePointInfo: Equatable {
     /// 서버 명세: remainingScore
-    let remainingScore: Int
+    var remainingScore: Int
 
     /// UI 문구 예시: "다음 레벨까지 17 집밥 포인트가 남았어요!"
     var remainingScoreText: String {
@@ -63,8 +63,8 @@ struct ProfilePointInfo: Equatable {
 
 /// 최근 본 레시피 / 저장한 레시피 미리보기
 struct ProfileActivityPreview: Equatable {
-    let recentlyViewed: [ProfileRecipeCard]
-    let bookmarked: [ProfileRecipeCard]
+    var recentlyViewed: [ProfileRecipeCard]
+    var bookmarked: [ProfileRecipeCard]
 
     static let empty: ProfileActivityPreview = .init(recentlyViewed: [], bookmarked: [])
 
