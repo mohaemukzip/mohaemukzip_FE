@@ -66,3 +66,5 @@ mohaemukzip/Secrets.xcconfig
 
 mohaemukzip/Secret.xcconfig
 mohaemukzip/Secret.xcconfig
+.DS_Store
+
