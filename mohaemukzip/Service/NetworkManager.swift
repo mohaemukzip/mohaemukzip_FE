@@ -9,6 +9,11 @@ struct BaseResponse<T: Decodable>: Decodable {
     let result: T?
 }
 
+/// result가 없는 성공 응답(예: PATCH)용 공용 빈 결과 타입
+struct EmptyResult: Decodable {
+    init() {}
+}
+
 // MARK: - 공용 provider 생성기
 //
 final class NetworkManager {
@@ -90,8 +95,8 @@ extension Response {
         do {
             let base = try self.map(BaseResponse<T>.self)
 
-            // 서버에서 isSuccess=false 이거나 result가 nil이면 여기서 잡아서 원문을 찍어줍니다.
-            guard base.isSuccess, let result = base.result else {
+            // 서버에서 isSuccess=false 이면 여기서 잡아서 원문을 찍어줍니다.
+            guard base.isSuccess else {
                 #if DEBUG
                 let url = request?.url?.absoluteString ?? "(nil)"
                 let raw = String(data: data, encoding: .utf8) ?? "(binary/empty)"
@@ -100,7 +105,7 @@ extension Response {
                 print("[NetworkMap] rawBody: \(raw)")
                 #endif
 
-                // message를 Error에 담아두면 화면/로그에서 원인 추적이 쉬움
+
                 throw NSError(
                     domain: "NetworkMap",
                     code: statusCode,
@@ -108,7 +113,36 @@ extension Response {
                 )
             }
 
-            return result
+
+            // 정상 케이스: result가 있을 때
+            if let result = base.result {
+                return result
+            }
+
+            // 성공인데 result가 없는 케이스(예: PATCH /members/me/profile)
+            if T.self == EmptyResult.self {
+                return EmptyResult() as! T
+            }
+
+            // 프로젝트에서 특정 도메인 EmptyResult를 쓰는 경우도 지원
+            if T.self == ProfileResponseDTO.EmptyResult.self {
+                return ProfileResponseDTO.EmptyResult() as! T
+            }
+
+            #if DEBUG
+            let url = request?.url?.absoluteString ?? "(nil)"
+            let raw = String(data: data, encoding: .utf8) ?? "(binary/empty)"
+            print("[NetworkMap] ❌ mapResult empty result | status=\(statusCode) url=\(url)")
+            print("[NetworkMap] isSuccess=\(base.isSuccess) code=\(base.code) message=\(base.message)")
+            print("[NetworkMap] rawBody: \(raw)")
+            #endif
+
+            // 성공인데 result가 없고, 호출한 타입이 빈 결과 타입도 아니면 구조 불일치로 에러 처리
+            throw NSError(
+                domain: "NetworkMap",
+                code: statusCode,
+                userInfo: [NSLocalizedDescriptionKey: base.message]
+            )
         } catch {
             if let nsError = error as NSError?, nsError.domain == "NetworkMap" {
                 throw error

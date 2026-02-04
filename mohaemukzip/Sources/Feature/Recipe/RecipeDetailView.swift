@@ -8,16 +8,28 @@
 import SwiftUI
 import YouTubePlayerKit
 
-// MARK: -레시피 목록 상세 화면
+// MARK: - 레시피 상세 화면
+/// 레시피 목록에서 선택한 항목의 상세 화면
+/// 영상 재생, 레시피 정보, 재료, 요약 스텝을 한 화면에 표시
+/// 북마크 및 요리 완료 액션 제공
 
 struct RecipeDetailView: View {
 
+    /// 상세 조회 대상 레시피 id
     let recipeId: Int
-    /// Optional base data from list screen (helps show title/channel immediately)
+
+    /// 목록 화면에서 전달받은 기본 데이터
+    /// 상세 API 응답 전 초기 UI 표시 목적
     let base: RecipeVideo?
 
+    /// 상세 화면 상태 및 비즈니스 로직 관리
     @StateObject private var viewModel: RecipeDetailViewModel
 
+    /// 네비게이션 뒤로가기 dismiss 핸들러
+    @Environment(\.dismiss) private var dismiss
+
+    /// RecipeDetailView 초기화
+    /// base 데이터가 있으면 즉시 화면 일부 표시
     init(recipeId: Int, base: RecipeVideo? = nil) {
         self.recipeId = recipeId
         self.base = base
@@ -26,18 +38,32 @@ struct RecipeDetailView: View {
 
     var body: some View {
         Group {
+            /// 화면 상태 분기
+            /// - 로딩 중: ProgressView 표시
+            /// - 성공: 상세 컨텐츠 렌더링
+            /// - 실패: 에러 안내 UI 표시
             if viewModel.isLoading {
                 ProgressView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else if let recipe = viewModel.recipe {
                 RecipeVideoDetailView(
                     video: recipe,
-                    isBookmarked: recipe.isBookmarked,
+                    isBookmarkUpdating: viewModel.isBookmarkUpdating,
+                    isSubmittingCookingComplete: viewModel.isCompletingCooking,
                     onTapBookmark: {
+                        /// 북마크 버튼 탭 이벤트를 ViewModel로 전달
+                        print("[RecipeDetailView] ✅ parent onTapBookmark called")
                         viewModel.toggleBookmark()
+                    },
+                    onSubmitCookingComplete: { rating in
+                        /// 요리 완료 제출 이벤트를 ViewModel로 전달
+                        viewModel.completeCooking(rating: rating)
                     }
                 )
+                /// 북마크 상태 변경 시 View 강제 갱신 목적
+                .id("\(recipe.id)-\(recipe.isBookmarked)")
             } else {
+                /// 데이터 로드 실패 시 에러 안내 UI
                 VStack(spacing: 10) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .font(.system(size: 24, weight: .semibold))
@@ -50,41 +76,68 @@ struct RecipeDetailView: View {
             }
         }
         .onAppear {
+            /// 화면 최초 진입 시 상세 데이터 로드
             viewModel.load(recipeId: recipeId, base: base)
+        }
+        .onChange(of: viewModel.shouldDismissAfterComplete) { shouldDismiss in
+            /// 요리 완료 성공 후 이전 화면으로 복귀
+            guard shouldDismiss else { return }
+            dismiss()
         }
         .navigationBarBackButtonHidden(true)
     }
 }
 
 
+// MARK: - 레시피 상세 컨텐츠
+/// 영상 플레이어와 레시피 상세 정보를 구성하는 메인 컨텐츠 뷰
+/// RecipeDetailView 내부에서 실제 UI 대부분을 담당
 struct RecipeVideoDetailView: View {
 
+    /// 표시할 레시피 상세 데이터
     let video: RecipeVideo
-    let isBookmarked: Bool
+
+    /// 북마크 요청 처리 중 여부
+    /// 중복 요청 및 연타 방지 목적
+    let isBookmarkUpdating: Bool
+
+    /// 요리 완료 API 요청 처리 중 여부
+    /// 모달 UI 비활성화 제어 목적
+    let isSubmittingCookingComplete: Bool
+
+    /// 북마크 버튼 탭 이벤트 콜백
     let onTapBookmark: () -> Void
 
+    /// 요리 완료 제출 이벤트 콜백
+    let onSubmitCookingComplete: (Int) -> Void
+
+    /// 뒤로가기 dismiss 핸들러
     @Environment(\.dismiss) private var dismiss
 
+    /// 유튜브 플레이어 상태 유지용 객체
     @StateObject private var player: YouTubePlayer
 
-    // 네비게이션바 북마크는 즉시 반응해야 해서 UI용 상태를 따로 둠
-    @State private var isBookmarkedUI: Bool
-
-    // 요리 완료 모달 표시 여부
+    /// 요리 완료 확인 모달 표시 여부
     @State private var isCookingCompleteModalPresented: Bool = false
 
-    // 사용자가 선택한 체감 난이도(별점). 0이면 미선택 상태
+    /// 사용자가 선택한 별점 값
     @State private var selectedRating: Int = 0
 
     init(
         video: RecipeVideo,
-        isBookmarked: Bool = false,
-        onTapBookmark: @escaping () -> Void = {}
+        isBookmarkUpdating: Bool = false,
+        isSubmittingCookingComplete: Bool = false,
+        onTapBookmark: @escaping () -> Void,
+        onSubmitCookingComplete: @escaping (Int) -> Void = { _ in }
     ) {
         self.video = video
-        self.isBookmarked = isBookmarked
+        self.isBookmarkUpdating = isBookmarkUpdating
+        self.isSubmittingCookingComplete = isSubmittingCookingComplete
         self.onTapBookmark = onTapBookmark
-        _isBookmarkedUI = State(initialValue: isBookmarked)
+        self.onSubmitCookingComplete = onSubmitCookingComplete
+        #if DEBUG
+        print("[RecipeVideoDetailView] 🧩 init with onTapBookmark")
+        #endif
         _player = StateObject(
             wrappedValue: YouTubePlayer(
                 source: .video(id: video.videoId),
@@ -97,16 +150,16 @@ struct RecipeVideoDetailView: View {
     }
 
     var body: some View {
-        ZStack {
-            // 상단 네비게이션 + 영상 플레이어는 고정, 아래 컨텐츠만 스크롤
+        ZStack(alignment: .top) {
+            /// 네비게이션 바 + 컨텐츠 영역
             VStack(spacing: 0) {
-                navigationBar
+                Color.clear
+                    .frame(height: 52) // 네비게이션 바 높이만큼 공간 확보
 
-                // ✅ 스크롤해도 영상이 고정되도록 ScrollView 바깥에 둠
+                /// 상단 영상 플레이어 영역
                 playerSection
                     .padding(.top, 8)
 
-                // 아래 정보(제목/통계/재료/요약 레시피)는 스크롤 영역
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
                         headerSection
@@ -122,16 +175,21 @@ struct RecipeVideoDetailView: View {
                 }
             }
 
-            // ✅ 요리 완료 확인 모달 (별점 선택 후 제출)
+            /// 상단 고정 네비게이션 바
+            navigationBar
+                .zIndex(10)
+                .allowsHitTesting(true)
+
+            /// 요리 완료 확인 모달
             if isCookingCompleteModalPresented {
                 CookingCompleteReviewModalView(
                     isPresented: $isCookingCompleteModalPresented,
                     selectedRating: $selectedRating,
+                    isSubmitting: isSubmittingCookingComplete,
                     onSubmit: { rating in
-                        // TODO: 서버 연결 시 여기에서 요리 완료 API 호출
-                        // - recipeId: video.id (path)
-                        // - rating: rating (query)
-                        // - 완료 후 홈/통계 갱신 트리거
+                        /// 요리 완료 제출 이벤트 상위 뷰로 전달
+                        /// 성공 여부에 따른 dismiss는 상위에서 처리
+                        onSubmitCookingComplete(rating)
                     }
                 )
                 .transition(.opacity)
@@ -142,17 +200,14 @@ struct RecipeVideoDetailView: View {
             bottomActionBar
         }
         .toolbar(.hidden, for: .navigationBar)
-        .onChange(of: isBookmarked) { newValue in
-            // 외부(뷰모델)에서 북마크 상태가 갱신되면 UI 상태도 맞춰줌
-            isBookmarkedUI = newValue
-        }
+        // 북마크 상태는 video.isBookmarked에서 직접 반영됨
     }
 
-    // MARK: - Sections (화면 구성 단위)
-    // 화면을 구성하는 주요 섹션들을 아래에 모아두었어요.
-    // (네비게이션/플레이어/헤더/통계/채널/재료/요약 레시피/하단 버튼)
+    // MARK: - Sections
+    /// 화면을 구성하는 주요 UI 섹션 모음
 
-    /// 상단 네비게이션 바 (뒤로가기 / 북마크)
+    /// 상단 네비게이션 바
+    /// 뒤로가기 및 북마크 액션 제공
     private var navigationBar: some View {
         HStack(spacing: 12) {
             Button {
@@ -169,29 +224,36 @@ struct RecipeVideoDetailView: View {
             Spacer()
 
             Button {
-                // UI는 즉시 반응, 실제 상태는 ViewModel에서 동기화
-                withAnimation(.easeInOut(duration: 0.15)) {
-                    isBookmarkedUI.toggle()
-                }
+                /// 북마크 토글 요청
+                #if DEBUG
+                print("[RecipeDetailView] 🔘 bookmark button tapped")
+                #endif
                 onTapBookmark()
+                #if DEBUG
+                print("[RecipeDetailView] ✅ onTapBookmark closure invoked")
+                #endif
             } label: {
                 ZStack {
-                    // 북마크 기본 아이콘 (에셋)
-                    Image("bigbookmark")
+                    Image("bookmark")
                         .resizable()
                         .scaledToFit()
                         .frame(width: 24, height: 24)
 
-                    // 북마크 활성화 시, 아이콘 형태 그대로 노란색으로 채움
-                    if isBookmarkedUI {
-                       Image("bookmark.fill")
+                    if video.isBookmarked {
+                        Image("bookmark.fill")
                             .resizable()
                             .scaledToFit()
                             .frame(width: 24, height: 24)
                     }
+
+                    if isBookmarkUpdating {
+                        ProgressView()
+                            .scaleEffect(0.7)
+                    }
                 }
                 .frame(width: 36, height: 36)
             }
+            .disabled(isBookmarkUpdating)
             .accessibilityLabel("북마크")
             .accessibilityHint("북마크 상태를 변경합니다")
         }
@@ -199,6 +261,8 @@ struct RecipeVideoDetailView: View {
         .padding(.top, 8)
         .padding(.bottom, 6)
         .background(Color(.systemBackground))
+        .contentShape(Rectangle())
+        .allowsHitTesting(true)
     }
 
     /// 유튜브 플레이어 영역 (16:9 비율 고정)
@@ -219,6 +283,8 @@ struct RecipeVideoDetailView: View {
                     .padding(12)
                 }
             }
+            /// 스크롤 제스처와 충돌 방지 목적
+            .allowsHitTesting(false)
             .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
             .clipped()
         }
@@ -382,8 +448,8 @@ struct RecipeVideoDetailView: View {
         VStack(spacing: 0) {
             Divider().opacity(0.6)
             Button {
-                // 요리 완료 버튼을 누르면 확인 모달을 띄움
-                // (별점 선택 후에만 제출 가능)
+                /// 요리 완료 확인 모달 표시
+                /// 별점 선택 후 제출 가능
                 selectedRating = 0
                 isCookingCompleteModalPresented = true
             } label: {
@@ -403,10 +469,8 @@ struct RecipeVideoDetailView: View {
         }
     }
 
-    // MARK: - Player Controls (플레이어 제어)
-    // 타임스탬프(초)를 눌렀을 때 해당 시점으로 이동(seek)시키기 위한 함수들
-
-    /// Seek the YouTube player to a specific time (in seconds) and start playing.
+    // MARK: - Player Controls
+    /// 요약 스텝 타임스탬프 선택 시 영상 위치 이동 처리
     private func seekToTime(_ seconds: Int) {
         Task {
             do {
@@ -421,9 +485,8 @@ struct RecipeVideoDetailView: View {
         }
     }
 
-    
-    // 별점 표시, 조회수 포맷 등 화면에서 자주 쓰는 작은 유틸들을 모아둠
-
+    /// 화면 표시용 유틸 함수 모음
+    /// 난이도 별점, 조회수 포맷 처리
     private func difficultyStars(filledCount: Int) -> some View {
         let filled = max(0, min(5, filledCount))
 
@@ -450,16 +513,15 @@ struct RecipeVideoDetailView: View {
     }
 }
 
-
-
-// MARK: - Components (재사용 컴포넌트)
-// 재료 칩, STEP 카드처럼 여러 번 쓰이는 뷰를 분리해둠
+// MARK: - Components
+/// 상세 화면에서 재사용되는 UI 컴포넌트 모음
 
 private struct RecipeIngredientChip: View {
 
     let ingredient: RecipeIngredient
 
-    // 재료 1개를 보여주는 칩(보유/미보유 배경색 분기)
+    /// 재료 정보를 표시하는 칩 UI
+    /// 보유 여부에 따라 배경 색상 분기
     var body: some View {
         VStack(spacing: 4) {
             Text(ingredient.name)
@@ -498,7 +560,8 @@ private struct RecipeStepCard: View {
     let step: RecipeStep
     let onTapTimestamp: (Int) -> Void
 
-    // STEP 카드 1개 (타임스탬프 누르면 해당 시점으로 이동)
+    /// 요약 레시피 STEP 카드 UI
+    /// 타임스탬프 버튼 선택 시 영상 이동
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .top) {
@@ -550,6 +613,7 @@ private struct RecipeStepCard: View {
         )
     }
 
+    //재생 시간 함수 !
     private func formattedTime(_ seconds: Int) -> String {
         let m = max(0, seconds) / 60
         let s = max(0, seconds) % 60
@@ -557,92 +621,39 @@ private struct RecipeStepCard: View {
     }
 }
 
+
+
 // MARK: - Preview
 
-#Preview("RecipeDetailView (Dummy via ViewModel)") {
+#Preview("RecipeDetailView") {
     NavigationStack {
-        RecipeDetailView(recipeId: 12, base: .previewBase)
-    }
-    .environment(\.verticalSizeClass, .regular)
-}
-
-#Preview("RecipeVideoDetailView (Filled Detail)") {
-    NavigationStack {
-        RecipeVideoDetailView(
-            video: .previewDetail,
-            isBookmarked: RecipeVideo.previewDetail.isBookmarked,
-            onTapBookmark: {}
-        )
-    }
-    .environment(\.verticalSizeClass, .regular)
-}
-
-private extension RecipeVideo {
-
-    /// 목록 화면에서 넘어오는 base 형태(= list API에 가까운 형태)
-    static var previewBase: RecipeVideo {
-        RecipeVideo(
-            id: 12,
-            title: "초간단 제육볶음 레시피",
-            videoUrl: nil,
-            videoId: "sHpMVI8wQuk",
-            channelId: "UC_KOREAN_002",
-            videoDuration: "13:10",
-            channelName: "고석현",
-            viewCount: 1_250_000,
-            cookingTimeMinutes: 15,
-            difficulty: 3,
-            level: nil,
-            ratingCount: nil,
-            ingredients: nil,
-            steps: nil,
-            summaryExists: nil,
-            cuisine: .korean,
-            koreanSubCategory: .soupStew,
-            chineseSubCategory: nil,
-            japaneseSubCategory: nil,
-            westernSubCategory: nil,
-            southeastAsianSubCategory: nil,
-            isBookmarked: false,
-            channelProfileImageUrl: "https://picsum.photos/seed/goseokhyun/200"
-        )
-    }
-
-    /// 상세 화면에 필요한 값이 채워진 형태(= detail API에 가까운 형태)
-    static var previewDetail: RecipeVideo {
-        RecipeVideo(
-            id: 12,
-            title: "초간단 제육볶음 레시피",
-            videoUrl: "https://www.youtube.com/watch?v=sHpMVI8wQuk",
-            videoId: "sHpMVI8wQuk",
-            channelId: nil,
-            videoDuration: nil,
-            channelName: "고석현",
-            viewCount: 1_250_000,
-            cookingTimeMinutes: 15,
-            difficulty: nil,
-            level: 3.0,
-            ratingCount: 0,
-            ingredients: [
-                RecipeIngredient(id: 3, name: "돼지고기", amount: 400.0, unit: "g", hasIngredient: true),
-                RecipeIngredient(id: 7, name: "양배추", amount: 1.0, unit: "개", hasIngredient: false),
-                RecipeIngredient(id: 9, name: "양파", amount: 0.5, unit: "개", hasIngredient: true)
-            ],
-            steps: [
-                RecipeStep(stepNumber: 1, title: "고기와 기본 재료 준비하기", description: "돼지고기와 채소를 손질합니다.", videoTime: 304),
-                RecipeStep(stepNumber: 2, title: "팬에 고기 볶기", description: "달군 팬에 고기를 볶습니다.", videoTime: 443),
-                RecipeStep(stepNumber: 3, title: "양념 넣고 볶기", description: "양념을 넣고 1~2분 더 볶습니다.", videoTime: 650)
-            ],
-            summaryExists: true,
-            cuisine: .korean,
-            koreanSubCategory: .soupStew,
-            chineseSubCategory: nil,
-            japaneseSubCategory: nil,
-            westernSubCategory: nil,
-            southeastAsianSubCategory: nil,
-            isBookmarked: true,
-            channelProfileImageUrl: "https://picsum.photos/seed/goseokhyun/200"
+        RecipeDetailView(
+            recipeId: 1,
+            base: RecipeVideo(
+                id: 1,
+                title: "프리뷰용 제육볶음",
+                videoUrl: nil,
+                videoId: "sHpMVI8wQuk",
+                channelId: "UC_TEST",
+                videoDuration: "10:00",
+                channelName: "프리뷰 채널",
+                viewCount: 12_345,
+                cookingTimeMinutes: 20,
+                difficulty: 3,
+                level: nil,
+                ratingCount: nil,
+                ingredients: [],
+                steps: [],
+                summaryExists: false,
+                cuisine: .korean,
+                koreanSubCategory: .soupStew,
+                chineseSubCategory: nil,
+                japaneseSubCategory: nil,
+                westernSubCategory: nil,
+                southeastAsianSubCategory: nil,
+                isBookmarked: false,
+                channelProfileImageUrl: nil
+            )
         )
     }
 }
-

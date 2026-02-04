@@ -23,8 +23,20 @@ struct HomeResultDTO: Decodable {
     let nextLevelScore: Int
     let consecutiveDays: Int
     let weeklyCooking: WeeklyCookingDTO
-    let todayMissions: TodayMissionDTO
+    let todayMission: TodayMissionDTO
     let recommendedRecipes: [RecommendedRecipeDTO]
+
+    enum CodingKeys: String, CodingKey {
+        case level
+        case title
+        case monthlyCooking
+        case score
+        case nextLevelScore
+        case consecutiveDays
+        case weeklyCooking
+        case todayMission
+        case recommendedRecipes
+    }
 }
 
 // MARK: - WeeklyCooking
@@ -56,7 +68,17 @@ struct TodayMissionDTO: Decodable {
     let title: String
     let description: String
     let reward: Int
-    let isCompleted: Bool
+    let keyword: String
+    let status: MissionStatusDTO
+
+    var isCompleted: Bool {
+        status == .completed
+    }
+}
+
+enum MissionStatusDTO: String, Decodable {
+    case assigned = "ASSIGNED"
+    case completed = "COMPLETED"
 }
 
 // MARK: - RecommendedRecipe

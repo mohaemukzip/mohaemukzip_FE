@@ -1,0 +1,160 @@
+//
+//  ProfileSettingsView.swift
+//  mohaemukzip
+//
+//  Created by 고석현 on 2/3/26.
+//
+
+import SwiftUI
+
+
+
+
+struct ProfileSettingsView: View {
+
+    @Environment(NavigationRouter.self) private var router
+
+    private let appVersionText: String = {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
+        return "v.\(version) (\(build))"
+    }()
+
+    var body: some View {
+        ZStack {
+
+
+            VStack(spacing: 0) {
+                header
+
+                ScrollView {
+                    VStack(spacing: 16) {
+                        accountSection
+                        Rectangle()
+                            .fill(Color(.systemGray6))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 8)
+                            .padding(.top, 14)
+                            .padding(.horizontal, -16)
+                            
+                        actionSection
+                    }
+                    .padding(.top, 12)
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 24)
+                }
+            }
+        }
+        .navigationBarHidden(true)
+    }
+
+    private var header: some View {
+        HStack(spacing: 8) {
+            Button {
+                router.pop()
+            } label: {
+                Image("backbutton")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(Color.black)
+                    .frame(width: 44, height: 44)
+            }
+
+            Text("설정")
+                .font(.custom("Pretendard-SemiBold", size: 20))
+                .foregroundStyle(Color.black)
+
+            Spacer()
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
+        .background(Color.white)
+    }
+
+    // MARK: - Sections
+
+    private var accountSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("계정")
+                .font(.custom("Pretendard-SemiBold", size: 16))
+                .foregroundStyle(Color.black)
+                .padding(.horizontal, 16)
+                .padding(.top, 14)
+                .padding(.bottom, 8)
+
+            settingsRow(
+                title: "계정 설정",
+                showsChevron: true
+            ) {
+                // TODO: 계정 설정 화면으로 라우팅
+                print("[ProfileSettingsView] 계정 설정")
+            }
+        }
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var actionSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            settingsRow(title: "로그아웃", showsChevron: false) {
+                print("[ProfileSettingsView] 로그아웃")
+            }
+
+       
+
+            settingsRow(title: "회원탈퇴", showsChevron: false, titleColor: .black) {
+                print("[ProfileSettingsView] 회원탈퇴")
+            }
+
+            Text(appVersionText)
+                .font(.custom("Pretendard-Regular", size: 14))
+                .foregroundStyle(Color.gray)
+                .padding(.horizontal, 16)
+                .padding(.top, 10)
+                .padding(.bottom, 14)
+        }
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Components
+
+    private func settingsRow(
+        title: String,
+        showsChevron: Bool,
+        titleColor: Color = .black,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button {
+            action()
+        } label: {
+            HStack(spacing: 8) {
+                Text(title)
+                    .font(.custom("Pretendard-Regular", size: 16))
+                    .foregroundStyle(titleColor)
+
+                Spacer()
+
+                if showsChevron {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(Color.gray)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+
+#Preview {
+    let router = NavigationRouter()
+
+    NavigationStack {
+        ProfileSettingsView()
+    }
+    .environment(router)
+}

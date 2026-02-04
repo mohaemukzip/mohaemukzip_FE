@@ -14,4 +14,13 @@ enum Route: Hashable {
     case recipeDetail(RecipeVideo)
     case recipeSearch
     case home
+    //MARK: - 마이페이지 추가
+    case profileSettings
+    case profileChange
+    case recentlyViewedRecipes
+    case bookmarkedRecipes
+//    case recipeDetailNoComplete(RecipeDetail)
+ 
+
+    
 }

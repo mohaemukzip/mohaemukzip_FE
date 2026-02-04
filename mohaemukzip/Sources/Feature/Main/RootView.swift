@@ -20,53 +20,86 @@ final class AppState: ObservableObject {
 
     @Published var root: Root = .splash
     @Published var accessToken: String? = nil
+    @Published var refreshToken: String? = nil
 
     /// 앱 시작 시 토큰 확인 후 루트 결정
     func boot() {
-        #if DEBUG
-        // ✅ 개발 중에는 자동로그인으로 main으로 튀지 않게 Auth 플로우부터 보이게
-        // 필요하면 false로 바꾸면 토큰 기반 자동로그인 테스트 가능
-        let forceAuthForDebug = true
-        if forceAuthForDebug {
-            accessToken = nil
-            root = .splash
-            return
-        }
-        #endif
+        
+        // Splash 를 먼저 보여주고, 토큰 로딩 후 루트를 결정
+        root = .splash
+        //TokenStore.clear() << 자동로그인 제거용
+        Task { @MainActor in
+            // 스플래시가 너무 빨리 사라져서 안 보이는 문제 방지 (필요 시 시간 조절)
+            try? await Task.sleep(nanoseconds: 1500_000_000)
 
-        accessToken = TokenStore.loadAccessToken()
-        root = (accessToken == nil) ? .auth : .main
+            let tokens = TokenStore.loadTokens()
+            accessToken = tokens.access
+            refreshToken = tokens.refresh
+
+            print("boot accessToken:", accessToken ?? "nil")
+
+            // Config 와 동기화 (API 레이어가 Config를 참조하는 구조 유지)
+            Config.accessTK = accessToken ?? ""
+            Config.refreshTK = refreshToken ?? ""
+
+            root = (accessToken == nil) ? .auth : .main
+        }
     }
 
-    func loginSucceeded(token: String) {
-        TokenStore.saveAccessToken(token)
-        accessToken = token
+    func loginSucceeded(accessToken: String, refreshToken: String?) {
+        TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+
+        Config.accessTK = accessToken
+        Config.refreshTK = refreshToken ?? ""
+
         root = .main
     }
-
-    func logout() {
-        TokenStore.clear()
-        accessToken = nil
-        root = .auth
-    }
+    
+// 로그아웃 미구현
+//    func logout() {
+//        TokenStore.clear()
+//        accessToken = nil
+//        refreshToken = nil
+//
+//        Config.accessTK = nil
+//        Config.refreshTK = nil
+//
+//        root = .auth
+//    }
 }
 
 // MARK: - Token Store (임시: UserDefaults)
 
-/// ✅ 나중에 Keychain으로 교체 추천
 enum TokenStore {
-    private static let key = "access_token"
+    private static let accessKey = "ACCESS_TOKEN"
+    private static let refreshKey = "REFRESH_TOKEN"
 
-    static func loadAccessToken() -> String? {
-        UserDefaults.standard.string(forKey: key)
+    struct Tokens {
+        let access: String?
+        let refresh: String?
     }
 
-    static func saveAccessToken(_ token: String) {
-        UserDefaults.standard.set(token, forKey: key)
+    static func loadTokens() -> Tokens {
+        return .init(
+            access: UserDefaults.standard.string(forKey: accessKey),
+            refresh: UserDefaults.standard.string(forKey: refreshKey)
+        )
+    }
+
+    static func saveTokens(access: String, refresh: String?) {
+        UserDefaults.standard.set(access, forKey: accessKey)
+        if let refresh {
+            UserDefaults.standard.set(refresh, forKey: refreshKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: refreshKey)
+        }
     }
 
     static func clear() {
-        UserDefaults.standard.removeObject(forKey: key)
+        UserDefaults.standard.removeObject(forKey: accessKey)
+        UserDefaults.standard.removeObject(forKey: refreshKey)
     }
 
     /// 개발 중: 자동로그인 상태 해제용
