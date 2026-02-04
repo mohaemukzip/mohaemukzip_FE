@@ -7,22 +7,28 @@
 
 // MARK: - 요리 완료 확인 모달 (UI 전용)
 
-// - 별점 1점 이상 선택 시에만 "루틴에 기록" 버튼이 주황색으로 활성화
-// - onSubmit에서 상위 뷰가 요리 완료 API를 호출하도록 연결한다.
+/// 별점 1점 이상 선택 시에만 제출 버튼 활성화
+/// 제출 시(onSubmit) 상위 뷰에서 요리 완료 API 호출 연결
+/// 제출 중(isSubmitting)에는 닫기/취소 동작 비활성화
 import SwiftUI
 
 struct CookingCompleteReviewModalView: View {
 
     // MARK: - Properties
 
+    /// 모달 표시 여부
     @Binding var isPresented: Bool
+
+    /// 선택된 별점(1~5)
     @Binding var selectedRating: Int
 
-    
+    /// 제출 액션
+    /// - Parameter rating: 선택된 별점(1~5)
+    /// - Note: 상위 뷰에서 요리 완료 API 호출 트리거로 사용
     let onSubmit: (Int) -> Void
 
-    /// 제출 중 상태 (요리 완료 API 호출 중)
-    /// - Note: 상위 뷰에서 주입해서 버튼/닫기 동작을 제어한다.
+    /// 제출 중 여부
+    /// - Note: 제출 중에는 배경 탭/취소로 닫히지 않도록 제어
     let isSubmitting: Bool
 
     // MARK: - Init
@@ -43,23 +49,23 @@ struct CookingCompleteReviewModalView: View {
 
     var body: some View {
         ZStack {
-            // 모달 배경 딤 처리
+            /// 배경 딤 처리
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
                 .onTapGesture {
-                    // 제출 중에는 실수로 닫히지 않도록 막는다.
+                    /// 제출 중 실수 닫힘 방지
                     guard !isSubmitting else { return }
                     isPresented = false
                 }
 
-            // 모달 카드
+            /// 모달 카드
             VStack(spacing: 0) {
                 VStack(spacing: 14) {
                     Text("요리 완료")
                         .font(.custom("Pretendard-SemiBold", size: 20))
                         .foregroundStyle(Color("grey900"))
 
-                    // 요리사 캐릭터 (Asset: "review")
+                    /// 캐릭터 이미지 (Asset: "review")
                     Image("review")
                         .resizable()
                         .scaledToFit()
@@ -77,7 +83,8 @@ struct CookingCompleteReviewModalView: View {
                     .lineSpacing(4)
                     .padding(.top, 6)
 
-                    // MARK: 별점 선택 (필수)
+                    // MARK: 별점 선택
+                    /// 별점 미선택(0점) 상태에서는 제출 불가
                     StarRatingPicker(
                         selectedRating: $selectedRating,
                         maxRating: 5
@@ -87,10 +94,10 @@ struct CookingCompleteReviewModalView: View {
                 .padding(.top, 22)
                 .padding(.horizontal, 20)
 
-                // 버튼 영역
+                /// 하단 버튼 영역
                 HStack(spacing: 12) {
                     Button {
-                        // 취소: 저장하지 않고 모달 닫기
+                        /// 취소: 저장 없이 닫기
                         guard !isSubmitting else { return }
                         isPresented = false
                     } label: {
@@ -106,7 +113,7 @@ struct CookingCompleteReviewModalView: View {
                     }
 
                     Button {
-                        // 요리완료: 별점이 선택된 경우에만 실행
+                        /// 제출: 별점 선택 시에만 실행
                         guard selectedRating >= 1 else { return }
                         guard !isSubmitting else { return }
                         onSubmit(selectedRating)
@@ -137,17 +144,21 @@ struct CookingCompleteReviewModalView: View {
                     .fill(Color(.systemBackground))
             )
         }
+        /// 접근성: 모달로 인식
         .accessibilityAddTraits(.isModal)
     }
 }
 
-// MARK: - 별점 선택 컴포넌트 (★)
+// MARK: - 별점 선택 컴포넌트
 
 struct StarRatingPicker: View {
 
     // MARK: - Properties
 
+    /// 현재 선택된 별점
     @Binding var selectedRating: Int
+
+    /// 최대 별점(기본 5)
     let maxRating: Int
 
     // MARK: - Body
@@ -159,7 +170,7 @@ struct StarRatingPicker: View {
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundStyle(selectedRating >= index ? Color.orange : Color(.systemGray3))
                     .onTapGesture {
-                        // 1~5점 선택
+                        /// 별점 선택
                         selectedRating = index
                     }
                     .accessibilityLabel("별점 \(index)점")

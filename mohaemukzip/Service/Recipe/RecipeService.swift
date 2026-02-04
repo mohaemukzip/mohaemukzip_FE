@@ -10,32 +10,29 @@ import Moya
 import Alamofire
 
 // MARK: - RecipeService
-// 레시피 API 호출 + DTO -> RecipeModel 변환(매핑)을 담당한다.
-//
-// 역할
-// 1) Moya Provider를 통해 RecipeEndpoints 요청을 수행한다.
-// 2) 서버 JSON을 ResponseDTO로 디코딩한다.
-// 3) 화면에서 사용하는 RecipeModel(RecipeVideo 등)로 변환한다.
-// 4) 서버가 미구현/오류로 내려오는 summary API는 실패 시 더미 스텝 fallback 데이터를 만든다.
+/// 레시피 관련 API 
+/// 네트워크 요청 → DTO 디코딩 → 앱 모델 변환 역할 수행
+/// 목록 / 상세 / 요약 / 북마크 / 요리 완료 API 포함
 
 final class RecipeService {
 
+    /// 앱 전역에서 공유되는 단일 인스턴스
     static let shared = RecipeService()
 
-    // MARK: - Provider
+    /// RecipeEndpoints 전용 Moya Provider
     private let provider: MoyaProvider<RecipeEndpoints>
 
-    /// - NOTE: ProfileService와 동일하게 프로젝트 공통 Provider 생성 로직을 사용한다.
-    ///         (NetworkManager.shared.makeProvider + Response.mapResult)
+    /// RecipeService 초기화
+    /// 공통 NetworkManager Provider 사용
     init(provider: MoyaProvider<RecipeEndpoints>? = nil) {
         self.provider = provider ?? NetworkManager.shared.makeProvider(for: RecipeEndpoints.self)
     }
 
     // MARK: - Public APIs
 
-    /// 세부 카테고리별 레시피 목록 조회
-    /// - Note:
-    ///   - categoryId로 상위/하위 카테고리를 판별해서 RecipeModel의 cuisine/subCategory를 채운다.
+    /// 카테고리 기준 레시피 목록 조회
+    /// 서버 응답 DTO를 RecipeVideo 모델 배열로 변환
+    /// categoryId 기반으로 cuisine / subCategory 매핑
     func fetchRecipes(
         categoryId: Int,
         page: Int? = nil,
@@ -53,13 +50,9 @@ final class RecipeService {
         }
     }
 
-    /// 레시피 상세 조회
-    /// - Parameters:
-    ///   - recipeId: 상세 레시피 ID
-    ///   - categoryId: 목록에서 진입할 때 알고 있는 categoryId (없으면 nil)
-    /// - Note:
-    ///   - 상세 응답에는 카테고리 정보가 없기 때문에, categoryId를 받을 수 있으면 모델의 카테고리도 채운다.
-    ///   - categoryId가 없다면 cuisine/subCategory는 기본값(.korean)으로 둔다.
+    /// 레시피 상세 정보 조회
+    /// 상세 API 응답을 RecipeVideo 모델로 변환
+    /// 목록에서 전달된 categoryId가 있으면 카테고리 보정
     func fetchRecipeDetail(
         recipeId: Int,
         categoryId: Int? = nil
@@ -74,11 +67,7 @@ final class RecipeService {
     }
 
     /// 요약 레시피 생성 요청
-    /// - Returns:
-    ///   - summaryExists: 서버가 요약 레시피를 제공하는지 여부
-    ///   - stepCount: 생성된/예상 스텝 개수
-    /// - Note:
-    ///   - 서버가 미구현/오류/빈 바디일 수 있으므로 실패하면 fallback 값을 반환한다.
+    /// 서버 미구현 또는 실패 시 fallback 값 반환
     func generateSummary(
         recipeId: Int
     ) async -> (summaryExists: Bool, stepCount: Int) {
@@ -89,13 +78,13 @@ final class RecipeService {
             )
             return (response.summaryExists, response.stepCount)
         } catch {
-            // 서버 미구현/오류 fallback
+            /// 서버 미구현 / 오류 상황 대비 fallback
             return (true, 6)
         }
     }
 
-    /// 북마크 토글
-    /// - Returns: 토글 이후 서버 기준 북마크 상태
+    /// 레시피 북마크 상태 토글
+    /// 서버 기준 토글 결과 반환
     func toggleBookmark(recipeId: Int) async throws -> Bool {
         let response = try await request(
             RecipeEndpoints.toggleBookmark(recipeId: recipeId),
@@ -104,8 +93,8 @@ final class RecipeService {
         return response.isBookmarked
     }
 
-    /// 요리 완료 처리 + 평점 등록
-    /// - Returns: 요리 완료 결과(점수/레벨업 등)
+    /// 요리 완료 처리 및 평점 등록
+    /// rating 값은 1~5 범위로 보정 후 전송
     func completeRecipe(
         recipeId: Int,
         rating: Int
@@ -137,11 +126,11 @@ final class RecipeService {
     }
 
     // MARK: - Mapping Helpers
+    /// 서버 categoryId 및 DTO를 앱 내부 모델로 변환하는 헬퍼 모음
 
-    /// categoryId -> (상위 cuisine + 해당되는 하위 카테고리) 변환
-    /// - Note:
-    ///   - 서버는 categoryId만 내려주므로, 앱 내부 모델에 필요한 Enum으로 변환한다.
-    ///   - categoryId가 nil이면 기본값(.korean, nil...)을 반환한다.
+    /// categoryId를 앱 내부 카테고리 구조로 변환
+    /// 상위 cuisine + 해당 하위 카테고리 매핑
+    /// categoryId가 없으면 기본값 반환
     private func mapCategory(
         categoryId: Int?
     ) -> MappedCategory {
@@ -229,7 +218,8 @@ final class RecipeService {
         }
     }
 
-    /// 목록 DTO -> 모델 변환
+    /// 목록 응답 DTO를 RecipeVideo 모델로 변환
+    /// 상세 정보는 비워두고 목록 표시용 필드만 채움
     private func mapRecipeSummaryToModel(
         _ dto: RecipeResponseDTO.RecipeSummary,
         category: MappedCategory
@@ -261,7 +251,8 @@ final class RecipeService {
         )
     }
 
-    /// 상세 DTO -> 모델 변환
+    /// 상세 응답 DTO를 RecipeVideo 모델로 변환
+    /// 재료 / 스텝 / 요약 여부까지 포함
     private func mapRecipeDetailToModel(
         _ dto: RecipeResponseDTO.RecipeDetailResponse,
         category: MappedCategory
@@ -314,9 +305,7 @@ final class RecipeService {
     }
 
     /// 요약 API 실패 시 사용할 더미 스텝 생성
-    /// - Parameters:
-    ///   - stepCount: 스텝 개수
-    /// - Returns: RecipeStep 배열
+    /// 일정 간격의 videoTime 값으로 기본 스텝 구성
     func makeFallbackSteps(stepCount: Int = 6) -> [RecipeStep] {
         let count = max(1, stepCount)
 
@@ -332,7 +321,8 @@ final class RecipeService {
         }
     }
 
-    /// "mm:ss" 또는 "ss" 형태로 오는 videoTime을 초(Int)로 변환
+    /// 영상 타임스탬프 문자열을 초 단위 Int로 변환
+    /// mm:ss / hh:mm:ss / ss 형식 대응
     private func parseVideoTimeToSeconds(_ raw: String) -> Int {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
 
@@ -356,9 +346,11 @@ final class RecipeService {
     }
 
     // MARK: - Request Helpers
+    /// Moya 요청을 async/await 형태로 래핑
+    /// 공통 BaseResponse 디코딩 로직 사용
 
-    /// Moya request를 async/await 형태로 감싼다.
-    /// - NOTE: ProfileService와 동일하게 `Response.mapResult(_:)`로 디코딩한다.
+    /// 공통 네트워크 요청 처리 함수
+    /// Moya Response를 Decodable 타입으로 변환
     private func request<T: Decodable>(
         _ target: RecipeEndpoints,
         as type: T.Type
@@ -394,6 +386,7 @@ final class RecipeService {
     }
 
     // MARK: - Debug Logs
+    /// DEBUG 환경에서만 네트워크 요청/응답 로그 출력
 
 #if DEBUG
     private func debugLogRequest(_ target: RecipeEndpoints) {
@@ -454,10 +447,12 @@ final class RecipeService {
 }
 
 // MARK: - Supporting Types
+/// RecipeService 내부에서 사용하는 보조 타입 정의
 
 extension RecipeService {
 
-    /// categoryId 변환 결과를 한 번에 들고 다니기 위한 컨테이너
+    /// categoryId 변환 결과를 묶어 전달하기 위한 컨테이너
+    /// 상위 cuisine + 하위 카테고리 Enum 조합
     struct MappedCategory {
         let cuisine: CuisineCategory
         let korean: KoreanSubCategory?
@@ -483,6 +478,7 @@ extension RecipeService {
         }
     }
 
+    /// RecipeService 전용 에러 타입
     enum RecipeServiceError: Error {
         case decodingFailed(Error)
     }
