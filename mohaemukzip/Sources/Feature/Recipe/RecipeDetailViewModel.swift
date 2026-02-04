@@ -28,6 +28,32 @@ final class RecipeDetailViewModel: ObservableObject {
     /// 북마크 요청 중복 방지를 위한 처리 상태
     @Published private(set) var isBookmarkUpdating: Bool = false
 
+    /// 요리 완료(평점 등록) 요청 중복 방지를 위한 처리 상태
+    @Published private(set) var isCompletingCooking: Bool = false
+
+    /// 요리 완료 성공 시, 화면 dismiss 트리거 (View에서 onChange로 감지)
+    @Published var shouldDismissAfterComplete: Bool = false
+
+    /// 마지막으로 전송한 별점(디버깅/필요 시 UI 표시용)
+    @Published private(set) var lastSubmittedRating: Int?
+
+    /// 요리 완료 결과(점수/레벨업 등) - 필요 시 UI에서 사용
+    @Published private(set) var completeResult: RecipeResponseDTO.CompleteRecipeResponse?
+
+    /// 요리 완료 응답의 레벨(소수)을 UI에서 쓰기 좋은 형태로 변환한 값
+    /// - Note: 서버는 recipeLevel을 소수로 내려줄 수 있다(예: 3.666...).
+    ///         UI에서는 반올림한 정수 레벨을 사용한다.
+    var roundedRecipeLevel: Int? {
+        guard let level = completeResult?.recipeLevel else { return nil }
+        return Int(level.rounded())
+    }
+
+    /// 필요 시 소수 1자리까지 표현하는 레벨(예: 3.7)
+    var recipeLevelOneDecimal: Double? {
+        guard let level = completeResult?.recipeLevel else { return nil }
+        return (level * 10).rounded() / 10
+    }
+
     // MARK: - 초기화
 
     private let service: RecipeService
@@ -61,6 +87,9 @@ final class RecipeDetailViewModel: ObservableObject {
     func load(recipeId: Int, base: RecipeVideo? = nil) {
         isLoading = true
         errorMessage = nil
+        shouldDismissAfterComplete = false
+        lastSubmittedRating = nil
+        completeResult = nil
 
         // 목록에서 전달된 base가 있으면, 네트워크 로딩 동안 화면에 먼저 보여준다.
         if let base {
@@ -76,10 +105,11 @@ final class RecipeDetailViewModel: ObservableObject {
                 )
 
                 // summary API가 미구현/500/빈 바디일 수 있어 별도로 확인한다.
-                // 실패 시에는 고정 더미 스텝 규칙을 적용한다.
+                // 실패 시에는 고정 더미 스텝 규칙(4개)을 적용한다.
                 let summary = await service.generateSummary(recipeId: recipeId)
+                let summaryExists = summary.summaryExists
 
-                if summary.summaryExists {
+                if summaryExists {
                     // 상세 API에서 steps가 비어있으면 fallback steps를 주입한다.
                     if detail.steps == nil || detail.steps?.isEmpty == true {
                         detail = RecipeVideo(
@@ -110,9 +140,44 @@ final class RecipeDetailViewModel: ObservableObject {
                     }
                 }
 
+                // 서버 summaryExists를 모델에 반영 (steps가 이미 존재하더라도 표시 여부는 summaryExists를 따른다)
+                if detail.summaryExists != summaryExists {
+                    detail = RecipeVideo(
+                        id: detail.id,
+                        title: detail.title,
+                        videoUrl: detail.videoUrl,
+                        videoId: detail.videoId,
+                        channelId: detail.channelId,
+                        videoDuration: detail.videoDuration,
+                        channelName: detail.channelName,
+                        viewCount: detail.viewCount,
+                        cookingTimeMinutes: detail.cookingTimeMinutes,
+                        difficulty: detail.difficulty,
+                        level: detail.level,
+                        ratingCount: detail.ratingCount,
+                        ingredients: detail.ingredients,
+                        steps: detail.steps,
+                        summaryExists: summaryExists,
+                        cuisine: detail.cuisine,
+                        koreanSubCategory: detail.koreanSubCategory,
+                        chineseSubCategory: detail.chineseSubCategory,
+                        japaneseSubCategory: detail.japaneseSubCategory,
+                        westernSubCategory: detail.westernSubCategory,
+                        southeastAsianSubCategory: detail.southeastAsianSubCategory,
+                        isBookmarked: detail.isBookmarked,
+                        channelProfileImageUrl: detail.channelProfileImageUrl
+                    )
+                }
+
                 self.recipe = detail
+                #if DEBUG
+                print("[RecipeDetailVM] ✅ load success | recipeId=\(recipeId) title=\(detail.title) ingredients=\(detail.ingredients?.count ?? 0) steps=\(detail.steps?.count ?? 0) summaryExists=\(detail.summaryExists ?? false)")
+                #endif
                 self.isLoading = false
             } catch {
+                #if DEBUG
+                print("[RecipeDetailVM] ❌ load fail | recipeId=\(recipeId) error=\(error)")
+                #endif
                 self.isLoading = false
                 self.errorMessage = "레시피 상세를 불러오지 못했습니다."
             }
@@ -120,29 +185,85 @@ final class RecipeDetailViewModel: ObservableObject {
     }
 
     /// 상세 화면에서 북마크 버튼 클릭 시 호출
-    /// - Note: 서버에 북마크 토글 요청을 보낸다.
+    /// - Note:
+    ///   - 목록 화면과 동일하게 서버 응답 기준으로만 상태를 갱신한다.
+    ///   - optimistic update를 제거하여 UI/상태 불일치를 방지한다.
     func toggleBookmark() {
-        guard !isBookmarkUpdating else { return }
-        guard let current = recipe else { return }
+        guard let current = recipe else {
+            #if DEBUG
+            print("[RecipeDetailVM] ❌ toggleBookmark ignored | recipe is nil")
+            #endif
+            return
+        }
+
+        // 중복 요청 방지 (리스트와 동일한 수준의 최소 제어)
+        guard !isBookmarkUpdating else {
+            #if DEBUG
+            print("[RecipeDetailVM] ⚠️ toggleBookmark ignored | already updating")
+            #endif
+            return
+        }
 
         let recipeId = current.id
-        let previousState = current.isBookmarked
-        let optimisticState = !previousState
-
-        // 서버 응답을 기다리지 않고 UI를 먼저 갱신 (Optimistic Update)
-        updateBookmarkState(optimisticState)
         isBookmarkUpdating = true
 
         Task {
             do {
                 let serverState = try await service.toggleBookmark(recipeId: recipeId)
+
+                // 서버 응답 기준으로만 상태 반영
                 self.updateBookmarkState(serverState)
                 self.isBookmarkUpdating = false
+
+                #if DEBUG
+                print("[RecipeDetailVM] ✅ bookmark toggled | recipeId=\(recipeId) isBookmarked=\(serverState)")
+                #endif
             } catch {
-                // 실패 시 이전 북마크 상태로 되돌림
-                self.updateBookmarkState(previousState)
                 self.isBookmarkUpdating = false
                 self.errorMessage = "북마크 처리에 실패했습니다. 네트워크 상태를 확인해주세요."
+
+                #if DEBUG
+                print("[RecipeDetailVM] ❌ bookmark toggle fail | recipeId=\(recipeId) error=\(error)")
+                #endif
+            }
+        }
+    }
+
+    /// 요리 완료(평점 등록) 버튼 클릭 시 호출
+    /// - Parameters:
+    ///   - rating: 사용자가 선택한 별점(1~5)
+    /// - Note:
+    ///   - 성공 시 completeResult에 서버 결과를 저장한다.
+    func completeCooking(rating: Int) {
+        guard !isCompletingCooking else { return }
+        guard let current = recipe else { return }
+
+        // 별점 범위 안전 처리
+        let safeRating = max(1, min(5, rating))
+        lastSubmittedRating = safeRating
+
+        isCompletingCooking = true
+        errorMessage = nil
+        completeResult = nil
+
+        Task {
+            do {
+                let result = try await service.completeRecipe(recipeId: current.id, rating: safeRating)
+                self.completeResult = result
+                self.isCompletingCooking = false
+                self.shouldDismissAfterComplete = true
+
+                #if DEBUG
+                print("[RecipeDetailVM] ✅ complete success | recipeId=\(current.id) rating=\(safeRating) reward=\(result.rewardScore) leveledUp=\(result.leveledUp)")
+                #endif
+            } catch {
+                self.isCompletingCooking = false
+                self.shouldDismissAfterComplete = false
+                self.errorMessage = "요리 완료 처리에 실패했습니다. 네트워크 상태를 확인해주세요."
+
+                #if DEBUG
+                print("[RecipeDetailVM] ❌ complete fail | recipeId=\(current.id) rating=\(safeRating) error=\(error)")
+                #endif
             }
         }
     }

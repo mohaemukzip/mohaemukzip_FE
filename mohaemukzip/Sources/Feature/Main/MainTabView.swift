@@ -130,7 +130,7 @@ extension View {
             case .yoTeacher:
                 YoTeacherChatView()
             case .recipeDetail(let video):
-                RecipeVideoDetailView(video: video)
+                RecipeDetailView(recipeId: video.id, base: video)
             case .recipeSearch:
                 SearchView()
             case .home:

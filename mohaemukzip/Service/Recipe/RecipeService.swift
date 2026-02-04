@@ -110,11 +110,30 @@ final class RecipeService {
         recipeId: Int,
         rating: Int
     ) async throws -> RecipeResponseDTO.CompleteRecipeResponse {
-        let response = try await request(
-            RecipeEndpoints.completeRecipe(recipeId: recipeId, rating: rating),
-            as: RecipeResponseDTO.CompleteRecipeResponse.self
-        )
-        return response
+        let safeRating = max(1, min(5, rating))
+        let target = RecipeEndpoints.completeRecipe(recipeId: recipeId, rating: safeRating)
+
+        #if DEBUG
+        print("[RecipeService] COMPLETE ▶️ recipeId=\(recipeId) rating=\(safeRating)")
+        #endif
+
+        do {
+            let response = try await request(
+                target,
+                as: RecipeResponseDTO.CompleteRecipeResponse.self
+            )
+
+            #if DEBUG
+            print("[RecipeService] COMPLETE ✅ recipeId=\(recipeId) rating=\(safeRating) cookingRecordId=\(response.cookingRecordId) reward=\(response.rewardScore) leveledUp=\(response.leveledUp)")
+            #endif
+
+            return response
+        } catch {
+            #if DEBUG
+            print("[RecipeService] COMPLETE ❌ recipeId=\(recipeId) rating=\(safeRating) error=\(error)")
+            #endif
+            throw error
+        }
     }
 
     // MARK: - Mapping Helpers
@@ -376,11 +395,21 @@ final class RecipeService {
 
     // MARK: - Debug Logs
 
-    #if DEBUG
+#if DEBUG
     private func debugLogRequest(_ target: RecipeEndpoints) {
         let method = target.method.rawValue
         let url = target.baseURL.appendingPathComponent(target.path).absoluteString
         print("[RecipeService] REQUEST \(method) \(url)")
+
+        if let headers = target.headers {
+            let masked = headers.mapValues { value -> String in
+                if value.lowercased().contains("bearer ") {
+                    return "Bearer \(value.dropFirst(min(value.count, 18)))..."
+                }
+                return value
+            }
+            print("[RecipeService] HEADERS: \(masked)")
+        }
 
         switch target.task {
         case .requestParameters(let parameters, _):
@@ -393,8 +422,11 @@ final class RecipeService {
     }
 
     private func debugLogResponse(_ target: RecipeEndpoints, response: Response) {
-        let method = target.method.rawValue
-        let url = target.baseURL.appendingPathComponent(target.path).absoluteString
+        let method = response.request?.httpMethod ?? target.method.rawValue
+        let actualUrl = response.request?.url?.absoluteString
+        let fallbackUrl = target.baseURL.appendingPathComponent(target.path).absoluteString
+        let url = actualUrl ?? fallbackUrl
+
         print("[RecipeService] RESPONSE \(method) \(url) status=\(response.statusCode) bytes=\(response.data.count)")
 
         if let bodyString = String(data: response.data, encoding: .utf8), !bodyString.isEmpty {
@@ -405,8 +437,11 @@ final class RecipeService {
     }
 
     private func debugLogDecodingError(_ target: RecipeEndpoints, response: Response, error: Error) {
-        let method = target.method.rawValue
-        let url = target.baseURL.appendingPathComponent(target.path).absoluteString
+        let method = response.request?.httpMethod ?? target.method.rawValue
+        let actualUrl = response.request?.url?.absoluteString
+        let fallbackUrl = target.baseURL.appendingPathComponent(target.path).absoluteString
+        let url = actualUrl ?? fallbackUrl
+
         print("[RecipeService] DECODE FAIL \(method) \(url) status=\(response.statusCode)")
         print("[RecipeService] ERROR: \(error)")
 
@@ -415,7 +450,7 @@ final class RecipeService {
             print("[RecipeService] RAW(prefix): \(prefix)")
         }
     }
-    #endif
+#endif
 }
 
 // MARK: - Supporting Types

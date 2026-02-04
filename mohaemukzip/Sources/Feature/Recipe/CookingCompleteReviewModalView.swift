@@ -8,9 +8,8 @@
 // MARK: - 요리 완료 확인 모달 (UI 전용)
 
 // - 별점 1점 이상 선택 시에만 "루틴에 기록" 버튼이 주황색으로 활성화
-// - 지금은 UI만 구현하고, onSubmit에서 추후 API 연결하기 쉽게 토대를 만듦.
+// - onSubmit에서 상위 뷰가 요리 완료 API를 호출하도록 연결한다.
 import SwiftUI
-import YouTubePlayerKit
 
 struct CookingCompleteReviewModalView: View {
 
@@ -19,8 +18,26 @@ struct CookingCompleteReviewModalView: View {
     @Binding var isPresented: Bool
     @Binding var selectedRating: Int
 
-    /// 별점 선택 후 "루틴에 기록" 눌렀을 때 실행될 콜백 (추후 API 연결 지점)
+    
     let onSubmit: (Int) -> Void
+
+    /// 제출 중 상태 (요리 완료 API 호출 중)
+    /// - Note: 상위 뷰에서 주입해서 버튼/닫기 동작을 제어한다.
+    let isSubmitting: Bool
+
+    // MARK: - Init
+
+    init(
+        isPresented: Binding<Bool>,
+        selectedRating: Binding<Int>,
+        isSubmitting: Bool = false,
+        onSubmit: @escaping (Int) -> Void
+    ) {
+        self._isPresented = isPresented
+        self._selectedRating = selectedRating
+        self.isSubmitting = isSubmitting
+        self.onSubmit = onSubmit
+    }
 
     // MARK: - Body
 
@@ -30,7 +47,8 @@ struct CookingCompleteReviewModalView: View {
             Color.black.opacity(0.45)
                 .ignoresSafeArea()
                 .onTapGesture {
-                    // 배경 터치로 닫는 UX를 원치 않으면 이 부분을 지워도  됌.
+                    // 제출 중에는 실수로 닫히지 않도록 막는다.
+                    guard !isSubmitting else { return }
                     isPresented = false
                 }
 
@@ -73,11 +91,12 @@ struct CookingCompleteReviewModalView: View {
                 HStack(spacing: 12) {
                     Button {
                         // 취소: 저장하지 않고 모달 닫기
+                        guard !isSubmitting else { return }
                         isPresented = false
                     } label: {
                         Text("취소")
                             .font(.custom("Pretendard-Medium", size: 16))
-                            .foregroundStyle(Color("grey900"))
+                            .foregroundStyle(isSubmitting ? Color("grey400") : Color("grey900"))
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(
@@ -87,22 +106,26 @@ struct CookingCompleteReviewModalView: View {
                     }
 
                     Button {
-                        // 루틴에 기록: 별점이 선택된 경우에만 실행
+                        // 요리완료: 별점이 선택된 경우에만 실행
                         guard selectedRating >= 1 else { return }
+                        guard !isSubmitting else { return }
                         onSubmit(selectedRating)
-                        isPresented = false
                     } label: {
-                        Text("루틴에 기록")
+                        Text(isSubmitting ? "처리 중" : "요리완료")
                             .font(.custom("Pretendard-Medium", size: 16))
                             .foregroundStyle(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 48)
                             .background(
                                 RoundedRectangle(cornerRadius: 12)
-                                    .fill(selectedRating >= 1 ? Color.orange : Color(.systemGray4))
+                                    .fill(
+                                        (selectedRating >= 1 && !isSubmitting)
+                                        ? Color.orange
+                                        : Color(.systemGray4)
+                                    )
                             )
                     }
-                    .disabled(selectedRating < 1)
+                    .disabled(selectedRating < 1 || isSubmitting)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 18)

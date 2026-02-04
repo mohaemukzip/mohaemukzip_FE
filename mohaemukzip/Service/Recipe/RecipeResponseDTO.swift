@@ -162,7 +162,7 @@ enum RecipeResponseDTO {
         let cookingRecordId: Int
         let recipeId: Int
         let rating: Int
-        let recipeLevel: Int
+        let recipeLevel: Double
         let ratingCount: Int
         let rewardScore: Int
         let leveledUp: Bool
