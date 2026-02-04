@@ -27,6 +27,7 @@ struct MainTabView: View {
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
+    @StateObject private var profileVM = ProfileViewModel()
     //@State private var loginVM = LoginViewModel()
     
     init() {
@@ -92,7 +93,10 @@ struct MainTabView: View {
                 )
             }
             Tab(value: .profile) {
-                ProfileView()
+                NavigationStack(path: $router.path) {
+                    ProfileView()
+                        .setupNavigationDestinations()
+                }
             } label: {
                 Label(
                     "마이",
@@ -100,12 +104,18 @@ struct MainTabView: View {
                 )
             }
         }
+        .onChange(of: selection) { _, _ in
+            // 탭 전환 시 기존 네비게이션 스택(Route)이 남아있으면
+            // 다른 탭의 NavigationStack에서 동일 path를 해석하려다 크래시가 날 수 있다.
+            router.navigateToRoot()
+        }
         .environment(router)
         .environment(fridgeVM)
         .environment(ingredientSearchVM)
         .environment(yoTeacherVM)
         .environment(searchVM)
         .environment(homeVM)
+        .environmentObject(profileVM)
     }
 }
 
@@ -120,13 +130,38 @@ extension View {
             case .yoTeacher:
                 YoTeacherChatView()
             case .recipeDetail(let video):
-                RecipeVideoDetailView(video: video)
+                RecipeDetailView(recipeId: video.id, base: video)
             case .recipeSearch:
                 SearchView()
             case .home:
                 HomeView()
+
+            // ✅ 추가
+            case .profileSettings:
+                ProfileSettingsView()
+
+            case .profileChange:
+                ProfileChangeDestinationView()
+
+            case .recentlyViewedRecipes:
+                RecentlyViewedRecipesView()
+
+            case .bookmarkedRecipes:
+                BookmarkedRecipesView()
+
+//            case .recipeDetailNoComplete(let video):
+//                // TODO: 여기만 나중에 “요리 완료 모달 없는 RecipeDetailView”로 교체
+//                RecipeVideoDetailView(video: video)
             }
         }
+    }
+}
+
+private struct ProfileChangeDestinationView: View {
+    @EnvironmentObject private var profileVM: ProfileViewModel
+
+    var body: some View {
+        ProfileChangeView()
     }
 }
 

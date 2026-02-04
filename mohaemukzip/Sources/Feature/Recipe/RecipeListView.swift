@@ -7,45 +7,66 @@
 
 import SwiftUI
 
-// MARK: - RecipeListView
-// 카테고리(상위/하위) 선택을 통해 레시피 영상을 탐색하는 목록 화면
-// 선택된 카테고리에 따라 ViewModel에서 필터링된 영상 목록을 표시함
+// MARK: - 카테고리별 검색 뷰 !!!
+/// 레시피 영상을 탐색하는 메인 목록 화면
+/// 상위 카테고리 → 하위 카테고리 선택 구조
+/// 선택 상태에 따라 ViewModel의 필터링 결과를 화면에 표시
 
 struct RecipeListView: View {
 
     /// 레시피 목록 화면 전용 ViewModel
-    /// 카테고리 선택 상태 및 필터링된 영상 목록을 관리함
+    /// 카테고리 선택 상태 및 필터링된 영상 목록 관리
     @StateObject private var viewModel: RecipeVideoViewModel
 
-    // MARK: - 초기화
-    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.     
+    /// 초기 진입 시 지정된 상위 카테고리
+    /// 외부 화면에서 특정 카테고리 선택 진입 용도
+    private let initialCuisine: CuisineCategory?
+
+    /// 초기 카테고리 적용 여부
+    /// onAppear / task 중복 실행 방지 목적
+    @State private var didApplyInitialCuisine = false
+
+    // MARK: - Initializers
+    /// 기본 진입
+    /// 카테고리 미선택 상태로 시작
     init() {
+        self.initialCuisine = nil
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
 
+    /// 특정 상위 카테고리 선택 상태로 진입
     init(category: CuisineCategory) {
-        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel(category: category))
+        self.initialCuisine = category
+        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
 
-    // MARK: - 카테고리 버튼 색상 정의
-    // 선택 / 비선택 상태를 명확히 구분하기 위한 컬러
+    // MARK: - Category Button Colors
+    /// 선택된 카테고리 배경 색상
     private let selectedOrange = Color(red: 1, green: 0.55, blue: 0.14)
+
+    /// 선택되지 않은 카테고리 배경 색상
     private let unselectedGray = Color(red: 0.96, green: 0.96, blue: 0.96)
 
     /// 하위 카테고리 그리드 레이아웃
-    /// 스크린샷 기준으로 고정 너비(64) 버튼을 1줄에 5개 배치
+    /// 고정 너비 버튼을 1줄에 5개 배치
     private var subCategoryColumns: [GridItem] {
         Array(repeating: GridItem(.fixed(64), spacing: 12, alignment: .center), count: 5)
     }
-    
+
+    /// 앱 전역 네비게이션 라우터
     @Environment(NavigationRouter.self) var router
+
+    /// 요선생 채팅 ViewModel
     @Environment(YoTeacherChatViewModel.self) var yoTeacherVM
 
     var body: some View {
         ZStack {
             VStack(spacing: 0) {
                 
-                // MARK: - 최상단 검색창
+                /// 검색 → 카테고리 → 콘텐츠 순서로 구성된 메인 레이아웃
+
+                // MARK: - Search Entry
+                /// 레시피 검색 화면으로 이동하는 진입 버튼
                 Button( action: { router.push(.recipeSearch) } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
@@ -66,8 +87,8 @@ struct RecipeListView: View {
                 }.padding(.horizontal, 16)
                     .padding(.bottom, 16)
 
-                // 상위 음식 카테고리 선택 영역 (한식/중식/일식/양식/동남아)
-                // MARK: - 상위 카테고리 (스크린샷 스타일)
+                // MARK: - Main Categories
+                /// 상위 음식 카테고리 선택 영역
                 HStack(alignment: .top, spacing: 12) {
                     categoryButton(.korean)
                     categoryButton(.chinese)
@@ -78,20 +99,18 @@ struct RecipeListView: View {
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
 
-                // 선택된 상위 카테고리에 따라 하위 카테고리를 노출
-                // 상위 카테고리가 선택되지 않은 경우에는 표시하지 않음
-                // MARK: - 하위 카테고리 그리드
-                // 상위 카테고리 선택 이후에만 노출되며, 선택 결과에 따라 영상 목록이 갱신됨
+                // MARK: - Sub Categories
+                /// 선택된 상위 카테고리에 따라 노출되는 하위 카테고리
                 subCategoryGrid
 
-                // 카테고리 영역과 콘텐츠 영역을 시각적으로 구분하기 위한 디바이더
-                // MARK: - Category / Content Divider
+                /// 카테고리 영역과 콘텐츠 영역 시각적 분리
                 Rectangle()
                     .fill(Color.black.opacity(0.1))
                     .frame(height: 8)
                     .padding(.top, 16)
                 
-                // MARK: - 요선생과 대화하기 배너 (viewModel의 SubCategory가 하나라도 선택된다면 나타남)
+                // MARK: - YoTeacher Banner
+                /// 하위 카테고리 미선택 상태에서만 노출
                 if viewModel.selectedKoreanSubCategory == nil &&
                     viewModel.selectedChineseSubCategory == nil &&
                     viewModel.selectedWesternSubCategory == nil &&
@@ -99,40 +118,63 @@ struct RecipeListView: View {
                     viewModel.selectedSoutheastAsianSubCategory == nil {
                     YoTeacher(onTap: {router.push(.yoTeacher)} )
                         .padding(.top, 25)
-                        .padding(.horizontal, 16) }
+                        .padding(.horizontal, 16)
+                }
 
-                // 선택된 상위 + 하위 카테고리를 기준으로 필터링된 영상 목록
-                // MARK: - 영상 목록 (상위+하위 모두 선택해야 filteredVideos가 생김)
+                // MARK: - Video List
+                /// 선택된 상위 + 하위 카테고리 기준 필터링 결과
                 ScrollView {
                     LazyVStack(spacing: 40) {
                         ForEach(viewModel.filteredVideos) { video in
-                            NavigationLink(value: Route.recipeDetail(video)) {
-                                RecipeVideoCard(video: video)
+                            /// 개별 레시피 영상 카드
+                            RecipeVideoCard(
+                                video: video,
+                                onTapBookmark: {
+                                    viewModel.toggleBookmark(recipeId: video.id)
+                                }
+                            )
+                            .contentShape(Rectangle())
+                            /// 영상 카드 탭 시 상세 화면 진입
+                            .onTapGesture {
+                                Task {
+                                    if let detail = await viewModel.prepareDetailVideo(recipeId: video.id) {
+                                        router.push(.recipeDetail(detail))
+                                    }
+                                }
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.top, 16)
                 }
-                
-                
             }
             .navigationBarHidden(true)
-            // MARK: - 요선생 플로팅 버튼 (viewModel의 filteredVideos가 비어있지 않으면 나타남)
+            /// 최초 진입 시 initialCuisine 적용
+            /// 중복 적용 방지를 위해 플래그 사용
+            .task {
+                guard !didApplyInitialCuisine else { return }
+                didApplyInitialCuisine = true
+
+                if let initialCuisine {
+                    viewModel.selectCuisine(initialCuisine)
+                }
+            }
+            // MARK: - YoTeacher Floating Button
+            /// 하위 카테고리 선택 이후 노출
             if !(viewModel.selectedKoreanSubCategory == nil &&
                 viewModel.selectedChineseSubCategory == nil &&
                 viewModel.selectedWesternSubCategory == nil &&
                 viewModel.selectedJapaneseSubCategory == nil &&
                  viewModel.selectedSoutheastAsianSubCategory == nil) {
-                YoTeacherFloating( onTap: {router.push(.yoTeacher)} ) }
+                YoTeacherFloating( onTap: {router.push(.yoTeacher)} )
+            }
         }
-        
     }
 
-    // MARK: - 상위 카테고리 버튼
-    // 선택 시 ViewModel의 selectedCuisine 상태를 갱신함
+    // MARK: - Main Category Button
+    /// 상위 카테고리 버튼 UI
+    /// 선택 시 ViewModel의 cuisine 상태 갱신
     private func categoryButton(_ cuisine: CuisineCategory) -> some View {
-        // 현재 카테고리가 선택된 상태인지 여부
+        /// 현재 버튼이 선택된 상태인지 여부
         let isSelected = (viewModel.selectedCuisine == cuisine)
 
         return Button {
@@ -172,6 +214,7 @@ struct RecipeListView: View {
         }
     }
 
+    /// 선택된 상위 카테고리에 따른 하위 카테고리 버튼 목록
     @ViewBuilder
     private var subCategoryGrid: some View {
         if let selectedCuisine = viewModel.selectedCuisine {
@@ -185,7 +228,6 @@ struct RecipeListView: View {
                             onTap: { viewModel.selectKoreanSubCategory(sub) }
                         )
                     }
-
                 case .chinese:
                     ForEach(ChineseSubCategory.allCases, id: \.self) { sub in
                         subCategoryButton(
@@ -194,7 +236,6 @@ struct RecipeListView: View {
                             onTap: { viewModel.selectChineseSubCategory(sub) }
                         )
                     }
-
                 case .japanese:
                     ForEach(JapaneseSubCategory.allCases, id: \.self) { sub in
                         subCategoryButton(
@@ -203,7 +244,6 @@ struct RecipeListView: View {
                             onTap: { viewModel.selectJapaneseSubCategory(sub) }
                         )
                     }
-
                 case .western:
                     ForEach(WesternSubCategory.allCases, id: \.self) { sub in
                         subCategoryButton(
@@ -212,7 +252,6 @@ struct RecipeListView: View {
                             onTap: { viewModel.selectWesternSubCategory(sub) }
                         )
                     }
-
                 case .southeastAsian:
                     ForEach(SoutheastAsianSubCategory.allCases, id: \.self) { sub in
                         subCategoryButton(
@@ -230,8 +269,8 @@ struct RecipeListView: View {
         }
     }
 
-    /// 하위 카테고리 버튼
-    /// 선택 시 해당 하위 카테고리를 기준으로 영상 목록을 필터링함
+    /// 하위 카테고리 버튼 UI
+    /// 선택 시 해당 하위 카테고리 기준으로 영상 필터링
     private func subCategoryButton(
         title: String,
         isSelected: Bool,
@@ -257,25 +296,29 @@ struct RecipeListView: View {
     }
 }
 
-// MARK: - 레시피 영상 카드
-// 영상 제목, 채널 정보, 북마크 버튼, 썸네일을 표시하는 카드 UI
+// MARK: - RecipeVideoCard
+/// 레시피 영상 요약 카드 UI
+/// 제목, 채널, 북마크 버튼, 썸네일 표시
 struct RecipeVideoCard: View {
 
+    /// 카드에 표시할 레시피 영상 데이터
     let video: RecipeVideo
 
-    /// 카드 내부에서만 사용하는 북마크 상태
-    /// 현재는 UI용 상태이며, 서버 연동 시 ViewModel로 이동 예정
-    @State private var isBookmarked: Bool
+    /// 북마크 버튼 탭 이벤트 콜백
+    /// 목록 ViewModel에서 토글 처리
+    let onTapBookmark: () -> Void
 
-    init(video: RecipeVideo) {
+    init(
+        video: RecipeVideo,
+        onTapBookmark: @escaping () -> Void
+    ) {
         self.video = video
-        _isBookmarked = State(initialValue: video.isBookmarked)
+        self.onTapBookmark = onTapBookmark
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-
-            // 제목 + 북마크
+            /// 제목 및 채널 정보 영역
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(video.title)
@@ -289,19 +332,19 @@ struct RecipeVideoCard: View {
 
                 Spacer()
 
-                // 북마크 버튼 (현재는 UI 토글만 처리)
+                /// 북마크 토글 버튼
                 Button {
-                    isBookmarked.toggle()
+                    onTapBookmark()
                 } label: {
-                    Image(isBookmarked ? "bookmark.fill" : "bookmark")
+                    Image(video.isBookmarked ? "bookmark.fill" : "bookmark")
                         .renderingMode(.original)
                 }
             }
             .padding(.horizontal, 16)
 
-            //  유튜브 썸네일만 표시 + 썸네일 스타일 오버레이
+            /// 유튜브 썸네일 영역
             ThumbnailView(videoId: video.videoId, durationText: video.videoDuration ?? "")
-                .frame(maxWidth: .infinity)   //  타이틀/북마크와 동일한 좌우 라인
+                .frame(maxWidth: .infinity)
                 .frame(height: 200)
                 .clipped()
                 .cornerRadius(12)
@@ -310,14 +353,16 @@ struct RecipeVideoCard: View {
     }
 }
 
-// MARK: - 유튜브 썸네일 뷰
-// maxres 이미지 우선 사용, 실패 시 hq 이미지로 fallback
+// MARK: - ThumbnailView
+/// 유튜브 영상 썸네일 표시 뷰
+/// maxres 이미지 우선, 실패 시 hq 이미지 사용
 private struct ThumbnailView: View {
 
     let videoId: String
     let durationText: String
 
-    /// maxres 썸네일 실패 시 hq 썸네일로 전환하기 위한 상태값
+    /// maxres 썸네일 실패 여부
+    /// 실패 시 hq 썸네일로 대체
     @State private var useFallbackHQ = false
 
     private var maxResURL: URL? {
@@ -334,32 +379,29 @@ private struct ThumbnailView: View {
 
     var body: some View {
         ZStack {
+            /// 썸네일 이미지 로딩 상태 처리
             AsyncImage(url: currentURL) { phase in
                 switch phase {
                 case .empty:
                     Color.black.opacity(0.12)
-
                 case .success(let image):
                     image
                         .resizable()
                         .scaledToFill()
-
                 case .failure:
-                    // maxres 썸네일이 없는 영상이 많아 실패 시 hq 이미지로 대체
                     Color.black.opacity(0.12)
                         .onAppear {
                             if !useFallbackHQ {
                                 useFallbackHQ = true
                             }
                         }
-
                 @unknown default:
                     Color.black.opacity(0.12)
                 }
             }
             .clipped()
 
-            //  재생 시간 (우측 하단 오버레이)
+            /// 영상 재생 시간 오버레이 표시
             if !durationText.isEmpty {
                 Text(durationText)
                     .font(.system(size: 12, weight: .semibold))
@@ -388,12 +430,10 @@ private struct ThumbnailView: View {
         
 }
 
-// MARK: - 조회수 포맷팅 유틸
+// MARK: - View Count Formatting
+/// 조회수 숫자를 화면 표시용 문자열로 변환
 
 private extension Int {
-    /// 조회수 포맷팅
-    /// - 10,000 미만: 그대로 표시 (예: 8,532)
-    /// - 10,000 이상: n.n만 형식 (예: 12,345 -> 1.2만)
     var formattedViewCount: String {
         if self < 10_000 {
             return self.formatted()
