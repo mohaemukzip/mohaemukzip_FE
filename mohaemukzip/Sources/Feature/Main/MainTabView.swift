@@ -27,7 +27,6 @@ struct MainTabView: View {
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
-    @State private var recipeVideoVM = RecipeVideoViewModel()
     //@State private var loginVM = LoginViewModel()
     
     init() {
@@ -107,7 +106,6 @@ struct MainTabView: View {
         .environment(yoTeacherVM)
         .environment(searchVM)
         .environment(homeVM)
-        .environment(recipeVideoVM)
     }
 }
 
