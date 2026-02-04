@@ -9,8 +9,6 @@ import Combine
 
 @Observable
 final class RecipeVideoViewModel {
-    
-    var searchedVideos: [RecipeVideo] = []
 
     // MARK: - 카테고리 선택 상태 (View → ViewModel)
     // 사용자가 선택한 상위 / 하위 카테고리를 관리함

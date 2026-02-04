@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+// TODO: SearchView에서 검색 후 이쪽 뷰로 넘어오게 하기
+
 struct VideoListView: View {
     @Environment(RecipeVideoViewModel.self) var viewModel
     @Environment(NavigationRouter.self) var router
@@ -31,7 +33,7 @@ struct VideoListView: View {
                     }
                 }
                 .padding(.top, 16)
-            }
+            }.scrollIndicators(.hidden)
         }.padding(.horizontal)
     }
 }
@@ -39,4 +41,5 @@ struct VideoListView: View {
 #Preview {
     VideoListView()
         .environment(RecipeVideoViewModel())
+        .environment(NavigationRouter())
 }
