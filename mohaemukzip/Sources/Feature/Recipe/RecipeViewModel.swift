@@ -7,27 +7,30 @@ import Combine
 
 // MARK: - RecipeVideoViewModel
 
-final class RecipeVideoViewModel: ObservableObject {
+@Observable
+final class RecipeVideoViewModel {
+    
+    var searchedVideos: [RecipeVideo] = []
 
     // MARK: - 카테고리 선택 상태 (View → ViewModel)
     // 사용자가 선택한 상위 / 하위 카테고리를 관리함
 
     /// 선택된 상위 음식 카테고리 (한식 / 중식 / 일식 / 양식 / 동남아)
-    @Published var selectedCuisine: CuisineCategory? = nil
+    var selectedCuisine: CuisineCategory? = nil
 
     /// 선택된 하위 카테고리
     /// 상위 카테고리에 따라 하나의 값만 사용됨
-    @Published var selectedKoreanSubCategory: KoreanSubCategory? = nil
-    @Published var selectedChineseSubCategory: ChineseSubCategory? = nil
-    @Published var selectedJapaneseSubCategory: JapaneseSubCategory? = nil
-    @Published var selectedWesternSubCategory: WesternSubCategory? = nil
-    @Published var selectedSoutheastAsianSubCategory: SoutheastAsianSubCategory? = nil
+    var selectedKoreanSubCategory: KoreanSubCategory? = nil
+    var selectedChineseSubCategory: ChineseSubCategory? = nil
+    var selectedJapaneseSubCategory: JapaneseSubCategory? = nil
+    var selectedWesternSubCategory: WesternSubCategory? = nil
+    var selectedSoutheastAsianSubCategory: SoutheastAsianSubCategory? = nil
 
     // MARK: - 데이터 소스
 
     /// 전체 레시피 영상 목록
     /// API 연동 전까지는 더미 데이터를 사용함
-    @Published private(set) var videos: [RecipeVideo] = []
+    private(set) var videos: [RecipeVideo] = []
 
     // MARK: - 필터링된 결과 (Computed)
 
