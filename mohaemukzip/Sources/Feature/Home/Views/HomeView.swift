@@ -49,7 +49,12 @@ struct HomeView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isHomePowerInfoPresented)
-        .task { await viewModel.load() }
+        .onAppear {
+            Task { await viewModel.load() }
+        }
+        .onChange(of: selectedTab) { _, _ in
+            Task { await viewModel.load() }
+        }
         .navigationBarHidden(true)
     }
 }

@@ -11,13 +11,16 @@ struct YoTeacherChatView: View {
     @Environment(YoTeacherChatViewModel.self) var viewModel
     @Environment(NavigationRouter.self) var router
     @State var text: String = ""
+    var isSendButtonDisabled: Bool {
+        text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
     
     var body: some View {
         ZStack {
             VStack {
                 HStack {
                     Button( action: { router.pop() } ) {
-                        Image("back button")
+                        Image("backbutton")
                             .foregroundStyle(.grey700)
                     }
                     Spacer()
@@ -47,23 +50,25 @@ struct YoTeacherChatView: View {
                                                 .padding(.bottom, 70)
                                         }
                                         
-                                        if let videos = message.responseVideos {
-                                            BotResponse(responseVideos: videos)
+                                        if message.id != viewModel.messages.last?.id {
+                                            BotResponse(response: message.chatBotResponse,
+                                                        title: message.chatBotTitle,
+                                                        text: message.chatBotText)
                                                 .padding(.bottom, 70)
-                                        }
-                                        
-                                        if message.id == viewModel.messages.last?.id {
-                                            // TODO: 메세지 당 응답을 같은 ForEach문에 배치
+                                        } else {
                                             if viewModel.responseState == .thinking {
                                                 HStack {
                                                     Image("icon-thinking")
                                                     Spacer()
                                                 }.padding(.bottom, 70)
-                                            } else if viewModel.responseState == .skeleton {
-                                                BotResponse(responseVideos: message.responseVideos)
+                                            } else if viewModel.responseState == .completed {
+                                                BotResponse(response: message.chatBotResponse,
+                                                            title: message.chatBotTitle,
+                                                            text: message.chatBotText)
                                                     .padding(.bottom, 70)
                                             }
                                         }
+                                        
                                     }.padding(.leading, 17)
                                         .id(message.id)
                                 }
@@ -90,7 +95,7 @@ struct YoTeacherChatView: View {
                         ScrollView(.horizontal) {
                             LazyHStack {
                                 ForEach(viewModel.recommendQ) { q in
-                                    Button ( action: { viewModel.addMessages(text: q.text) } ) {
+                                    Button ( action: { Task {await viewModel.sendMessage(message: q.text)} } ) {
                                         RecommendQuestion(text: q.text)
                                             .padding(.trailing, 2)
                                     }
@@ -108,11 +113,12 @@ struct YoTeacherChatView: View {
                             TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
                                 .padding(.leading)
                             Spacer()
-                            Button ( action: { viewModel.addMessages(text: text ); text = "" } ) {
+                            Button ( action: { let messageToSend = text; text = "";
+                                Task {await viewModel.sendMessage(message: messageToSend)} } ) {
                                 Image("icon-chat")
-                                    .foregroundStyle(.grey700)
+                                        .foregroundStyle(isSendButtonDisabled ? .grey300 : .grey700)
                                     .padding()
-                            }
+                                }.disabled(isSendButtonDisabled)
                         }
                         
                     }.padding(.horizontal, 17)

@@ -55,11 +55,8 @@ struct FridgeView: View {
                 Rectangle()
                     .foregroundStyle(.white)
                 HStack {
-                    Spacer()
-                    Button ( action: { } ) { OrangeButton(text: "장보기 연동하기", size: .small) }
-                    Spacer()
-                    Button ( action: { router.push(.ingredientSearch); ingredientSearchVM.searchText = "" } ) { OrangeButton(text: "재료 입력하기", size: .small) }
-                    Spacer()
+                    Button ( action: { router.push(.ingredientSearch); ingredientSearchVM.searchText = "" } ) { OrangeButton(text: "재료 입력하기", size: .big)
+                                    .frame(height: 46)}
                 }.padding()
             }.frame(height: 94)
             

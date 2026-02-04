@@ -15,7 +15,7 @@ struct SearchView: View {
         @Bindable var viewModel = viewModel
         VStack {
             HStack(spacing: 30) {
-                Button( action: { router.pop(); viewModel.searchText = "" } ) { Image("back button") }
+                Button( action: { router.pop(); viewModel.searchText = "" } ) { Image("backbutton") }
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
                         .foregroundStyle(.grey100)

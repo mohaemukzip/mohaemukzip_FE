@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct IngredientDetailSearchModel: Identifiable {
-    let id: UUID = UUID()
-    let name: String
+struct searchQuery: Equatable {
+    let text: String
+    let category: Category
 }

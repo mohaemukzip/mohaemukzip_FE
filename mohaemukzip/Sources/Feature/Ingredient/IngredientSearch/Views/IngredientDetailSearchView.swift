@@ -86,12 +86,11 @@ struct IngredientDetailSearchView: View {
                             }
                         } else {
                             IngredientList(ingredients: viewModel.savedIngredients,
-                                           onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
-                                                        Task { await viewModel.toggleSaved(id: id)} },
+                                           onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                            onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
                         }
                         
-                    }.padding()
+                    }.padding(.horizontal)
                 } else { // 검색 텍스트 있는 경우
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -112,9 +111,9 @@ struct IngredientDetailSearchView: View {
                     }.padding(.vertical, 10)
                     
                     IngredientList(ingredients: viewModel.filteredIngredients,
-                                   onSaveTap: { id in //viewModel.toggleIsSaved(for: id)
-                                                Task { await viewModel.toggleSaved(id: id)} },
+                                   onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                    onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
+                    .padding(.horizontal)
                 }
             } // end of VStack
             Button ( action: { isShowingSheet = true } ) {
@@ -152,9 +151,23 @@ struct IngredientDetailSearchView: View {
                 }).presentationDetents([.fraction(0.98)])
             }
         }.navigationBarBackButtonHidden() // end of ZStack
-            .task {
-                await viewModel.fetchSavedList()
-                await viewModel.getRecent()
+            .task(id: viewModel.searchText.isEmpty) {
+                if viewModel.searchText.isEmpty {
+                    await viewModel.fetchSavedList()
+                    await viewModel.getRecent()
+                }
+            }
+            .task(id: searchQuery(text: viewModel.searchText, category: viewModel.selectedCategory)) {
+                
+                // MARK: 검색어가 입력되는 동안 불필요한 api 호출을 없애기 위한 0.5초 디바운싱
+                // MARK: 검색어 입력이 멈추고 0.5초 이후 api 호출
+                if !viewModel.searchText.isEmpty {
+                    try? await Task.sleep(nanoseconds: 500_000_000)
+                }
+                
+                if !Task.isCancelled {
+                    Task {await viewModel.resetAndFetchIngredients()}
+                }
             }
     } // end of body
 }

@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum Category: String, CaseIterable {
+enum Category: String, CaseIterable, Equatable {
     case all = "전체"
     case dairy = "가공/유제품"
     case meatEgg = "육류/계란"
@@ -21,6 +21,37 @@ enum Category: String, CaseIterable {
     case seasoning = "조미료/양념"
     case snack = "간식"
     case etc = "기타"
+    
+    var forApi: String {
+        switch self {
+        case .all:
+            return ""
+        case .dairy:
+            return "PROCESSED_DAIRY"
+        case .meatEgg:
+            return "MEAT_EGG"
+        case .grainNut:
+            return "GRAIN_NUT"
+        case .fruit:
+            return "FRUIT"
+        case .noodle:
+            return "NOODLE"
+        case .breadRiceCake:
+            return "BREAD_CAKE"
+        case .beverage:
+            return "BEVERAGE"
+        case .vegetable:
+            return "VEGETABLE"
+        case .seafood:
+            return "SEAFOOD"
+        case .seasoning:
+            return "SEASONING"
+        case .snack:
+            return "SNACK"
+        case .etc:
+            return "ETC"
+        }
+    }
 }
 
 struct IngredientForAddition: Identifiable {
