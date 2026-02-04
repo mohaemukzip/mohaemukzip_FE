@@ -17,14 +17,22 @@ struct RecipeListView: View {
     /// 카테고리 선택 상태 및 필터링된 영상 목록을 관리함
     @StateObject private var viewModel: RecipeVideoViewModel
 
+    /// 초기 진입 시 지정된 상위 카테고리(선택 진입용)
+    private let initialCuisine: CuisineCategory?
+
+    /// 초기 카테고리 적용이 중복 실행되는 것을 방지하기 위한 플래그
+    @State private var didApplyInitialCuisine = false
+
     // MARK: - 초기화
-    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.     
+    // 기본 진입: 아무것도 선택되지 않은 상태. 초기화.
     init() {
+        self.initialCuisine = nil
         _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
 
     init(category: CuisineCategory) {
-        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel(category: category))
+        self.initialCuisine = category
+        _viewModel = StateObject(wrappedValue: RecipeVideoViewModel())
     }
 
     // MARK: - 카테고리 버튼 색상 정의
@@ -106,10 +114,20 @@ struct RecipeListView: View {
                 ScrollView {
                     LazyVStack(spacing: 40) {
                         ForEach(viewModel.filteredVideos) { video in
-                            NavigationLink(value: Route.recipeDetail(video)) {
-                                RecipeVideoCard(video: video)
+                            RecipeVideoCard(
+                                video: video,
+                                onTapBookmark: {
+                                    viewModel.toggleBookmark(recipeId: video.id)
+                                }
+                            )
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                Task {
+                                    if let detail = await viewModel.prepareDetailVideo(recipeId: video.id) {
+                                        router.push(.recipeDetail(detail))
+                                    }
+                                }
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.top, 16)
@@ -118,6 +136,14 @@ struct RecipeListView: View {
                 
             }
             .navigationBarHidden(true)
+            .task {
+                guard !didApplyInitialCuisine else { return }
+                didApplyInitialCuisine = true
+
+                if let initialCuisine {
+                    viewModel.selectCuisine(initialCuisine)
+                }
+            }
             // MARK: - 요선생 플로팅 버튼 (viewModel의 filteredVideos가 비어있지 않으면 나타남)
             if !(viewModel.selectedKoreanSubCategory == nil &&
                 viewModel.selectedChineseSubCategory == nil &&
@@ -263,13 +289,16 @@ struct RecipeVideoCard: View {
 
     let video: RecipeVideo
 
-    /// 카드 내부에서만 사용하는 북마크 상태
-    /// 현재는 UI용 상태이며, 서버 연동 시 ViewModel로 이동 예정
-    @State private var isBookmarked: Bool
+    /// 북마크 버튼 탭 처리
+    /// 목록 화면(ViewModel)에서 서버 토글 후 상태를 갱신한다.
+    let onTapBookmark: () -> Void
 
-    init(video: RecipeVideo) {
+    init(
+        video: RecipeVideo,
+        onTapBookmark: @escaping () -> Void
+    ) {
         self.video = video
-        _isBookmarked = State(initialValue: video.isBookmarked)
+        self.onTapBookmark = onTapBookmark
     }
 
     var body: some View {
@@ -291,9 +320,9 @@ struct RecipeVideoCard: View {
 
                 // 북마크 버튼 (현재는 UI 토글만 처리)
                 Button {
-                    isBookmarked.toggle()
+                    onTapBookmark()
                 } label: {
-                    Image(isBookmarked ? "bookmark.fill" : "bookmark")
+                    Image(video.isBookmarked ? "bookmark.fill" : "bookmark")
                         .renderingMode(.original)
                 }
             }

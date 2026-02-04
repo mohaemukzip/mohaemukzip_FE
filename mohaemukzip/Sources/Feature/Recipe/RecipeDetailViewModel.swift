@@ -12,22 +12,6 @@
 import Foundation
 import Combine
 
-// MARK: - 북마크 처리 서비스 정의
-
-/// 레시피 북마크 상태를 서버에 반영하기 위한 인터페이스
-/// 서버에서는 최종 북마크 상태(true/false)를 반환해야 함
-protocol RecipeBookmarkServicing {
-    func setBookmark(recipeId: Int, isBookmarked: Bool) async throws -> Bool
-}
-
-/// 실제 API 연동 전까지 사용하는 더미 북마크 서비스
-/// 항상 전달받은 상태 그대로 반환함
-struct RecipeBookmarkServiceStub: RecipeBookmarkServicing {
-    func setBookmark(recipeId: Int, isBookmarked: Bool) async throws -> Bool {
-        // TODO: Replace with real network request
-        return isBookmarked
-    }
-}
 
 
 @MainActor
@@ -46,14 +30,26 @@ final class RecipeDetailViewModel: ObservableObject {
 
     // MARK: - 초기화
 
-    private let bookmarkService: RecipeBookmarkServicing
+    private let service: RecipeService
 
+    /// 서비스 주입용 init
+    /// - Note:
+    ///   - Swift 6에서는 기본 파라미터로 `RecipeService()`를 생성하면
+    ///     nonisolated 컨텍스트에서 MainActor init을 호출하는 에러가 날 수 있다.
     init(
         recipe: RecipeVideo? = nil,
-        bookmarkService: RecipeBookmarkServicing = RecipeBookmarkServiceStub()
+        service: RecipeService
     ) {
         self.recipe = recipe
-        self.bookmarkService = bookmarkService
+        self.service = service
+    }
+
+    /// 기본 생성용 init
+    /// - Note:
+    ///   - RecipeService() 생성은 MainActor에서만 수행한다.
+    @MainActor
+    convenience init(recipe: RecipeVideo? = nil) {
+        self.init(recipe: recipe, service: RecipeService())
     }
 
     // MARK: - 외부에서 호출하는 기능
@@ -66,17 +62,65 @@ final class RecipeDetailViewModel: ObservableObject {
         isLoading = true
         errorMessage = nil
 
-        // TODO: API 연동 전까지는 더미 데이터로 상세 화면 구성
-        // 이후에는 GET /recipes/{recipeId} 호출 → DTO 매핑 로직으로 교체 예정
-        let detail = makeDummyDetailVideo(recipeId: recipeId, base: base)
+        // 목록에서 전달된 base가 있으면, 네트워크 로딩 동안 화면에 먼저 보여준다.
+        if let base {
+            recipe = base
+        }
 
-        recipe = detail
-        isLoading = false
+        Task {
+            do {
+                let categoryId = categoryId(from: base)
+                var detail = try await service.fetchRecipeDetail(
+                    recipeId: recipeId,
+                    categoryId: categoryId
+                )
+
+                // summary API가 미구현/500/빈 바디일 수 있어 별도로 확인한다.
+                // 실패 시에는 고정 더미 스텝 규칙을 적용한다.
+                let summary = await service.generateSummary(recipeId: recipeId)
+
+                if summary.summaryExists {
+                    // 상세 API에서 steps가 비어있으면 fallback steps를 주입한다.
+                    if detail.steps == nil || detail.steps?.isEmpty == true {
+                        detail = RecipeVideo(
+                            id: detail.id,
+                            title: detail.title,
+                            videoUrl: detail.videoUrl,
+                            videoId: detail.videoId,
+                            channelId: detail.channelId,
+                            videoDuration: detail.videoDuration,
+                            channelName: detail.channelName,
+                            viewCount: detail.viewCount,
+                            cookingTimeMinutes: detail.cookingTimeMinutes,
+                            difficulty: detail.difficulty,
+                            level: detail.level,
+                            ratingCount: detail.ratingCount,
+                            ingredients: detail.ingredients,
+                            steps: makeFallbackSummarySteps(),
+                            summaryExists: true,
+                            cuisine: detail.cuisine,
+                            koreanSubCategory: detail.koreanSubCategory,
+                            chineseSubCategory: detail.chineseSubCategory,
+                            japaneseSubCategory: detail.japaneseSubCategory,
+                            westernSubCategory: detail.westernSubCategory,
+                            southeastAsianSubCategory: detail.southeastAsianSubCategory,
+                            isBookmarked: detail.isBookmarked,
+                            channelProfileImageUrl: detail.channelProfileImageUrl
+                        )
+                    }
+                }
+
+                self.recipe = detail
+                self.isLoading = false
+            } catch {
+                self.isLoading = false
+                self.errorMessage = "레시피 상세를 불러오지 못했습니다."
+            }
+        }
     }
 
     /// 상세 화면에서 북마크 버튼 클릭 시 호출
-    /// - Note: 현재는 더미 서비스가 즉시 성공을 반환함
-    ///         API 연동 시 bookmarkService 구현체만 교체하면 됨
+    /// - Note: 서버에 북마크 토글 요청을 보낸다.
     func toggleBookmark() {
         guard !isBookmarkUpdating else { return }
         guard let current = recipe else { return }
@@ -91,21 +135,14 @@ final class RecipeDetailViewModel: ObservableObject {
 
         Task {
             do {
-                let serverState = try await bookmarkService.setBookmark(
-                    recipeId: recipeId,
-                    isBookmarked: optimisticState
-                )
-                await MainActor.run {
-                    self.updateBookmarkState(serverState)
-                    self.isBookmarkUpdating = false
-                }
+                let serverState = try await service.toggleBookmark(recipeId: recipeId)
+                self.updateBookmarkState(serverState)
+                self.isBookmarkUpdating = false
             } catch {
-                await MainActor.run {
-                    // 실패 시 이전 북마크 상태로 되돌림
-                    self.updateBookmarkState(previousState)
-                    self.isBookmarkUpdating = false
-                    self.errorMessage = "북마크 처리에 실패했습니다. 네트워크 상태를 확인해주세요."
-                }
+                // 실패 시 이전 북마크 상태로 되돌림
+                self.updateBookmarkState(previousState)
+                self.isBookmarkUpdating = false
+                self.errorMessage = "북마크 처리에 실패했습니다. 네트워크 상태를 확인해주세요."
             }
         }
     }
@@ -117,49 +154,112 @@ final class RecipeDetailViewModel: ObservableObject {
         recipe = current
     }
 
-    // MARK: - 더미 상세 데이터 생성
+    // MARK: - CategoryId Mapping
 
-    /// API 연동 전까지 상세 화면을 구성하기 위한 더미 레시피 생성
-    /// 목록 화면에서 전달받은 base 데이터가 있으면 최대한 재사용함
-    private func makeDummyDetailVideo(recipeId: Int, base: RecipeVideo?) -> RecipeVideo {
-        let ingredients: [RecipeIngredient] = [
-            RecipeIngredient(id: 3, name: "돼지고기", amount: 400.0, unit: "g", hasIngredient: true),
-            RecipeIngredient(id: 7, name: "양배추", amount: 1.0, unit: "개", hasIngredient: false),
-            RecipeIngredient(id: 9, name: "양파", amount: 0.5, unit: "개", hasIngredient: true),
-            RecipeIngredient(id: 11, name: "고추장", amount: 2.0, unit: "큰술", hasIngredient: true)
-        ]
+    /// 상세 API에는 categoryId가 없어서, 목록에서 전달된 base를 기준으로 categoryId를 복원한다.
+    private func categoryId(from base: RecipeVideo?) -> Int? {
+        guard let base else { return nil }
 
-        let steps: [RecipeStep] = [
-            RecipeStep(stepNumber: 1, title: "고기와 기본 재료 준비하기", description: "돼지고기와 채소를 손질합니다.", videoTime: 304),
-            RecipeStep(stepNumber: 2, title: "팬에 고기 볶기", description: "달군 팬에 고기를 볶습니다.", videoTime: 443),
-            RecipeStep(stepNumber: 3, title: "양념 넣고 볶기", description: "양념을 넣고 1~2분 더 볶습니다.", videoTime: 650)
-        ]
+        switch base.cuisine {
+        case .korean:
+            guard let sub = base.koreanSubCategory else { return nil }
+            switch sub {
+            case .soupStew: return 1
+            case .rice: return 2
+            case .noodle: return 3
+            case .stirFry: return 4
+            case .braised: return 5
+            case .pancake: return 6
+            case .grill: return 7
+            case .mixed: return 8
+            case .sideDish: return 9
+            case .kimchi: return 10
+            }
 
-        // base 값이 있으면 목록에서 내려온 데이터(영상 길이, 난이도, 북마크 등)를 우선 사용
-        return RecipeVideo(
-            id: base?.id ?? recipeId,
-            title: base?.title ?? "레시피 상세",
-            videoUrl: base?.videoUrl, // 상세 API에서는 값이 들어올 수 있음
-            videoId: base?.videoId ?? "sHpMVI8wQuk",
-            channelId: base?.channelId,
-            videoDuration: base?.videoDuration,
-            channelName: base?.channelName ?? "채널명",
-            viewCount: base?.viewCount ?? 0,
-            cookingTimeMinutes: base?.cookingTimeMinutes ?? 15,
-            difficulty: base?.difficulty,
-            level: 3.0, // 상세 API의 level(Double) 예시
-            ratingCount: 0,
-            ingredients: ingredients,
-            steps: steps,
-            summaryExists: true,
-            cuisine: base?.cuisine ?? .korean,
-            koreanSubCategory: base?.koreanSubCategory,
-            chineseSubCategory: base?.chineseSubCategory,
-            japaneseSubCategory: base?.japaneseSubCategory,
-            westernSubCategory: base?.westernSubCategory,
-            southeastAsianSubCategory: base?.southeastAsianSubCategory,
-            isBookmarked: base?.isBookmarked ?? false,
-            channelProfileImageUrl: "https://picsum.photos/200"
-        )
+        case .chinese:
+            guard let sub = base.chineseSubCategory else { return nil }
+            switch sub {
+            case .noodle: return 11
+            case .friedRice: return 12
+            case .riceBowl: return 13
+            case .stirFry: return 14
+            case .deepFried: return 15
+            case .soup: return 16
+            case .mara: return 17
+            case .meat: return 18
+            case .seafood: return 19
+            case .dumpling: return 20
+            }
+
+        case .japanese:
+            guard let sub = base.japaneseSubCategory else { return nil }
+            switch sub {
+            case .riceBowl: return 21
+            case .noodle: return 22
+            case .soup: return 23
+            case .stirFry: return 24
+            case .braised: return 25
+            case .deepFried: return 26
+            case .grill: return 27
+            case .lunchBox: return 28
+            case .seafood: return 29
+            case .egg: return 30
+            }
+
+        case .western:
+            guard let sub = base.westernSubCategory else { return nil }
+            switch sub {
+            case .pasta: return 31
+            case .risotto: return 32
+            case .stirFry: return 33
+            case .steak: return 34
+            case .oven: return 35
+            case .salad: return 36
+            case .soup: return 37
+            case .brunch: return 38
+            case .pizza: return 39
+            case .cheese: return 40
+            }
+
+        case .southeastAsian:
+            guard let sub = base.southeastAsianSubCategory else { return nil }
+            switch sub {
+            case .rice: return 41
+            case .riceNoodle: return 42
+            case .noodle: return 43
+            case .soup: return 44
+            case .stirFry: return 45
+            case .deepFried: return 46
+            case .curry: return 47
+            case .meat: return 48
+            case .seafood: return 49
+            case .salad: return 50
+            }
+        }
+    }
+
+    // MARK: - Summary Fallback
+
+    /// 요약 생성 API가 실패했을 때 사용할 고정 스텝 더미 데이터
+    /// - Rule:
+    ///   - summaryExists = true
+    ///   - stepCount = 4 고정
+    ///   - title/description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
+    ///   - timestamp = 1:00, 1:30, 2:00, 2:30
+    private func makeFallbackSummarySteps() -> [RecipeStep] {
+        let title = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
+        let description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
+
+        // 1:00, 1:30, 2:00, 2:30
+        let times: [Int] = [60, 90, 120, 150]
+
+        return times.enumerated().map { index, seconds in
+            RecipeStep(
+                stepNumber: index + 1,
+                title: title,
+                description: description,
+                videoTime: seconds
+            )
+        }
     }
 }

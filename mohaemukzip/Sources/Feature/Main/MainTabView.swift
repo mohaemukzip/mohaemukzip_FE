@@ -27,7 +27,7 @@ struct MainTabView: View {
     @State private var yoTeacherVM = YoTeacherChatViewModel()
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
-    @State private var profileVM = ProfileViewModel()
+    @StateObject private var profileVM = ProfileViewModel()
     //@State private var loginVM = LoginViewModel()
     
     init() {
@@ -103,6 +103,11 @@ struct MainTabView: View {
                     image: selection == .profile ? "selectedProfile" : "icon-profile"
                 )
             }
+        }
+        .onChange(of: selection) { _, _ in
+            // 탭 전환 시 기존 네비게이션 스택(Route)이 남아있으면
+            // 다른 탭의 NavigationStack에서 동일 path를 해석하려다 크래시가 날 수 있다.
+            router.navigateToRoot()
         }
         .environment(router)
         .environment(fridgeVM)
