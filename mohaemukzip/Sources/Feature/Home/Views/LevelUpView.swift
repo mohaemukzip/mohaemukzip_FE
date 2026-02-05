@@ -27,7 +27,7 @@ struct LevelUpView: View {
                         .font(.PretendardSemibold24)
                         .foregroundStyle(.grey900)
 
-                    Text("\(content.title)가 되었어요.")
+                    Text(level == 2 ? "\(content.title)이 되었어요." : "\(content.title)가 되었어요.")
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
                 }
