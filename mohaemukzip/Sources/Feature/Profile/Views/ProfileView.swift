@@ -340,11 +340,11 @@ private struct ProfileRecipePreviewCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 8))
 
                 Text(recipe.videoDurationText)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.custom("Pretendard-SemiBold", size: 12))
                     .foregroundStyle(Color.white)
                     .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.black.opacity(0.75))
+                    .padding(.vertical, 4)
+                    .background(Color.black.opacity(0.6))
                     .clipShape(RoundedRectangle(cornerRadius: 6))
                     .padding(6)
             }
