@@ -10,8 +10,9 @@ import SwiftUI
 // TODO: SearchView에서 검색 후 이쪽 뷰로 넘어오게 하기
 
 struct VideoListView: View {
-    @Environment(RecipeVideoViewModel.self) var viewModel
     @Environment(NavigationRouter.self) var router
+    @Environment(SearchViewModel.self) var viewModel
+    @ObservedObject var recipeVideoVM: RecipeVideoViewModel
     
     var body: some View {
         VStack {
@@ -27,7 +28,12 @@ struct VideoListView: View {
                 LazyVStack(spacing: 40) {
                     ForEach(viewModel.searchedVideos) { video in
                         NavigationLink(value: Route.recipeDetail(video)) {
-                            RecipeVideoCard(video: video)
+                            RecipeVideoCard(video: video, onTapBookmark: {recipeVideoVM.toggleBookmark(recipeId: video.id)})
+                                .onAppear {
+                                    if video.id == viewModel.searchedVideos.last?.id {
+                                    Task { await viewModel.getNextSearchedVideos() }
+                                }
+                            }
                         }
                         .buttonStyle(.plain)
                     }
@@ -35,11 +41,15 @@ struct VideoListView: View {
                 .padding(.top, 16)
             }.scrollIndicators(.hidden)
         }.padding(.horizontal)
+            .task(id: viewModel.selectedDishId) {
+                await viewModel.resetAndGetSearchedVideos()
+            }
+            .navigationBarBackButtonHidden()
     }
 }
 
 #Preview {
-    VideoListView()
-        .environment(RecipeVideoViewModel())
+    VideoListView(recipeVideoVM: RecipeVideoViewModel())
         .environment(NavigationRouter())
+        .environment(SearchViewModel())
 }

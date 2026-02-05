@@ -131,13 +131,14 @@ extension View {
                 YoTeacherChatView()
             case .recipeDetail(let video):
                 RecipeDetailView(recipeId: video.id, base: video)
-            case .recipeSearch:
-                SearchView()
+            case .recipeSearch(let vm):
+                SearchView(recipeVideoVM: vm)
             case .home:
                 HomeView()
-            // 상세화면 넘어갈 때
             case .recipeDetailById(let recipeId):
                 RecipeDetailView(recipeId: recipeId, base: nil)
+            case .videoList(let vm):
+                VideoListView(recipeVideoVM: vm)
 
             // ✅ 추가
             case .profileSettings:
