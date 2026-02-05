@@ -67,7 +67,7 @@ struct RecipeListView: View {
 
                 // MARK: - Search Entry
                 /// 레시피 검색 화면으로 이동하는 진입 버튼
-                Button( action: { router.push(.recipeSearch) } ) {
+                Button( action: { router.push(.recipeSearch(viewModel)) } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)

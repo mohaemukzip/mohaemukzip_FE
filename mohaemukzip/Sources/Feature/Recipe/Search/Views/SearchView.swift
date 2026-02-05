@@ -10,6 +10,7 @@ import SwiftUI
 struct SearchView: View {
     @Environment(SearchViewModel.self) var viewModel
     @Environment(NavigationRouter.self) var router
+    @ObservedObject var recipeVideoVM: RecipeVideoViewModel
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -38,15 +39,20 @@ struct SearchView: View {
             ScrollView {
                 LazyVStack {
                     ForEach(viewModel.suggestions) { suggestion in
-                        SearchSuggestion(inputText: viewModel.searchText, suggestionText: suggestion.text)
-                            .padding(.horizontal)
-                            // MARK: onAppear 활용해서 무한스크롤 구현
-                            .onAppear {
-                                if suggestion.id == viewModel.suggestions.last?.id {
-                                    Task { await viewModel.searchNextPage() }
+                        
+                        Button ( action: { viewModel.selectedDishId = suggestion.id
+                                           router.push(.videoList(recipeVideoVM)) } ) {
+                            SearchSuggestion(inputText: viewModel.searchText, suggestionText: suggestion.text)
+                                .padding(.horizontal)
+                                // MARK: onAppear 활용해서 무한스크롤 구현
+                                .onAppear {
+                                    if suggestion.id == viewModel.suggestions.last?.id {
+                                        Task { await viewModel.searchNextPage() }
+                                    }
                                 }
                             }
-                    }
+                        
+                        }
                 }
             }.scrollIndicators(.hidden)
         }.padding(.horizontal)
@@ -69,7 +75,7 @@ struct SearchView: View {
 }
 
 #Preview {
-    SearchView()
+    SearchView(recipeVideoVM: RecipeVideoViewModel())
         .environment(SearchViewModel())
         .environment(NavigationRouter())
 }

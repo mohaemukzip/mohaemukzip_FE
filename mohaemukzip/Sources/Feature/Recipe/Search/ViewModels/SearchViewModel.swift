@@ -12,41 +12,58 @@ import Combine
 class SearchViewModel {
     let service = SearchService()
     var searchText: String = ""
-    var filteredSuggestion: [String] = []
     
+    // MARK: 추천검색어
     var suggestions: [SearchKeyword] = []
-    var pageNum: Int = 0
-    var isLast: Bool = false
+    var isLastSuggestion: Bool = false
+    var pageNumForSuggestion: Int = 0
     
-    let suggestionDummy = ["김밥", "김치찌개", "김김김", "두바이쫀득쿠키", "두쫀붕", "허니콤보"]
-    
-    func performSearch() {
-        if searchText.isEmpty {
-            filteredSuggestion = []
-        } else {
-            filteredSuggestion = suggestionDummy.filter { $0.contains(searchText) }
-        }
-    }
+    // MARK: 레시피비디오
+    var searchedVideos: [RecipeVideo] = []
+    var selectedDishId: Int?
+    var isLastVideo: Bool = false
+    var pageNumForVideo: Int = 0
     
     func resetAndSearch() async {
         self.suggestions = []
-        self.pageNum = 0
-        self.isLast = false
-        self.searchText = ""
+        self.pageNumForSuggestion = 0
+        self.isLastSuggestion = false
         
         await searchNextPage()
     }
     
     func searchNextPage() async {
-        if !isLast && suggestions.isEmpty {
+        if !isLastSuggestion {
             do {
-                let (newItems, isLast) = try await service.getSearchText(keyword: searchText, page: pageNum)
+                let (newItems, isLast) = try await service.getSearchText(keyword: searchText, page: pageNumForSuggestion)
                 
                 self.suggestions.append(contentsOf: newItems)
-                self.isLast = isLast
-                self.pageNum += 1
+                self.isLastSuggestion = isLast
+                self.pageNumForSuggestion += 1
             } catch {
                 print("추천어를 불러올 수 없습니다: \(error)")
+            }
+        }
+    }
+    
+    func resetAndGetSearchedVideos() async {
+        self.searchedVideos = []
+        self.pageNumForVideo = 0
+        self.isLastVideo = false
+        
+        await getNextSearchedVideos()
+    }
+    
+    func getNextSearchedVideos() async {
+        if !isLastVideo {
+            do {
+                let (newItems, isLast) = try await service.getResultForKeyword(dishId: self.selectedDishId ?? 1, page: self.pageNumForVideo)
+                
+                self.searchedVideos.append(contentsOf: newItems)
+                self.isLastVideo = isLast
+                self.pageNumForVideo += 1
+            } catch {
+                print("검색된 레시피 목록을 불러올 수 없습니다: \(error)")
             }
         }
     }

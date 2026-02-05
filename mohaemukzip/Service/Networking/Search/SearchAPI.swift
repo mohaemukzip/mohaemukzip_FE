@@ -11,6 +11,7 @@ import Alamofire
 
 enum SearchAPI {
     case getSearchText(String, Int)
+    case getResultForKeyword(Int, Int)
 }
 
 extension SearchAPI: TargetType {
@@ -19,7 +20,12 @@ extension SearchAPI: TargetType {
     }
     
     var path: String {
-        return "/search"
+        switch self {
+        case .getSearchText:
+            return "/search"
+        case .getResultForKeyword:
+            return "/search/recipes/dish"
+        }
     }
     
     var method: Moya.Method {
@@ -30,6 +36,8 @@ extension SearchAPI: TargetType {
         switch self {
         case .getSearchText(let keyword, let page):
             return .requestParameters(parameters: ["keyword": keyword, "page": page], encoding: URLEncoding.queryString)
+        case .getResultForKeyword(let dishId, let page):
+            return .requestParameters(parameters: ["dishId": dishId, "page": page], encoding: URLEncoding.queryString)
         }
     }
     
