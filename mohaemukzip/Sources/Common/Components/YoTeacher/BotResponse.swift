@@ -11,6 +11,7 @@ struct BotResponse: View {
     var response: [YoTeacherMessage]? = nil
     var title: String? = nil
     var text: String? = nil
+    var onTapVideo: (Int) -> Void
     
     var body: some View {
         if let unwrappedResponse = response {
@@ -41,7 +42,9 @@ struct BotResponse: View {
                     ScrollView(.horizontal) {
                         LazyHStack {
                             ForEach(unwrappedResponse) { image in
-                                RecipeVideoChatCard(url: image.thumbnailURL)
+                                Button ( action: { onTapVideo(image.id) } ) {
+                                    RecipeVideoChatCard(url: image.thumbnailURL)
+                                }
                             }
                         }
                     }.frame(height: 100)
@@ -51,7 +54,7 @@ struct BotResponse: View {
         }
     }
 }
-
+/*
 #Preview {
     BotResponse(response: [YoTeacherMessage(id: 1,
                                             title: "",
@@ -63,5 +66,6 @@ struct BotResponse: View {
                                                                    title: "",
                                             thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)],
                 title: "제목",
-                text: "내용")
-}
+                text: "내용",
+                onTapVideo: { _ in  } )
+}*/

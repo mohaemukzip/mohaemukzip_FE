@@ -43,5 +43,5 @@ struct SearchSuggestion: View {
 }
 
 #Preview {
-    SearchSuggestion(inputText: "김", suggestionText: "김칫국")
+    SearchSuggestion(inputText: "김", suggestionText: "김김김")
 }

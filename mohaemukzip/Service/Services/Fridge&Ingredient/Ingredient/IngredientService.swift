@@ -123,4 +123,24 @@ class IngredientService {
             }
         }
     }
+    
+    func getRecommendedDate(id: Int) async throws -> String {
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.getRecommendedDate(id)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.mapResult(RecommendDateDTO.self)
+                        let date = decoded.recommendedDate
+                        
+                        continuation.resume(returning: date)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }

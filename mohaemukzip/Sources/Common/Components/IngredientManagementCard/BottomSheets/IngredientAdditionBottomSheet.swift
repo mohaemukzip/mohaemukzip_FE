@@ -15,6 +15,7 @@ struct IngredientAdditionBottomSheet: View {
     var onAdd: (StorageType, Date, Int) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
+    var onRecommend: () async -> Date?
     
     @State private var showStorageCase: Bool = false
     @State private var showDatePicker: Bool = false
@@ -118,20 +119,36 @@ struct IngredientAdditionBottomSheet: View {
                     Spacer()
                 }.padding(.bottom, 6)
                 
-                Button ( action: { withAnimation { showDatePicker.toggle() } }) {
-                    ZStack {
-                        RoundedRectangle(cornerRadius: 4)
-                            .frame(height: 40)
-                            .foregroundStyle(.grey100)
-                        
-                        HStack {
-                            Text(dateFormatter.string(from: expiryDate))
-                                .font(.PretendardRegular16)
-                                .foregroundStyle(.grey500)
-                                .padding(.leading, 10)
-                            Spacer()
+                HStack(spacing: 12) {
+                    Button ( action: { withAnimation { showDatePicker.toggle() } }) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .frame(height: 40)
+                                .foregroundStyle(.grey100)
+                            
+                            HStack {
+                                Text(dateFormatter.string(from: expiryDate))
+                                    .font(.PretendardRegular16)
+                                    .foregroundStyle(.grey500)
+                                    .padding(.leading, 10)
+                                Spacer()
+                            }
                         }
                     }
+                    
+                    Button ( action: { Task {
+                        if let newDate = await onRecommend() {
+                            self.expiryDate = newDate
+                        }
+                    } } ) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(.main400, lineWidth: 1)
+                            Text("자동 추천일")
+                                .font(.PretendardRegular16)
+                                .foregroundStyle(.main400)
+                        }
+                    }.frame(width: 104, height: 38)
                 }.padding(.bottom, 16)
                 
                 if (showDatePicker) {
@@ -199,10 +216,12 @@ struct IngredientAdditionBottomSheet: View {
 
 /*
 #Preview {
-    IngredientAdditionBottomSheet(ingredient: IngredientSearchModel(name: "대파", amount: "100g", category: "가공/유제품"),
+    IngredientAdditionBottomSheet(ingredient: IngredientForAddition(id: 1, name: "대파", category: .beverage, unit: "g", amount: 10, isSaved: true),
                                   onAdd: { storage, date, amount in
                                             print("프리뷰 테스트 - 보관: \(storage), 날짜: \(date), 중량: \(amount)")},
-                                  onSave: { },
-                                  onDismiss: { }
+                                  onSave: { _ in print("") },
+                                  onDismiss: { },
+                                  onRecommend: { _ in return Date() }
     )
-}*/
+}
+*/
