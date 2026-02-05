@@ -68,3 +68,9 @@ struct FavoriteIngredient: Decodable {
                                isSaved: isFavorite)
     }
 }
+
+struct RecommendDateDTO: Decodable {
+    let ingredientId: Int
+    let ingredientName: String
+    let recommendedDate: String
+}

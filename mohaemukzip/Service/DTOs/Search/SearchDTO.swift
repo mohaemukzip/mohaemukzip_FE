@@ -43,7 +43,7 @@ struct RecipeInfoDTO: Decodable {
     let channelId: String
     let videoDuration: String
     let cookingTimeMinutes: Int
-    let difficulty: Int
+    let difficulty: Double
     let isBookmarked: Bool
     
     func toDomain() -> RecipeVideo {
@@ -55,7 +55,7 @@ struct RecipeInfoDTO: Decodable {
                            channelName: channelName,
                            viewCount: viewCount,
                            cookingTimeMinutes: cookingTimeMinutes,
-                           difficulty: difficulty,
+                           difficulty: Int(difficulty.rounded()),
                            cuisine: .korean,
                            isBookmarked: isBookmarked)
     }

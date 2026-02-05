@@ -89,6 +89,9 @@ struct IngredientSearchView: View {
                                           onDismiss: {
                 viewModel.selectedIngredientForAddition = nil
                 viewModel.searchText = ""
+            },
+                                          onRecommend: {
+                return await viewModel.getRecommendedDate(id: ingredient.id)
             }).presentationDetents([.fraction(0.98)])
         }
         .navigationBarBackButtonHidden()
