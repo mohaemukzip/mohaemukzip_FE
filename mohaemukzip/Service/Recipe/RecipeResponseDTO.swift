@@ -106,7 +106,7 @@ enum RecipeResponseDTO {
         let videoDuration: String?
         let views: Int
         let videoId: String
-        let difficulty: Int
+        let difficulty: Double
         let ratingCount: Int
         let channelProfileImageUrl: String?
         let isBookmarked: Bool

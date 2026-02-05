@@ -20,6 +20,8 @@ enum Route: Hashable {
     case recentlyViewedRecipes
     case bookmarkedRecipes
 //    case recipeDetailNoComplete(RecipeDetail)
+    //목록에서 상세화면 넘어가는거 필요할떄, 레시피 아이디만 이렇게 넘겨주면 돼요~
+    case recipeDetailById(Int)
  
 
     

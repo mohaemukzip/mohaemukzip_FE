@@ -27,7 +27,11 @@ final class RecentlyViewedRecipesViewModel: ObservableObject {
 
             switch result {
             case let .success(dtoList):
-                let mapped = dtoList.map { ProfileRecipeCard.from(dto: $0) }
+                let mapped = dtoList.map {
+                    var card = ProfileRecipeCard.from(dto: $0)
+                    card.difficulty = Int(($0.difficulty ?? 0).rounded())
+                    return card
+                }
 
                 DispatchQueue.main.async {
                     self.items = mapped
