@@ -352,3 +352,12 @@ final class RecipeVideoViewModel: ObservableObject {
         }
     }
 }
+extension RecipeVideoViewModel: Hashable {
+    static func == (lhs: RecipeVideoViewModel, rhs: RecipeVideoViewModel) -> Bool {
+        ObjectIdentifier(lhs) == ObjectIdentifier(rhs)
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+}

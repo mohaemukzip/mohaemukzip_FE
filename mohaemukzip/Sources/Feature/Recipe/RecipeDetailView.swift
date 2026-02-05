@@ -7,6 +7,7 @@
 
 import SwiftUI
 import YouTubePlayerKit
+import UIKit
 
 // MARK: - 레시피 상세 화면
 /// 레시피 목록에서 선택한 항목의 상세 화면
@@ -27,6 +28,12 @@ struct RecipeDetailView: View {
 
     /// 네비게이션 뒤로가기 dismiss 핸들러
     @Environment(\.dismiss) private var dismiss
+    /// 외부 URL 오픈 핸들러 (유튜브 앱/웹 이동)
+    @Environment(\.openURL) private var openURL
+
+    // ✅ 요리 완료 후 "항상 홈으로" 보내기 위한 탭 라우터
+    // MainTabView에서 .environment(tabRouter)로 주입된 객체를 가져온다.
+    @Environment(TabRouter.self) private var tabRouter
 
     /// RecipeDetailView 초기화
     /// base 데이터가 있으면 즉시 화면 일부 표시
@@ -80,9 +87,11 @@ struct RecipeDetailView: View {
             viewModel.load(recipeId: recipeId, base: base)
         }
         .onChange(of: viewModel.shouldDismissAfterComplete) { shouldDismiss in
-            /// 요리 완료 성공 후 이전 화면으로 복귀
+            /// 요리 완료 성공 후 항상 HomeView로 이동
+            /// - 탭을 home으로 강제 변경
+            /// - 이미 home 탭인 상태여도 goHomeToken으로 스택을 루트로 초기화
             guard shouldDismiss else { return }
-            dismiss()
+            tabRouter.goHome()
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -113,6 +122,9 @@ struct RecipeVideoDetailView: View {
 
     /// 뒤로가기 dismiss 핸들러
     @Environment(\.dismiss) private var dismiss
+
+    /// 외부 URL 오픈 핸들러 (유튜브 앱/웹 이동)
+    @Environment(\.openURL) private var openURL
 
     /// 유튜브 플레이어 상태 유지용 객체
     @StateObject private var player: YouTubePlayer
@@ -157,8 +169,8 @@ struct RecipeVideoDetailView: View {
                     .frame(height: 52) // 네비게이션 바 높이만큼 공간 확보
 
                 /// 상단 영상 플레이어 영역
+                /// - 아래 ScrollView 시작점이 영상 하단과 정확히 맞도록 불필요한 여백 제거
                 playerSection
-                    .padding(.top, 8)
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
@@ -265,30 +277,36 @@ struct RecipeVideoDetailView: View {
         .allowsHitTesting(true)
     }
 
-    /// 유튜브 플레이어 영역 (16:9 비율 고정)
+    /// 유튜브 플레이어 영역 (16:9 비율)
+    /// GeometryReader 기반 높이 계산은 기기/레이아웃 상황에 따라 실제 렌더링 높이와 미세하게 달라져
+    /// 아래 컨텐츠가 영상과 겹쳐 보일 수 있다.
+    /// → aspectRatio 기반으로 고정하고, 높이를 살짝 줄여(오버랩 방지) 스크롤 시작점이 영상 하단과 맞게 한다.
     private var playerSection: some View {
-        GeometryReader { geometry in
-            YouTubePlayerView(player) { state in
-                switch state {
-                case .idle:
-                    ProgressView()
-                case .ready:
-                    EmptyView()
-                case .error:
-                    VStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                        Text("영상을 불러오지 못했어요")
-                            .font(.footnote)
-                    }
-                    .padding(12)
+        YouTubePlayerView(player) { state in
+            switch state {
+            case .idle:
+                ProgressView()
+            case .ready:
+                EmptyView()
+            case .error:
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text("영상을 불러오지 못했어요")
+                        .font(.footnote)
                 }
+                .padding(12)
             }
-            /// 스크롤 제스처와 충돌 방지 목적
-            .allowsHitTesting(false)
-            .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
-            .clipped()
+
         }
-        .frame(height: UIScreen.main.bounds.width * 9 / 16)
+        /// 스크롤 제스처와 충돌 방지 목적
+        // ✅ 플레이어 터치(재생/일시정지/전체화면 등)를 막으면 영상 조작이 불가능해진다.
+        // 상단에 고정된 구조라 ScrollView 제스처 충돌이 크지 않으므로 터치를 허용한다.
+        .allowsHitTesting(true)
+        /// 16:9 비율 유지
+        .aspectRatio(16 / 9, contentMode: .fit)
+        .clipped()
+        /// ✅ 하단 컨텐츠와 겹침 방지를 위해 높이를 아주 조금만 줄인다.
+        .padding(.bottom, 2)
     }
 
     /// 레시피 제목 + 조회수
@@ -340,54 +358,60 @@ struct RecipeVideoDetailView: View {
     }
 
     /// 채널 정보 (프로필 이미지 + 채널명)
+    /// 탭 시 유튜브 앱(우선) → 웹(대체)으로 채널 홈 이동
     private var channelSection: some View {
-        HStack(spacing: 12) {
-            AsyncImage(url: URL(string: video.channelProfileImageUrl ?? "")) { phase in
-                switch phase {
-                case .empty:
-                    Circle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            ProgressView().scaleEffect(0.7)
-                        )
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    Circle()
-                        .fill(Color(.systemGray5))
-                        .overlay(
-                            Image(systemName: "person.fill")
-                                .font(.system(size: 14, weight: .semibold))
-                                .foregroundStyle(.secondary)
-                        )
-                @unknown default:
-                    Circle()
-                        .fill(Color(.systemGray5))
+        Button {
+            openChannelHome(channelId: video.channelId)
+        } label: {
+            HStack(spacing: 12) {
+                AsyncImage(url: URL(string: video.channelProfileImageUrl ?? "")) { phase in
+                    switch phase {
+                    case .empty:
+                        Circle()
+                            .fill(Color(.systemGray5))
+                            .overlay(
+                                ProgressView().scaleEffect(0.7)
+                            )
+                    case .success(let image):
+                        image
+                            .resizable()
+                            .scaledToFill()
+                    case .failure:
+                        Circle()
+                            .fill(Color(.systemGray5))
+                            .overlay(
+                                Image(systemName: "person.fill")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundStyle(.secondary)
+                            )
+                    @unknown default:
+                        Circle()
+                            .fill(Color(.systemGray5))
+                    }
                 }
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+
+                Text(video.channelName)
+                    .font(.custom("Pretendard-Regular", size: 14))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.secondary)
             }
-            .frame(width: 36, height: 36)
-            .clipShape(Circle())
-
-            Text(video.channelName)
-                .font(.custom("Pretendard-Regular", size: 14))
-                .foregroundStyle(.primary)
-
-            Spacer()
-
-            Image(systemName: "chevron.right")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.secondary)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(Color(.systemGray5), lineWidth: 1)
+            )
+            .contentShape(Rectangle())
         }
-        .padding(.vertical, 14)
-        .padding(.horizontal, 16)
-        .background(
-            RoundedRectangle(cornerRadius: 14)
-                .stroke(Color(.systemGray5), lineWidth: 1)
-        )
+        .buttonStyle(.plain)
     }
-
     /// 필요한 재료 (가로 스크롤 칩)
     private var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -466,6 +490,24 @@ struct RecipeVideoDetailView: View {
                     .padding(.vertical, 14)
             }
             .background(Color(.systemBackground))
+        }
+    }
+    // MARK: - Channel Navigation
+    /// 채널명/채널영역 탭 시 유튜브 채널 홈으로 이동
+    private func openChannelHome(channelId: String?) {
+        let trimmed = (channelId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard trimmed.isEmpty == false else { return }
+
+        // 1) 유튜브 앱 딥링크 (설치된 경우)
+        if let appURL = URL(string: "youtube://www.youtube.com/channel/\(trimmed)"),
+           UIApplication.shared.canOpenURL(appURL) {
+            openURL(appURL)
+            return
+        }
+
+        // 2) 웹 fallback
+        if let webURL = URL(string: "https://www.youtube.com/channel/\(trimmed)") {
+            openURL(webURL)
         }
     }
 

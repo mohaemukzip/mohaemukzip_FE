@@ -16,7 +16,8 @@ struct MainTabView: View {
     }
     
     //기본 설정된 상태 -> home
-    @State private var selection: TabType = .home
+    // ✅ 탭 선택을 외부(상세 화면 등)에서도 제어할 수 있도록 라우터로 분리
+    @State private var tabRouter = TabRouter()
     
     // MARK: - 각 뷰에서 사용하는 뷰모델은 MainTabView에서 소유(@State)
     // MARK: - MainTabView에서 소유하는 뷰모델을 환경변수로 각 뷰에 주입
@@ -58,7 +59,7 @@ struct MainTabView: View {
         
     }
     var body: some View {
-        TabView(selection: $selection) {
+        TabView(selection: $tabRouter.selection) {
             Tab(value: .home) {
                 NavigationStack(path: $router.path) {
                     HomeTabView()
@@ -67,7 +68,7 @@ struct MainTabView: View {
             } label: {
                 Label(
                     "홈",
-                    image: selection == .home ? "selectedHome" : "icon-home"
+                    image: tabRouter.selection == .home ? "selectedHome" : "icon-home"
                 )
             }
             Tab(value: .search) {
@@ -78,7 +79,7 @@ struct MainTabView: View {
             } label: {
                 Label(
                     "검색",
-                    image: selection == .search ? "selectedSearch" : "searchicon"
+                    image: tabRouter.selection == .search ? "selectedSearch" : "searchicon"
                 )
             }
             Tab(value: .ingredient) {
@@ -89,7 +90,7 @@ struct MainTabView: View {
             } label: {
                 Label(
                     "재료",
-                    image: selection == .ingredient ? "selectedIngredient" : "icon-ingredient"
+                    image: tabRouter.selection == .ingredient ? "selectedIngredient" : "icon-ingredient"
                 )
             }
             Tab(value: .profile) {
@@ -100,22 +101,47 @@ struct MainTabView: View {
             } label: {
                 Label(
                     "마이",
-                    image: selection == .profile ? "selectedProfile" : "icon-profile"
+                    image: tabRouter.selection == .profile ? "selectedProfile" : "icon-profile"
                 )
             }
         }
-        .onChange(of: selection) { _, _ in
+        .onChange(of: tabRouter.selection) { _, _ in
             // 탭 전환 시 기존 네비게이션 스택(Route)이 남아있으면
             // 다른 탭의 NavigationStack에서 동일 path를 해석하려다 크래시가 날 수 있다.
             router.navigateToRoot()
         }
+        .onChange(of: tabRouter.goHomeToken) { _, _ in
+            // ✅ 이미 홈 탭인 상태에서 goHome()이 호출될 수도 있어서
+            // selection 변화가 없어도 스택을 루트로 확실히 초기화한다.
+            router.navigateToRoot()
+        }
         .environment(router)
+        // ✅ 탭 이동(특히 "항상 홈으로")을 위해 탭 라우터 주입
+        // 상세 화면/모달에서 tabRouter.goHome() 호출 가능
+        .environment(tabRouter)
         .environment(fridgeVM)
         .environment(ingredientSearchVM)
         .environment(yoTeacherVM)
         .environment(searchVM)
         .environment(homeVM)
         .environmentObject(profileVM)
+    }
+}
+
+// MARK: - TabRouter
+// ✅ 상세 화면 등 어디서든 "홈으로" 이동을 요청할 수 있게 하는 탭 라우터
+// 사용 예: @Environment(TabRouter.self) private var tabRouter
+//         tabRouter.goHome()
+@Observable
+final class TabRouter {
+    var selection: MainTabView.TabType = .home
+
+    // goHome()이 이미 홈인 상태에서 호출될 수도 있어서 토큰으로 한 번 더 트리거
+    var goHomeToken: Int = 0
+
+    func goHome() {
+        selection = .home
+        goHomeToken += 1
     }
 }
 
@@ -131,13 +157,15 @@ extension View {
                 YoTeacherChatView()
             case .recipeDetail(let video):
                 RecipeDetailView(recipeId: video.id, base: video)
-            case .recipeSearch:
-                SearchView()
+            case .recipeSearch(let vm):
+                SearchView(recipeVideoVM: vm)
             case .home:
                 HomeTabView()
             // 상세화면 넘어갈 때
             case .recipeDetailById(let recipeId):
                 RecipeDetailView(recipeId: recipeId, base: nil)
+            case .videoList(let vm):
+                VideoListView(recipeVideoVM: vm)
 
             // ✅ 추가
             case .profileSettings:

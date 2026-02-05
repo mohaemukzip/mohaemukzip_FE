@@ -67,7 +67,7 @@ struct RecipeListView: View {
 
                 // MARK: - Search Entry
                 /// 레시피 검색 화면으로 이동하는 진입 버튼
-                Button( action: { router.push(.recipeSearch) } ) {
+                Button( action: { router.push(.recipeSearch(viewModel)) } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)
@@ -156,6 +156,27 @@ struct RecipeListView: View {
 
                 if let initialCuisine {
                     viewModel.selectCuisine(initialCuisine)
+                }
+            }
+            .onAppear {
+                // ✅ 상세 화면에서 뒤로가기(백버튼)로 돌아올 때마다 목록을 최신 상태로 동기화
+                // 상세 화면에서 북마크 토글 등으로 상태가 바뀌어도
+                // 목록 ViewModel(videos)이 자동 갱신되지 않기 때문에, 복귀 시 서버에서 다시 조회한다.
+
+                // 하위 카테고리가 선택된 상태에서만 fetch한다.
+                // (상위만 선택된 상태에서는 fetchRecipesForSelectedCategory()가 videos를 비워버릴 수 있음)
+                let hasSelectedSubCategory = (
+                    viewModel.selectedKoreanSubCategory != nil ||
+                    viewModel.selectedChineseSubCategory != nil ||
+                    viewModel.selectedJapaneseSubCategory != nil ||
+                    viewModel.selectedWesternSubCategory != nil ||
+                    viewModel.selectedSoutheastAsianSubCategory != nil
+                )
+
+                guard hasSelectedSubCategory else { return }
+
+                Task {
+                    await viewModel.fetchRecipesForSelectedCategory()
                 }
             }
             // MARK: - YoTeacher Floating Button

@@ -135,6 +135,20 @@ class IngredientSearchViewModel: ObservableObject {
         }
     }
     
+    func getRecommendedDate(id: Int) async -> Date? {
+        do {
+            let dateString = try await service.getRecommendedDate(id: id)
+            
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            
+            return formatter.date(from: dateString)
+        } catch {
+            print("추천 소비기한 받아올 수 없음: \(error)")
+            return nil
+        }
+    }
+    
     // 저장 기능 함수
     func toggleIsSaved(for id: Int) {
         if let index = allIngredients.firstIndex(where: {$0.id == id}) {
@@ -156,8 +170,4 @@ class IngredientSearchViewModel: ObservableObject {
         }
     }
     
-    // 재료 추가 요청 함수
-    func sendRequest(name: String) {
-        print("서버에 \(name) 재료 요청 전송")
-    }
 }

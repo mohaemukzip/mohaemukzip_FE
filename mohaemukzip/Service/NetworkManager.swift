@@ -1,10 +1,3 @@
-//
-//  NetworkManager.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/29/26.
-//
-
 import Foundation
 import Moya
 
@@ -112,12 +105,14 @@ extension Response {
                 print("[NetworkMap] rawBody: \(raw)")
                 #endif
 
+
                 throw NSError(
                     domain: "NetworkMap",
                     code: statusCode,
                     userInfo: [NSLocalizedDescriptionKey: base.message]
                 )
             }
+
 
             // 정상 케이스: result가 있을 때
             if let result = base.result {
