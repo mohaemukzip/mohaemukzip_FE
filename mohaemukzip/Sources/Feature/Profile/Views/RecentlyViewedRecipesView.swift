@@ -14,8 +14,14 @@ struct RecentlyViewedRecipesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // ===============================
+            // 🔽 NEW: 고정 헤더 (로딩/빈 상태에서도 위치 고정)
+            // ===============================
             listHeader(title: "최근 조회한 레시피")
-
+                .background(Color.white)
+            // ===============================
+            // 🔼 END NEW
+            // ===============================
             if viewModel.isLoading {
                 ProgressView().padding(.top, 20)
             } else if viewModel.items.isEmpty {
@@ -38,6 +44,16 @@ struct RecentlyViewedRecipesView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        // ===============================
+        // 🔽 LEGACY: safeAreaInset 기반 헤더 (로딩 시 위치 점프 발생)
+        // ===============================
+//        .safeAreaInset(edge: .top) {
+//            listHeader(title: "최근 조회한 레시피")
+//                .background(Color.white)
+//        }
+        // ===============================
+        // 🔼 LEGACY END
+        // ===============================
         .navigationBarHidden(true)
         .task {
             viewModel.fetch()

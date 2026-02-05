@@ -15,14 +15,21 @@ struct BookmarkedRecipesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // ===============================
+            // 🔽 NEW: 고정 헤더 (로딩/빈 상태에서도 위치 고정)
+            // ===============================
             listHeader(title: "저장한 레시피")
+                .background(Color.white)
+            // ===============================
+            // 🔼 END NEW
+            // ===============================
 
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView().padding(.top, 20)
             } else if viewModel.items.isEmpty {
                 Text("저장한 레시피가 없습니다.")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.gray)            
+                    .foregroundStyle(Color.gray)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
@@ -36,8 +43,9 @@ struct BookmarkedRecipesView: View {
                             }
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                // TODO: 여기서 RecipeDetailView로 라우팅 연결
+                                router.push(.recipeDetailById(item.id))
                             }
+
                     }
 
                     if viewModel.isLoading && !viewModel.items.isEmpty {
@@ -53,6 +61,16 @@ struct BookmarkedRecipesView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        // ===============================
+        // 🔽 LEGACY: safeAreaInset 기반 헤더 (로딩 시 위치 점프 발생)
+        // ===============================
+//        .safeAreaInset(edge: .top) {
+//            listHeader(title: "저장한 레시피")
+//                .background(Color.white)
+//        }
+        // ===============================
+        // 🔼 LEGACY END
+        // ===============================
         .navigationBarHidden(true)
         .task {
             viewModel.fetchFirstPage()

@@ -111,7 +111,8 @@ extension ProfileMyPageModel {
     /// 서버 응답 DTO(MyPage) → 마이페이지 화면 모델 변환
     static func from(dto: ProfileResponseDTO.MyPage) -> ProfileMyPageModel {
         let profile = ProfileUserProfile(
-            profileImageUrl: dto.profileImageUrl,
+            // 서버에서 프로필 이미지가 null이면 기본 에셋 이미지 사용
+            profileImageUrl: dto.profileImageUrl ?? "realprofile",
             nickname: dto.nickname,
             level: dto.level
         )

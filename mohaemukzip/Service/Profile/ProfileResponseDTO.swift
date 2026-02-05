@@ -20,7 +20,7 @@ import Foundation
 
 enum ProfileResponseDTO {
 
-    // MARK: - 공통 레시피 카드 DTO
+    // MARK: - 공통 레시피 카드 DTO썼
     /// 마이페이지 / 최근 본 레시피 / 저장된 레시피 목록에서 공통으로 사용
     struct RecipeCard: Decodable {
         let id: Int
@@ -43,7 +43,7 @@ enum ProfileResponseDTO {
     // MARK: - 마이페이지 조회
     /// GET /members/me/mypage
     struct MyPage: Decodable {
-        let profileImageUrl: String
+        let profileImageUrl: String?
         let nickname: String
         let level: Int
         let remainingScore: Int

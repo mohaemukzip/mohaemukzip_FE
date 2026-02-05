@@ -13,6 +13,7 @@ enum AuthAPI {
     case signup(SignUpRequestDTO)
     case login(LoginRequestDTO)
     case checkLoginId(CheckLoginIdRequestDTO)
+ 
 }
 
 extension AuthAPI: TargetType {
