@@ -28,6 +28,10 @@ struct RecipeDetailView: View {
     /// 네비게이션 뒤로가기 dismiss 핸들러
     @Environment(\.dismiss) private var dismiss
 
+    // ✅ 요리 완료 후 "항상 홈으로" 보내기 위한 탭 라우터
+    // MainTabView에서 .environment(tabRouter)로 주입된 객체를 가져온다.
+    @Environment(TabRouter.self) private var tabRouter
+
     /// RecipeDetailView 초기화
     /// base 데이터가 있으면 즉시 화면 일부 표시
     init(recipeId: Int, base: RecipeVideo? = nil) {
@@ -80,9 +84,11 @@ struct RecipeDetailView: View {
             viewModel.load(recipeId: recipeId, base: base)
         }
         .onChange(of: viewModel.shouldDismissAfterComplete) { shouldDismiss in
-            /// 요리 완료 성공 후 이전 화면으로 복귀
+            /// 요리 완료 성공 후 항상 HomeView로 이동
+            /// - 탭을 home으로 강제 변경
+            /// - 이미 home 탭인 상태여도 goHomeToken으로 스택을 루트로 초기화
             guard shouldDismiss else { return }
-            dismiss()
+            tabRouter.goHome()
         }
         .navigationBarBackButtonHidden(true)
     }
