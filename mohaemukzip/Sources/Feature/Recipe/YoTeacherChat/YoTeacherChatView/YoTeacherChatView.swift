@@ -53,7 +53,8 @@ struct YoTeacherChatView: View {
                                         if message.id != viewModel.messages.last?.id {
                                             BotResponse(response: message.chatBotResponse,
                                                         title: message.chatBotTitle,
-                                                        text: message.chatBotText)
+                                                        text: message.chatBotText,
+                                                        onTapVideo: { id in router.push(.recipeDetailById(id)) })
                                                 .padding(.bottom, 70)
                                         } else {
                                             if viewModel.responseState == .thinking {
@@ -64,7 +65,8 @@ struct YoTeacherChatView: View {
                                             } else if viewModel.responseState == .completed {
                                                 BotResponse(response: message.chatBotResponse,
                                                             title: message.chatBotTitle,
-                                                            text: message.chatBotText)
+                                                            text: message.chatBotText,
+                                                            onTapVideo: { id in router.push(.recipeDetailById(id)) })
                                                     .padding(.bottom, 70)
                                             }
                                         }
