@@ -16,6 +16,10 @@ struct ProfileView: View {
     @EnvironmentObject private var viewModel: ProfileViewModel
     @Environment(NavigationRouter.self) private var router
 
+    // ✅ 화면이 다시 보일 때마다 최신 상태로 동기화하기 위한 fetch 타이밍 제어
+    // 너무 짧은 간격으로 onAppear가 연속 호출되는 경우를 방지한다.
+    @State private var lastFetchAt: Date? = nil
+
     // MARK: - Body
 
     var body: some View {
@@ -39,20 +43,20 @@ struct ProfileView: View {
         }
         .background(Color.white)
         .navigationBarHidden(true)
-        .task {
-            // ✅ 최초 진입(또는 데이터 비어있을 때)만 로드
-            // - 프로필 수정 화면에서 돌아온 직후에는 ViewModel이 이미 최신 상태일 수 있어
-            //   불필요한 재호출로 placeholder가 잠깐 보이는 걸 방지
-            let nicknameEmpty = viewModel.myPage.profile.nickname
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .isEmpty
-            let imageEmpty = viewModel.myPage.profile.profileImageUrl
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-                .isEmpty
+        .onAppear {
+            // ✅ 다른 화면(프로필 수정/저장 목록 등)에서 돌아올 때마다 최신 상태로 동기화
+            // - 닉네임/프로필 이미지/최근 조회/저장 레시피 썸네일 등이 바뀔 수 있으니
+            //   화면이 다시 보이는 시점에 서버에서 재조회한다.
 
-            if nicknameEmpty || imageEmpty {
-                viewModel.fetchMyPage()
+            // onAppear가 연속 호출될 수 있어 너무 잦은 호출은 짧게 막는다.
+            // (예: 스크롤/레이아웃 변화로 인해 재등장처럼 보이는 경우)
+            let now = Date()
+            if let lastFetchAt, now.timeIntervalSince(lastFetchAt) < 2 {
+                return
             }
+            lastFetchAt = now
+
+            viewModel.fetchMyPage()
         }
         .overlay {
             if viewModel.isLoading {

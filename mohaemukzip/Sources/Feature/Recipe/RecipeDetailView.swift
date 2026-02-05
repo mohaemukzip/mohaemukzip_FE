@@ -31,6 +31,10 @@ struct RecipeDetailView: View {
     /// 외부 URL 오픈 핸들러 (유튜브 앱/웹 이동)
     @Environment(\.openURL) private var openURL
 
+    // ✅ 요리 완료 후 "항상 홈으로" 보내기 위한 탭 라우터
+    // MainTabView에서 .environment(tabRouter)로 주입된 객체를 가져온다.
+    @Environment(TabRouter.self) private var tabRouter
+
     /// RecipeDetailView 초기화
     /// base 데이터가 있으면 즉시 화면 일부 표시
     init(recipeId: Int, base: RecipeVideo? = nil) {
@@ -83,9 +87,11 @@ struct RecipeDetailView: View {
             viewModel.load(recipeId: recipeId, base: base)
         }
         .onChange(of: viewModel.shouldDismissAfterComplete) { shouldDismiss in
-            /// 요리 완료 성공 후 이전 화면으로 복귀
+            /// 요리 완료 성공 후 항상 HomeView로 이동
+            /// - 탭을 home으로 강제 변경
+            /// - 이미 home 탭인 상태여도 goHomeToken으로 스택을 루트로 초기화
             guard shouldDismiss else { return }
-            dismiss()
+            tabRouter.goHome()
         }
         .navigationBarBackButtonHidden(true)
     }
@@ -163,8 +169,8 @@ struct RecipeVideoDetailView: View {
                     .frame(height: 52) // 네비게이션 바 높이만큼 공간 확보
 
                 /// 상단 영상 플레이어 영역
+                /// - 아래 ScrollView 시작점이 영상 하단과 정확히 맞도록 불필요한 여백 제거
                 playerSection
-                    .padding(.top, 8)
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 16) {
@@ -271,29 +277,36 @@ struct RecipeVideoDetailView: View {
         .allowsHitTesting(true)
     }
 
-    /// 유튜브 플레이어 영역 (16:9 비율 고정)
+    /// 유튜브 플레이어 영역 (16:9 비율)
+    /// GeometryReader 기반 높이 계산은 기기/레이아웃 상황에 따라 실제 렌더링 높이와 미세하게 달라져
+    /// 아래 컨텐츠가 영상과 겹쳐 보일 수 있다.
+    /// → aspectRatio 기반으로 고정하고, 높이를 살짝 줄여(오버랩 방지) 스크롤 시작점이 영상 하단과 맞게 한다.
     private var playerSection: some View {
-        GeometryReader { geometry in
-            YouTubePlayerView(player) { state in
-                switch state {
-                case .idle:
-                    ProgressView()
-                case .ready:
-                    EmptyView()
-                case .error:
-                    VStack(spacing: 8) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                        Text("영상을 불러오지 못했어요")
-                            .font(.footnote)
-                    }
-                    .padding(12)
+        YouTubePlayerView(player) { state in
+            switch state {
+            case .idle:
+                ProgressView()
+            case .ready:
+                EmptyView()
+            case .error:
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text("영상을 불러오지 못했어요")
+                        .font(.footnote)
                 }
+                .padding(12)
             }
-           
-            .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
-            .clipped()
+
         }
-        .frame(height: UIScreen.main.bounds.width * 9 / 16)
+        /// 스크롤 제스처와 충돌 방지 목적
+        // ✅ 플레이어 터치(재생/일시정지/전체화면 등)를 막으면 영상 조작이 불가능해진다.
+        // 상단에 고정된 구조라 ScrollView 제스처 충돌이 크지 않으므로 터치를 허용한다.
+        .allowsHitTesting(true)
+        /// 16:9 비율 유지
+        .aspectRatio(16 / 9, contentMode: .fit)
+        .clipped()
+        /// ✅ 하단 컨텐츠와 겹침 방지를 위해 높이를 아주 조금만 줄인다.
+        .padding(.bottom, 2)
     }
 
     /// 레시피 제목 + 조회수
