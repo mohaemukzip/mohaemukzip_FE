@@ -61,7 +61,7 @@ struct MainTabView: View {
         TabView(selection: $selection) {
             Tab(value: .home) {
                 NavigationStack(path: $router.path) {
-                    HomeView()
+                    HomeTabView()
                         .setupNavigationDestinations()
                 }
             } label: {
@@ -134,7 +134,7 @@ extension View {
             case .recipeSearch:
                 SearchView()
             case .home:
-                HomeView()
+                HomeTabView()
             // 상세화면 넘어갈 때
             case .recipeDetailById(let recipeId):
                 RecipeDetailView(recipeId: recipeId, base: nil)
