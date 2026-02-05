@@ -10,38 +10,75 @@ import SwiftUI
 struct HomeView: View {
     @Environment(NavigationRouter.self) private var router
     @Environment(HomeViewModel.self) var viewModel
+    @Environment(SearchViewModel.self) var searchViewModel
+    
+    @State private var isLevelUpPresented: Bool = false
+    @AppStorage("lastSeenLevel") private var lastSeenLevel: Int = 0
+    
+    var body: some View {
+        @Bindable var viewModel = viewModel
+        
+        VStack(spacing: 14) {
+            if let home = viewModel.home {
+                characterSection(home)
+                sectionDivider
+                weeklyChallengeSection(home)
+                sectionDivider
+                todayMissionSection(home)
+                recommendedSection(home)
+            } else if viewModel.isLoading {
+                ProgressView().padding(.top, 40)
+            } else {
+                Text("데이터가 없어요")
+                    .foregroundStyle(.secondary)
+                    .padding(.top, 40)
+            }
+        }
+        .task {
+            await viewModel.load()
+        }
+        .onChange(of: viewModel.home?.level) { _, newLevel in
+            checkLevelUpIfNeeded(newLevel: newLevel)
+        }
+        .fullScreenCover(isPresented: $isLevelUpPresented) {
+            LevelUpView(level: viewModel.home?.level ?? 1) {
+                isLevelUpPresented = false
+                if let level = viewModel.home?.level {
+                    lastSeenLevel = level
+                }
+            }
+        }
+        .padding(.horizontal, 17)
+        .padding(.top, 8)
+        .background(.white)
+    }
+}
+
+struct HomeTabView: View {
+    @Environment(NavigationRouter.self) private var router
+    @Environment(HomeViewModel.self) var viewModel
+    @Environment(SearchViewModel.self) var searchViewModel
+    
     @State private var selectedTab: TopTab = .board
     @State private var isHomePowerInfoPresented: Bool = false
     
     enum TopTab { case board, stats }
     
     var body: some View {
-        @Bindable var viewModel = viewModel
-        
         ZStack {
-            ScrollView(showsIndicators: false){
+            ScrollView(showsIndicators: false) {
                 VStack(spacing: 14) {
                     topTabs
                     
                     switch selectedTab {
                     case .board:
-                        if let home = viewModel.home {
-                            characterSection(home)
-                            weeklyChallengeSection(home)
-                            todayMissionSection(home)
-                            recommendedSection(home)
-                        } else if viewModel.isLoading {
-                            ProgressView().padding(.top, 40)
-                        } else {
-                            Text("데이터가 없어요").foregroundStyle(.secondary).padding(.top, 40)
-                        }
+                        HomeView()
+                            .padding(.bottom, 20)
                     case .stats:
                         StatsView(isHomePowerInfoPresented: $isHomePowerInfoPresented)
                     }
                 }
-                .padding(.bottom, 20)
             }
-            
             
             if isHomePowerInfoPresented {
                 HomePowerInfoModalView(isPresented: $isHomePowerInfoPresented)
@@ -49,18 +86,11 @@ struct HomeView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: isHomePowerInfoPresented)
-        .onAppear {
-            Task { await viewModel.load() }
-        }
-        .onChange(of: selectedTab) { _, _ in
-            Task { await viewModel.load() }
-        }
         .navigationBarHidden(true)
     }
 }
 
-// MARK: - UI Pieces
-private extension HomeView {
+private extension HomeTabView {
     var topTabs: some View {
         HStack(spacing: 0) {
             HStack(spacing: 16) {
@@ -88,16 +118,34 @@ private extension HomeView {
                 .foregroundStyle(selectedTab == tab ? .grey900 : .grey400)
         }
     }
+}
+
+// MARK: - UI Pieces
+private extension HomeView {
+    func checkLevelUpIfNeeded(newLevel: Int?) {
+        guard let level = newLevel else { return }
+        
+        if lastSeenLevel == 0 {
+            lastSeenLevel = level
+            return
+        }
+        
+        guard level >= 1 else { return }
+        
+        if level > lastSeenLevel {
+            isLevelUpPresented = true
+        }
+    }
     
     func characterSection(_ home: HomeModel) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             // lv 주는 값에 따라 캐릭터 이미지 다르게
-            HStack(spacing: 20) {
+            HStack(alignment: .top, spacing: 20) {
                 Image(levelImageName(home.level))
                     .resizable()
                     .scaledToFit()
                     .padding(12)
-                    .frame(width: 170, height: 167)
+                    .frame(width: 150)
                 
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(spacing: 6) {
@@ -137,19 +185,14 @@ private extension HomeView {
             }
             .padding(.top, 2)
         }
-        .padding(14)
-        .background(.white)
-        .clipShape(RoundedRectangle(cornerRadius: 18)) //지우기
+        .padding(.top, 12)
+        .padding(.bottom, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     func weeklyChallengeSection(_ home: HomeModel) -> some View {
-        VStack(alignment: .leading, spacing: 32) {
-            Rectangle()
-                .frame(height: 8)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.grey100)
-                .padding(.horizontal, -17)
-            Text("_님은 \(home.consecutiveDays)일째 루틴 도전 중!")
+        VStack(alignment: .leading, spacing: 18) {
+            Text("\(home.nickname)님은 \(home.consecutiveDays)일째 루틴 도전 중!")
                 .font(.PretendardSemibold20)
                 .foregroundStyle(.grey900)
             
@@ -159,29 +202,26 @@ private extension HomeView {
                         Text(item.day)
                             .font(.PretendardMedium14)
                             .foregroundStyle(.grey500)
+                        
                         ZStack {
                             Circle()
-                                .fill(item.isDone ? Color.clear : Color(.systemGray4))
+                                .fill(item.isDone ? Color.clear : .grey300)
                             
-//                            if item.isDone {
-//                                Image(.icnBab)
-//                                    .resizable()
-//                                    .scaledToFit()
-//                            }
+                            if item.isDone {
+                                Image(.icnBab)
+                                    .resizable()
+                                    .scaledToFit()
+                            }
                         }
                         .frame(width: 40, height: 40)
                     }
                     .frame(maxWidth: .infinity)
                 }
             }
-            Rectangle()
-                .frame(height: 8)
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.grey100)
-                .padding(.horizontal, -17)
         }
-        .padding(17)
-        .clipShape(RoundedRectangle(cornerRadius: 18))
+        .padding(.top, 16)
+        .padding(.bottom, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     func todayMissionSection(_ home: HomeModel) -> some View {
@@ -203,38 +243,40 @@ private extension HomeView {
                     Text(home.todayMission.description)
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
-                        .lineLimit(2) //행간 어케 주지
+                        .lineLimit(2)
                 }
                 
                 
-                Text("보상: +\(home.todayMission.reward) 루틴 포인트, '재료 마스터' 뱃지 획득")
+                Text("보상: +\(home.todayMission.reward) 루틴 포인트")
                     .font(.PretendardRegular16)
                     .foregroundStyle(.main400)
                 
                 Button {
                     // TODO: 퀘스트 화면 이동
                     print("BEFORE:", router.path)
+                    searchViewModel.searchText = "\(home.todayMission.dishId)"
                     router.push(.ingredientDetailSearch)
                     print("AFTER:", router.path)
                 } label: {
-                    Text(home.todayMission.isCompleted ? "완료됨" : "퀘스트 도전하기")
-                        .font(.system(size: 13, weight: .bold))
+                    Text(home.todayMission.status == .completed ? "완료됨" : "퀘스트 도전하기")
+                        .font(.PretendardSemibold16)
                         .frame(maxWidth: .infinity)
                         .frame(height: 46)
                         .foregroundStyle(.white)
-                        .background(home.todayMission.isCompleted ? Color.gray : Color.orange)
+                        .background(
+                            home.todayMission.status == .completed
+                            ? Color.grey400
+                            : Color.main400
+                        )
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
-                .disabled(home.todayMission.isCompleted)
+                .disabled(home.todayMission.status == .completed)
             }
-            .padding(24)
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .overlay(
-                RoundedRectangle(cornerRadius: 10)
-                    .stroke(.grey400, lineWidth: 1)
-            )
+            .padding(.vertical, 16)
+            .padding(.horizontal, 0)
         }
-        .padding(.horizontal, 17)
+        .padding(.bottom, 66)
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
     
     func recommendedSection(_ home: HomeModel) -> some View {
@@ -242,17 +284,29 @@ private extension HomeView {
             Text("오늘의 추천 요리 레시피")
                 .font(.PretendardSemibold20)
                 .foregroundStyle(.black)
-                .padding(.top, 80)
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
                     ForEach(home.recipes) { recipe in
                         HomeRecipeCardView(recipe: recipe)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                router.push(.recipeDetailById(recipe.id))
+                            }
                     }
                 }
             }
         }
-        .padding(.horizontal, 17)
+        .padding(.bottom, 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+    
+    var sectionDivider: some View {
+        Rectangle()
+            .fill(Color.grey100)
+            .frame(height: 8)
+            .frame(maxWidth: .infinity)
+            .padding(.horizontal, -17)
     }
     
     func levelImageName(_ level: Int) -> String {
@@ -418,9 +472,8 @@ private struct HomePowerInfoModalView: View {
     }
 }
 
-// MARK: - Preview
 #Preview {
-    HomeView()
+    HomeTabView()
         .environment(NavigationRouter())
         .environment(HomeViewModel())
 }
