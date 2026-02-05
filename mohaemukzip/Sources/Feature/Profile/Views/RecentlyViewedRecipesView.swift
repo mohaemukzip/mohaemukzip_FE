@@ -30,8 +30,7 @@ struct RecentlyViewedRecipesView: View {
                             .listRowSeparator(.hidden)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                // TODO: 여기서 RecipeDetailView로 라우팅 연결
-                                // router.push(.recipeDetailNoCompleteModal(id: item.id)) 같은 식으로
+                                router.push(.recipeDetailById(item.id))
                             }
                     }
                 }

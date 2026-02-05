@@ -35,7 +35,7 @@ enum ProfileResponseDTO {
         let videoDuration: String
 
         let cookingTimeMinutes: Int?
-        let difficulty: Int?
+        let difficulty: Double?
 
         let isBookmarked: Bool
     }

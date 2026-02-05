@@ -85,7 +85,7 @@ struct ProfileRecipeCard: Identifiable, Equatable {
     let channelId: String
     let videoDuration: String
     let cookingTimeMinutes: Int
-    let difficulty: Int
+    var difficulty: Int?
     let isBookmarked: Bool
 
     /// "10:23" 같은 재생 시간 표시
@@ -146,7 +146,7 @@ extension ProfileRecipeCard {
             channelId: dto.channelId ?? "",
             videoDuration: dto.videoDuration,
             cookingTimeMinutes: dto.cookingTimeMinutes ?? 0,
-            difficulty: dto.difficulty ?? 0,
+            difficulty: dto.difficulty.map { Int($0.rounded()) },
             isBookmarked: dto.isBookmarked
         )
     }

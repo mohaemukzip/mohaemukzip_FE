@@ -22,12 +22,14 @@ struct BookmarkedRecipesView: View {
             } else if viewModel.items.isEmpty {
                 Text("저장한 레시피가 없습니다.")
                     .font(.system(size: 14, weight: .medium))
-                    .foregroundStyle(Color.gray)
+                    .foregroundStyle(Color.gray)            
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
                     ForEach(viewModel.items) { item in
-                        RecipeListRow(recipe: item, showsBookmark: true)
+                        RecipeListRow(recipe: item, showsBookmark: true, onTapBookmark: {
+                            viewModel.toggleBookmark(recipeId: item.id)
+                        })
                             .listRowSeparator(.hidden)
                             .onAppear {
                                 viewModel.loadNextIfNeeded(currentItem: item)

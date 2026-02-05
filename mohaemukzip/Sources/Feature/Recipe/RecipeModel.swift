@@ -207,7 +207,7 @@ struct RecipeVideo: Identifiable, Hashable {
 
     // MARK: - 카테고리 정보 (프론트 기준 정의)
     /// 서버 값과 1:1 매칭되지 않을 수 있으며, 앱 내부 분류 기준으로 사용함
-    let cuisine: CuisineCategory
+    let cuisine: CuisineCategory?
     let koreanSubCategory: KoreanSubCategory?
     let chineseSubCategory: ChineseSubCategory?
     let japaneseSubCategory: JapaneseSubCategory?
@@ -271,7 +271,7 @@ struct RecipeVideo: Identifiable, Hashable {
         ingredients: [RecipeIngredient]? = nil,
         steps: [RecipeStep]? = nil,
         summaryExists: Bool? = nil,
-        cuisine: CuisineCategory,
+        cuisine: CuisineCategory?,
         koreanSubCategory: KoreanSubCategory? = nil,
         chineseSubCategory: ChineseSubCategory? = nil,
         japaneseSubCategory: JapaneseSubCategory? = nil,
