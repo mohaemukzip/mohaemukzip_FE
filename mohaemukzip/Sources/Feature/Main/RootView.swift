@@ -27,7 +27,7 @@ final class AppState: ObservableObject {
         
         // Splash 를 먼저 보여주고, 토큰 로딩 후 루트를 결정
         root = .splash
-        TokenStore.clear() /*<< 자동로그인 제거용*/
+        TokenStore.clear() // << 자동로그인 제거용
         Task { @MainActor in
             // 스플래시가 너무 빨리 사라져서 안 보이는 문제 방지 (필요 시 시간 조절)
             try? await Task.sleep(nanoseconds: 1500_000_000)

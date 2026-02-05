@@ -25,13 +25,13 @@ struct OnboardingView: View {
             id: 0,
             imageName: "onboarding1",
             title: "뭐해먹집에서 집밥을 게임처럼",
-            subtitle: "요리를 파밍하는 경험치를 쌓고 레시피를 개방 성취해요!"
+            subtitle: "요리할 때마다 경험치를 쌓고 퀘스트를 깨며 성장해요!"
         ),
         .init(
             id: 1,
             imageName: "onboarding2",
             title: "지금 나에게 맞는 레시피를 한 번에",
-            subtitle: "취향, 난이도, 재료, 상황까지 반영하여 레시피를 검색해요."
+            subtitle: "취향, 난이도, 재료, 상태까지 반영하여 레시피를 검색해요."
         ),
         .init(
             id: 2,
@@ -68,33 +68,18 @@ struct OnboardingView: View {
     
 
     private var bottomControls: some View {
-        VStack(spacing: 0) {
+        // 고정 값 (디자인 스펙)
+        let indicatorTop: CGFloat = 16
+        let buttonTopGap: CGFloat = 34
+        let buttonHeight: CGFloat = 57
+
+        return VStack(spacing: 0) {
             PageIndicator(total: pages.count, current: selection)
-                .padding(.top, 60)
-                .offset(y: 50)
+                .padding(.top, indicatorTop)
 
-            if selection < pages.count - 1 {
-                HStack {
-                    Spacer()
-                    Button {
-                        router.push(.start)
-                    } label: {
-                        Text("건너뛰기")
-                            .font(.PretendardRegular16)
-                            .foregroundStyle(.grey500)
-                    }
-                }
-                .padding(.top, 52)
-                .frame(height: 10, alignment: .top)
-                .offset(y: 50)
-                .padding(.bottom, 34)
-            } else {
-                Color.clear
-                    .frame(height: 10)
-                    .offset(y: 50)
-                    .padding(.bottom, 34)
-            }
+            Spacer().frame(height: buttonTopGap)
 
+            // ✅ 버튼 영역도 항상 같은 높이를 차지하게 (있을 때/없을 때 동일)
             if selection == pages.count - 1 {
                 Button {
                     router.push(.start)
@@ -103,17 +88,30 @@ struct OnboardingView: View {
                         .font(.PretendardSemibold18)
                         .foregroundStyle(.white)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 57)
+                        .frame(height: buttonHeight)
                         .background(
                             RoundedRectangle(cornerRadius: 12)
                                 .fill(.main400)
                         )
                 }
-                .padding(.top, 37)
+                .buttonStyle(.plain)
             } else {
-                Color.clear
-                    .frame(height: 57)
-                    .padding(.top, 37)
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            router.push(.start)
+                        } label: {
+                            Text("건너뛰기")
+                                .font(.PretendardRegular16)
+                                .foregroundStyle(.grey500)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.bottom, 12) // safeAreaInset(38) + 12 = 50
+                }
+                .frame(height: buttonHeight)
             }
         }
         .padding(.horizontal, 17)
@@ -129,14 +127,18 @@ private struct OnboardingPageView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-                .padding(.top, 58)
+                .padding(.top, 75)
                 .padding(.horizontal, 17)
                 .padding(.bottom, 60)
 
             Image(page.imageName)
                 .resizable()
                 .scaledToFit()
+
+            Spacer(minLength: 0)
         }
+        // ✅ TabView가 페이지를 세로 중앙 정렬하지 않도록, 화면을 꽉 채우고 top 정렬
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
 
     private var header: some View {
