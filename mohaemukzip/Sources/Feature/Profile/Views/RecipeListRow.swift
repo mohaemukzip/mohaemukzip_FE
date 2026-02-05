@@ -11,10 +11,16 @@ struct RecipeListRow: View {
 
     let recipe: ProfileRecipeCard
     let showsBookmark: Bool
+    let onTapBookmark: (() -> Void)?
 
-    init(recipe: ProfileRecipeCard, showsBookmark: Bool = true) {
+    init(
+        recipe: ProfileRecipeCard,
+        showsBookmark: Bool = true,
+        onTapBookmark: (() -> Void)? = nil
+    ) {
         self.recipe = recipe
         self.showsBookmark = showsBookmark
+        self.onTapBookmark = onTapBookmark
     }
 
     var body: some View {
@@ -53,8 +59,18 @@ struct RecipeListRow: View {
             Spacer()
 
             if showsBookmark {
-                Image(systemName: recipe.isBookmarked ? "bookmark.fill" : "bookmark")
-                    .foregroundStyle(recipe.isBookmarked ? Color.black : Color.gray)
+                if let onTapBookmark {
+                    Button {
+                        onTapBookmark()
+                    } label: {
+                        Image("bookmark.fill")
+                            .foregroundStyle(Color.black)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    Image( "bookmark.fill")
+                        .foregroundStyle(Color.black)
+                }
             }
         }
         .padding(.vertical, 8)

@@ -356,6 +356,8 @@ final class RecipeDetailViewModel: ObservableObject {
             case .seafood: return 49
             case .salad: return 50
             }
+        case .none:
+            return nil
         }
     }
 

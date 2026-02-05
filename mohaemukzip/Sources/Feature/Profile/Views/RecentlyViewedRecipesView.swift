@@ -14,8 +14,14 @@ struct RecentlyViewedRecipesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // ===============================
+            // 🔽 NEW: 고정 헤더 (로딩/빈 상태에서도 위치 고정)
+            // ===============================
             listHeader(title: "최근 조회한 레시피")
-
+                .background(Color.white)
+            // ===============================
+            // 🔼 END NEW
+            // ===============================
             if viewModel.isLoading {
                 ProgressView().padding(.top, 20)
             } else if viewModel.items.isEmpty {
@@ -30,8 +36,7 @@ struct RecentlyViewedRecipesView: View {
                             .listRowSeparator(.hidden)
                             .contentShape(Rectangle())
                             .onTapGesture {
-                                // TODO: 여기서 RecipeDetailView로 라우팅 연결
-                                // router.push(.recipeDetailNoCompleteModal(id: item.id)) 같은 식으로
+                                router.push(.recipeDetailById(item.id))
                             }
                     }
                 }
@@ -39,6 +44,16 @@ struct RecentlyViewedRecipesView: View {
                 .scrollIndicators(.hidden)
             }
         }
+        // ===============================
+        // 🔽 LEGACY: safeAreaInset 기반 헤더 (로딩 시 위치 점프 발생)
+        // ===============================
+//        .safeAreaInset(edge: .top) {
+//            listHeader(title: "최근 조회한 레시피")
+//                .background(Color.white)
+//        }
+        // ===============================
+        // 🔼 LEGACY END
+        // ===============================
         .navigationBarHidden(true)
         .task {
             viewModel.fetch()

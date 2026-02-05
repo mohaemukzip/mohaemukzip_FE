@@ -10,7 +10,7 @@ import Moya
 import Alamofire
 
 // MARK: - RecipeService
-/// 레시피 관련 API 
+/// 레시피 관련 API
 /// 네트워크 요청 → DTO 디코딩 → 앱 모델 변환 역할 수행
 /// 목록 / 상세 / 요약 / 북마크 / 요리 완료 API 포함
 
@@ -287,7 +287,7 @@ final class RecipeService {
             channelName: dto.channel,
             viewCount: dto.views,
             cookingTimeMinutes: dto.cookingTimeMinutes,
-            difficulty: dto.difficulty,
+            difficulty: Int(dto.difficulty.rounded()),
             level: nil,
             ratingCount: dto.ratingCount,
             ingredients: ingredients,

@@ -78,7 +78,7 @@ struct MainTabView: View {
             } label: {
                 Label(
                     "검색",
-                    image: selection == .search ? "selectedSearch" : "icon-search"
+                    image: selection == .search ? "selectedSearch" : "searchicon"
                 )
             }
             Tab(value: .ingredient) {
@@ -135,6 +135,9 @@ extension View {
                 SearchView()
             case .home:
                 HomeView()
+            // 상세화면 넘어갈 때
+            case .recipeDetailById(let recipeId):
+                RecipeDetailView(recipeId: recipeId, base: nil)
 
             // ✅ 추가
             case .profileSettings:
