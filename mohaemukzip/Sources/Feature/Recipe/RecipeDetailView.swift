@@ -289,8 +289,7 @@ struct RecipeVideoDetailView: View {
                     .padding(12)
                 }
             }
-            /// 스크롤 제스처와 충돌 방지 목적
-            .allowsHitTesting(false)
+           
             .frame(width: geometry.size.width, height: geometry.size.width * 9 / 16)
             .clipped()
         }
