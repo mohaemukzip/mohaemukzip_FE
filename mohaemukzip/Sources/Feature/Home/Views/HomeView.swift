@@ -246,7 +246,6 @@ private extension HomeView {
                         .lineLimit(2)
                 }
                 
-                
                 Text("보상: +\(home.todayMission.reward) 루틴 포인트")
                     .font(.PretendardRegular16)
                     .foregroundStyle(.main400)
