@@ -89,7 +89,8 @@ struct IngredientDetailSearchView: View {
                         } else {
                             IngredientList(ingredients: viewModel.savedIngredients,
                                            onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
-                                           onPlusTap: { item in self.sheetItem = item })
+                                           onPlusTap: { item in self.sheetItem = item },
+                                           onRequest: { self.isShowingSheet = true })
                         }
                         
                     }.padding(.horizontal)
@@ -118,43 +119,45 @@ struct IngredientDetailSearchView: View {
                     .padding(.horizontal)
                 }
             } // end of VStack
-            Button ( action: { isShowingSheet = true } ) {
-                IngredientRequestButton()
-                    .padding(.horizontal)
-                    .padding(.bottom, 35)
+            
+            if viewModel.savedIngredients.isEmpty {
+                Button ( action: { isShowingSheet = true } ) {
+                    IngredientRequestButton()
+                        .padding(.horizontal)
+                        .padding(.bottom, 35)
+                }
             }
-            .sheet(isPresented: $isShowingSheet) {
-                RequestBottomSheet(isShowingSheet: $isShowingSheet,
-                                   onRequest: { requestedText in
-                    Task { await viewModel.ingredientRequest(name: requestedText) }
-                    viewModel.searchText = ""
-                }).presentationDetents([.fraction(0.45), .large])
-            }
-            .sheet(item: $sheetItem) { ingredient in
-                IngredientAdditionBottomSheet(ingredient: ingredient,
-                                              onAdd: { storage, date, weight in
-                    Task {
-                        await fridgeVM.addIngredient(id: ingredient.id,
-                                                     ty: storage.rawValue,
-                                                     date: date,
-                                                     amount: weight)
-                        self.sheetItem = nil
-                        viewModel.searchText = ""
-                        router.navigateToRoot()
-                    }
-                },
-                                              onSave: { id in
-                    self.sheetItem?.isSaved.toggle()
-                    Task { await viewModel.toggleSaved(id: ingredient.id) }
-                },
-                                              onDismiss: {
+        }.sheet(isPresented: $isShowingSheet) {
+            RequestBottomSheet(isShowingSheet: $isShowingSheet,
+                               onRequest: { requestedText in
+                Task { await viewModel.ingredientRequest(name: requestedText) }
+                viewModel.searchText = ""
+            }).presentationDetents([.fraction(0.45), .large])
+        }
+        .sheet(item: $sheetItem) { ingredient in
+            IngredientAdditionBottomSheet(ingredient: ingredient,
+                                          onAdd: { storage, date, weight in
+                Task {
+                    await fridgeVM.addIngredient(id: ingredient.id,
+                                                 ty: storage.rawValue,
+                                                 date: date,
+                                                 amount: weight)
                     self.sheetItem = nil
                     viewModel.searchText = ""
-                },
-                                              onRecommend: {
-                    return await viewModel.getRecommendedDate(id: ingredient.id)
-                }).presentationDetents([.fraction(0.98)])
-            }
+                    router.navigateToRoot()
+                }
+            },
+                                          onSave: { id in
+                self.sheetItem?.isSaved.toggle()
+                Task { await viewModel.toggleSaved(id: ingredient.id) }
+            },
+                                          onDismiss: {
+                self.sheetItem = nil
+                viewModel.searchText = ""
+            },
+                                          onRecommend: {
+                return await viewModel.getRecommendedDate(id: ingredient.id)
+            }).presentationDetents([.fraction(0.98)])
         }.navigationBarBackButtonHidden() // end of ZStack
             .task(id: viewModel.searchText.isEmpty) {
                 if viewModel.searchText.isEmpty {
