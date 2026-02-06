@@ -101,6 +101,7 @@ private extension StatsView {
             stickerDates: viewModel.stickerDates,
             stickerImageName: "icn_bab"
         )
+        .padding(.bottom, 20)
     }
 }
 

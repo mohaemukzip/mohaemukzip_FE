@@ -29,7 +29,6 @@ struct MainTabView: View {
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
     @StateObject private var profileVM = ProfileViewModel()
-    //@State private var loginVM = LoginViewModel()
     
     init() {
         let appearance = UITabBarAppearance()
@@ -62,7 +61,7 @@ struct MainTabView: View {
         TabView(selection: $tabRouter.selection) {
             Tab(value: .home) {
                 NavigationStack(path: $router.path) {
-                    HomeView()
+                    HomeTabView()
                         .setupNavigationDestinations()
                 }
             } label: {
@@ -160,7 +159,8 @@ extension View {
             case .recipeSearch(let vm):
                 SearchView(recipeVideoVM: vm)
             case .home:
-                HomeView()
+                HomeTabView()
+            // 상세화면 넘어갈 때
             case .recipeDetailById(let recipeId):
                 RecipeDetailView(recipeId: recipeId, base: nil)
             case .videoList(let vm):

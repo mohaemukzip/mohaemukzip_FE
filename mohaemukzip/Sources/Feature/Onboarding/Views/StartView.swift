@@ -56,7 +56,7 @@ struct StartView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 17)
-                .padding(.bottom, 38)
+                //.padding(.bottom, 38)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)

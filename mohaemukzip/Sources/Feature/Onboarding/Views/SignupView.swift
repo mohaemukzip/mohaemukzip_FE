@@ -24,14 +24,15 @@ struct SignupView: View {
                     passwordConfirmSection
 
                     Spacer(minLength: 24)
-
-                    startButton
-                        .padding(.bottom, 38)
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 17)
                 .padding(.top, 12)
             }
         .background(Color.white)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            startButton
+                .padding(.horizontal, 17)
+        }
         .navigationBarBackButtonHidden()
     }
 
@@ -55,6 +56,8 @@ struct SignupView: View {
             .font(.PretendardSemibold20)
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
+            // ✅ 높이 제약으로 인해 말줄임표가 생기지 않도록 세로로 확장 허용
+            .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 4)
     }
 

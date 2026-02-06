@@ -63,10 +63,11 @@ struct AgreeView: View {
                 .padding(.horizontal, 24)
                 .padding(.bottom, 24)
             }
-
-            bottomButton
         }
         .background(Color.white)
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            bottomButton
+        }
         .navigationBarBackButtonHidden(true)
     }
 
@@ -95,14 +96,13 @@ struct AgreeView: View {
                     .frame(maxWidth: .infinity)
                     .frame(height: 57)
                     .background(viewModel.isNextEnabled ? Color.main400 : Color.grey300)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     .padding(.horizontal, 17)
-                    .padding(.vertical, 16)
+                    .padding(.top, 16)
             }
             .disabled(!viewModel.isNextEnabled)
         }
         .background(Color.white)
-        .navigationBarBackButtonHidden()
     }
 }
 

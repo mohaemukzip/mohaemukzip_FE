@@ -11,6 +11,7 @@ struct HomeModel {
     let monthlyCooking: Int
     let score: Int
     let nextLevelScore: Int
+    let nickname: String
     let consecutiveDays: Int
     let weekly: [(day: String, isDone: Bool)]
     let todayMission: TodayMissionModel
@@ -28,7 +29,8 @@ struct TodayMissionModel: Equatable {
     let title: String
     let description: String
     let reward: Int
-    let isCompleted: Bool
+    let status: MissionStatusDTO
+    let dishId: Int
 }
 
 struct RecipeModel: Identifiable, Equatable {
@@ -51,6 +53,7 @@ extension HomeResultDTO {
             monthlyCooking: monthlyCooking,
             score: score,
             nextLevelScore: nextLevelScore,
+            nickname: nickname,
             consecutiveDays: consecutiveDays,
             weekly: weeklyCooking.asArray,
             todayMission: .init(
@@ -58,7 +61,8 @@ extension HomeResultDTO {
                 title: todayMission.title,
                 description: todayMission.description,
                 reward: todayMission.reward,
-                isCompleted: todayMission.isCompleted
+                status: todayMission.status,
+                dishId: todayMission.dishId
             ),
             recipes: recommendedRecipes.map {
                 .init(

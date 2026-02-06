@@ -56,6 +56,16 @@ extension AuthAPI: TargetType {
     }
     
     var headers: [String: String]? {
-        ["Content-Type": "application/json"]
+        switch self {
+        case .checkLoginId:
+            return [
+                "Content-Type": "application/json",
+                "Authorization": "Bearer \(Config.accessTK)"
+            ]
+        default:
+            return [
+                "Content-Type": "application/json"
+            ]
+        }
     }
 }
