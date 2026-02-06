@@ -167,7 +167,7 @@ struct IngredientAdditionBottomSheet: View {
                         .tint(.grey700)
                         .frame(height: 360)
                         .cornerRadius(8)
-                        .onChange(of: expiryDate, {showDatePicker.toggle()})
+                        .onChange(of: expiryDate, { withAnimation(.easeInOut(duration: 0.3)){showDatePicker.toggle()} })
                     }.padding(.bottom, 16)
                         .padding(.top, -10)
                 }
