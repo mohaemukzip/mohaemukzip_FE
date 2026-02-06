@@ -56,12 +56,12 @@ struct IngredientAdditionBottomSheet: View {
                     Spacer()
                 }.padding(.bottom, 6)
                 
-                Button ( action: {
-                    withAnimation(.easeInOut(duration: 0.3)) {
-                        showStorageCase.toggle()
-                    }
-                }) {
-                    VStack(spacing: 1) {
+                VStack(spacing: 1) {
+                    Button ( action: {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            showStorageCase.toggle()
+                        }
+                    }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 4)
                                 .stroke(lineWidth: 1)
@@ -78,37 +78,36 @@ struct IngredientAdditionBottomSheet: View {
                                     .padding(.trailing, 10)
                             }
                         }
-                        
-                        if (showStorageCase) {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 4)
-                                    .stroke(lineWidth: 1)
-                                    .foregroundStyle(.grey300)
-                                    .frame(height: 159)
-                                VStack(spacing: 0) {
-                                    ForEach(StorageType.allCases, id: \.self) { type in
-                                        ZStack {
-                                            RoundedRectangle(cornerRadius: 4)
-                                                .frame(height: 53)
-                                                .foregroundStyle(storageLocation == type ? .main100 : .clear)
-                                            HStack {
-                                                Button( action: {storageLocation = type;
-                                                    withAnimation(.easeInOut(duration: 0.3)) { showStorageCase.toggle() } } ) {
+                    }
+                    
+                    if (showStorageCase) {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 4)
+                                .stroke(lineWidth: 1)
+                                .foregroundStyle(.grey300)
+                                .frame(height: 159)
+                            VStack(spacing: 0) {
+                                ForEach(StorageType.allCases, id: \.self) { type in
+                                    ZStack {
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .frame(height: 53)
+                                            .foregroundStyle(storageLocation == type ? .main100 : .clear)
+                                        Button( action: {storageLocation = type;
+                                            withAnimation(.easeInOut(duration: 0.3)) { showStorageCase.toggle() } } ) {
+                                                HStack {
                                                     Text(type.displayName)
                                                         .font(.PretendardRegular16)
                                                         .foregroundStyle(.grey900)
                                                         .padding(.leading, 10)
+                                                    Spacer()
                                                 }
-                                                Spacer()
-                                            }
                                         }
                                     }
                                 }
                             }
-                        } // end of if
-                        
-                    } // end of VStack
-                }.padding(.bottom, 16) // end of Button
+                        }
+                    }
+                }.padding(.bottom, 16) // end of VStack
                 
                 
                 HStack {
@@ -214,14 +213,29 @@ struct IngredientAdditionBottomSheet: View {
     } // end of body
 }
 
-/*
 #Preview {
-    IngredientAdditionBottomSheet(ingredient: IngredientForAddition(id: 1, name: "대파", category: .beverage, unit: "g", amount: 10, isSaved: true),
-                                  onAdd: { storage, date, amount in
-                                            print("프리뷰 테스트 - 보관: \(storage), 날짜: \(date), 중량: \(amount)")},
-                                  onSave: { _ in print("") },
-                                  onDismiss: { },
-                                  onRecommend: { _ in return Date() }
+    let mockIngredient = IngredientForAddition(
+        id: 101,
+        name: "대파",
+        category: .vegetable,
+        unit: "g",
+        amount: 0,
+        isSaved: true
+    )
+    IngredientAdditionBottomSheet(
+        ingredient: mockIngredient,
+        onAdd: { storage, date, amount in
+            print("추가 요청: \(storage.displayName), 날짜: \(date), 중량: \(amount)g")
+        },
+        onSave: { id in
+            print("즐겨찾기 토글 ID: \(id)")
+        },
+        onDismiss: {
+            print("시트 닫기 요청")
+        },
+        onRecommend: {
+            try? await Task.sleep(nanoseconds: 500_000_000)
+            return Calendar.current.date(byAdding: .day, value: 7, to: Date())
+        }
     )
 }
-*/
