@@ -11,6 +11,7 @@ struct HomeView: View {
     @Environment(NavigationRouter.self) private var router
     @Environment(HomeViewModel.self) var viewModel
     @Environment(SearchViewModel.self) var searchViewModel
+    @ObservedObject var recipeVideoVM: RecipeVideoViewModel
     
     @State private var isLevelUpPresented: Bool = false
     @AppStorage("lastSeenLevel") private var lastSeenLevel: Int = 0
@@ -58,6 +59,7 @@ struct HomeTabView: View {
     @Environment(NavigationRouter.self) private var router
     @Environment(HomeViewModel.self) var viewModel
     @Environment(SearchViewModel.self) var searchViewModel
+    @StateObject private var recipeVideoVM = RecipeVideoViewModel()
     
     @State private var selectedTab: TopTab = .board
     @State private var isHomePowerInfoPresented: Bool = false
@@ -72,7 +74,7 @@ struct HomeTabView: View {
                     
                     switch selectedTab {
                     case .board:
-                        HomeView()
+                        HomeView(recipeVideoVM: recipeVideoVM)
                             .padding(.bottom, 20)
                     case .stats:
                         StatsView(isHomePowerInfoPresented: $isHomePowerInfoPresented)
@@ -253,8 +255,9 @@ private extension HomeView {
                 Button {
                     // TODO: 퀘스트 화면 이동
                     print("BEFORE:", router.path)
-                    searchViewModel.searchText = "\(home.todayMission.dishId)"
-                    router.push(.ingredientDetailSearch)
+                    searchViewModel.selectedDishId = home.todayMission.dishId
+                    router.push(.videoList(recipeVideoVM))
+                    //router.push(.ingredientDetailSearch)
                     print("AFTER:", router.path)
                 } label: {
                     Text(home.todayMission.status == .completed ? "완료됨" : "퀘스트 도전하기")
@@ -357,13 +360,11 @@ private struct HomeRecipeCardView: View {
                 .lineLimit(1)
                 .padding(.bottom, 2)
             
-            HStack(spacing: 4) {
-                Text(recipe.channel)
-                Text(".")
-                Text("조회수 \(formattedViews(recipe.views))회")
-            }
-            .font(.PretendardRegular13)
-            .foregroundStyle(.grey500)
+            Text("\(recipe.channel) · 조회수 \(formattedViews(recipe.views))회")
+                .font(.PretendardRegular13)
+                .foregroundStyle(.grey500)
+                .lineLimit(1)
+                .truncationMode(.tail)
         }
         .frame(width: 160)
     }
@@ -471,8 +472,3 @@ private struct HomePowerInfoModalView: View {
     }
 }
 
-#Preview {
-    HomeTabView()
-        .environment(NavigationRouter())
-        .environment(HomeViewModel())
-}

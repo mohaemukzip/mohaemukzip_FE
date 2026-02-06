@@ -29,7 +29,6 @@ struct MainTabView: View {
     @State private var searchVM = SearchViewModel()
     @State private var homeVM = HomeViewModel()
     @StateObject private var profileVM = ProfileViewModel()
-    //@State private var loginVM = LoginViewModel()
     
     init() {
         let appearance = UITabBarAppearance()
