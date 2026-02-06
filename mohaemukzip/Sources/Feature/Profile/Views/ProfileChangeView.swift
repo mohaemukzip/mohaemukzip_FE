@@ -133,7 +133,9 @@ private extension ProfileChangeView {
 
                 Group {
                     if let data = selectedImageData, let uiImage = UIImage(data: data) {
-                        Image(uiImage: uiImage).resizable()
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
                     } else if
                         !viewModel.myPage.profile.profileImageUrl
                             .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
@@ -172,6 +174,7 @@ private extension ProfileChangeView {
                     }
                 }
                 .frame(width: 120, height: 120)
+                .clipped()
                 .clipShape(Circle())
 
                 ZStack {
@@ -235,13 +238,11 @@ private extension ProfileChangeView {
             .background(Color(.systemGray6))
             .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            if let message = validationMessage {
-                Text(message)
-                    .font(.custom("Pretendard-Regular", size: 12))
-                    .foregroundStyle(Color.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 4)
-            }
+            Text(validationMessage ?? "닉네임은 한글/영문/숫자만 입력할 수 있어요")
+                .font(.custom("Pretendard-Regular", size: 12))
+                .foregroundStyle(validationMessage == nil ? Color.gray : Color.red)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 4)
         }
     }
 }
@@ -265,13 +266,20 @@ private extension ProfileChangeView {
     func validateNickname(_ value: String) -> String? {
         let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
 
-        if trimmed.isEmpty { return "닉네임은 1자 이상이어야 해" }
-        if value.count > 15 { return "닉네임은 최대 15자까지 가능해" }
-        if value.contains("  ") { return "연속 공백은 사용할 수 없어" }
+        // 0자(공백만 포함) 입력
+        if trimmed.isEmpty { return "닉네임을 1자 이상 입력해 주세요." }
+        if trimmed.count > 15 { return "닉네임은 최대 15자까지 가능해" }
 
-        let pattern = "^[가-힣A-Za-z0-9 ]+$"
+        // 공백 불가(한글/영문/숫자만)
+        if value.contains(where: { $0.isWhitespace }) {
+            return "닉네임은 한글/영문/숫자만 입력할 수 있어요"
+        }
+
+        // 한글(완성형 + 자모) / 영문 / 숫자만 허용
+        // - "ㅇ" 같은 자모도 허용하기 위해 ㄱ-ㅎ, ㅏ-ㅣ 범위를 포함
+        let pattern = "^[가-힣ㄱ-ㅎㅏ-ㅣA-Za-z0-9]+$"
         if value.range(of: pattern, options: .regularExpression) == nil {
-            return "한글, 영문, 숫자, 공백만 사용할 수 있어"
+            return "이모지 및 특수문자 입력 불가"
         }
         return nil
     }

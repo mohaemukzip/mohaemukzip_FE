@@ -26,6 +26,13 @@ struct RecipeListView: View {
     /// onAppear / task 중복 실행 방지 목적
     @State private var didApplyInitialCuisine = false
 
+    /// 상세 화면 진입 중복 방지 플래그
+    /// 연타/중복 탭으로 router.push가 여러 번 호출되는 것을 막는다.
+    @State private var isPushingDetail = false
+
+    /// 중복 탭 방지용 딜레이(ms)
+    private let detailPushDelayNanoseconds: UInt64 = 250_000_000 // 0.25s
+
     // MARK: - Initializers
     /// 기본 진입
     /// 카테고리 미선택 상태로 시작
@@ -136,9 +143,21 @@ struct RecipeListView: View {
                             .contentShape(Rectangle())
                             /// 영상 카드 탭 시 상세 화면 진입
                             .onTapGesture {
+                                // ✅ 연타/중복 탭 방지
+                                guard !isPushingDetail else { return }
+                                isPushingDetail = true
+
                                 Task {
+                                    // 짧은 딜레이로 빠른 연타를 흡수
+                                    try? await Task.sleep(nanoseconds: detailPushDelayNanoseconds)
+
+                                    // 상세 데이터 준비 후 화면 전환
                                     if let detail = await viewModel.prepareDetailVideo(recipeId: video.id) {
                                         router.push(.recipeDetail(detail))
+                                        // push 이후에는 목록 화면이 사라지므로 별도 해제 불필요
+                                    } else {
+                                        // 데이터 준비 실패 시에는 다시 탭 가능하게 해제
+                                        isPushingDetail = false
                                     }
                                 }
                             }
@@ -159,6 +178,9 @@ struct RecipeListView: View {
                 }
             }
             .onAppear {
+                // ✅ 상세 화면에서 돌아오면 다시 진입 가능하도록 잠금 해제
+                isPushingDetail = false
+
                 // ✅ 상세 화면에서 뒤로가기(백버튼)로 돌아올 때마다 목록을 최신 상태로 동기화
                 // 상세 화면에서 북마크 토글 등으로 상태가 바뀌어도
                 // 목록 ViewModel(videos)이 자동 갱신되지 않기 때문에, 복귀 시 서버에서 다시 조회한다.
@@ -451,7 +473,7 @@ private struct ThumbnailView: View {
         
 }
 
-// MARK: - View Count Formatting
+// MARK: - 조회수 변환
 /// 조회수 숫자를 화면 표시용 문자열로 변환
 
 private extension Int {
