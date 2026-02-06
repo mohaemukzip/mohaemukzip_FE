@@ -12,6 +12,8 @@ struct IngredientDetailSearchView: View {
     @Environment(FridgeViewModel.self) var fridgeVM
     @Environment(NavigationRouter.self) var router
     @State var isShowingSheet: Bool = false
+    // MARK: 바텀시트 UX 개선을 위해 바텀시트에 전달할 item을 뷰에서 상태변수로 관리
+    @State var sheetItem: IngredientForAddition?
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -87,7 +89,7 @@ struct IngredientDetailSearchView: View {
                         } else {
                             IngredientList(ingredients: viewModel.savedIngredients,
                                            onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
-                                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
+                                           onPlusTap: { item in self.sheetItem = item })
                         }
                         
                     }.padding(.horizontal)
@@ -112,7 +114,7 @@ struct IngredientDetailSearchView: View {
                     
                     IngredientList(ingredients: viewModel.filteredIngredients,
                                    onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
-                                   onPlusTap: { item in viewModel.selectedIngredientForAddition = item })
+                                   onPlusTap: { item in self.sheetItem = item })
                     .padding(.horizontal)
                 }
             } // end of VStack
@@ -128,7 +130,7 @@ struct IngredientDetailSearchView: View {
                     viewModel.searchText = ""
                 }).presentationDetents([.fraction(0.45), .large])
             }
-            .sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
+            .sheet(item: $sheetItem) { ingredient in
                 IngredientAdditionBottomSheet(ingredient: ingredient,
                                               onAdd: { storage, date, weight in
                     Task {
@@ -136,17 +138,17 @@ struct IngredientDetailSearchView: View {
                                                      ty: storage.rawValue,
                                                      date: date,
                                                      amount: weight)
-                        viewModel.selectedIngredientForAddition = nil
+                        self.sheetItem = nil
                         viewModel.searchText = ""
                         router.navigateToRoot()
                     }
                 },
                                               onSave: { id in
-                    viewModel.selectedIngredientForAddition?.isSaved.toggle()
+                    self.sheetItem?.isSaved.toggle()
                     Task { await viewModel.toggleSaved(id: ingredient.id) }
                 },
                                               onDismiss: {
-                    viewModel.selectedIngredientForAddition = nil
+                    self.sheetItem = nil
                     viewModel.searchText = ""
                 },
                                               onRecommend: {

@@ -11,6 +11,8 @@ struct IngredientSearchView: View {
     @Environment(IngredientSearchViewModel.self) var viewModel
     @Environment(FridgeViewModel.self) var fridgeVM
     @Environment(NavigationRouter.self) var router
+    // MARK: 바텀시트 UX 개선을 위해 바텀시트에 전달할 item을 뷰에서 상태변수로 관리
+    @State var sheetItem: IngredientForAddition?
     
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -62,14 +64,14 @@ struct IngredientSearchView: View {
             IngredientList(ingredients: viewModel.filteredIngredients,
                            onSaveTap: { id in
                 Task { await viewModel.toggleSaved(id: id) }},
-                           onPlusTap: { item in viewModel.selectedIngredientForAddition = item},
+                           onPlusTap: { item in self.sheetItem = item},
                            // MARK: 무한스크롤 구현 - 마지막 item 나타나면 fetchNextPage() 호출
                            onLastAppear: { item in
                                             if item.id == viewModel.allIngredients.last?.id {
                                                 Task { await viewModel.fetchNextPage() } }})
             .padding(.horizontal)
                             
-        }.sheet(item: $viewModel.selectedIngredientForAddition) { ingredient in
+        }.sheet(item: $sheetItem) { ingredient in
             IngredientAdditionBottomSheet(ingredient: ingredient,
                                           onAdd: { storage, date, weight in
                 Task {
@@ -77,17 +79,17 @@ struct IngredientSearchView: View {
                                                  ty: storage.rawValue,
                                                  date: date,
                                                  amount: weight)
-                    viewModel.selectedIngredientForAddition = nil
+                    self.sheetItem = nil
                     router.navigateToRoot()
                     viewModel.searchText = ""
                 }
             },
                                           onSave: { id in
                 Task { await viewModel.toggleSaved(id: ingredient.id) }
-                viewModel.selectedIngredientForAddition?.isSaved.toggle()
+                self.sheetItem?.isSaved.toggle()
             },
                                           onDismiss: {
-                viewModel.selectedIngredientForAddition = nil
+                self.sheetItem = nil
                 viewModel.searchText = ""
             },
                                           onRecommend: {
