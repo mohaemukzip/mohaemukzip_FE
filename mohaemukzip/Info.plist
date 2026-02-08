@@ -18,8 +18,6 @@
         <string>Pretendard-SemiBold.otf</string>
         <string>Pretendard-Thin.otf</string>
     </array>
-    <key>UIDesignRequiresCompatibility</key>
-    <true/>
     <key>LSApplicationQueriesSchemes</key>
     <array>
         <string>youtube</string>

@@ -13,7 +13,9 @@ enum AuthAPI {
     case signup(SignUpRequestDTO)
     case login(LoginRequestDTO)
     case checkLoginId(CheckLoginIdRequestDTO)
- 
+    case reissue
+    case logout
+    case withdrawal
 }
 
 extension AuthAPI: TargetType {
@@ -30,6 +32,12 @@ extension AuthAPI: TargetType {
             return "/auth/login"
         case .checkLoginId:
             return "/auth/check-loginid"
+        case .reissue:
+            return "/auth/reissue"
+        case .logout:
+            return "/auth/logout"
+        case .withdrawal:
+            return "/auth/withdrawal"
         }
     }
     
@@ -41,6 +49,12 @@ extension AuthAPI: TargetType {
             return .post
         case .checkLoginId:
             return .post
+        case .reissue:
+            return .post
+        case .logout:
+            return .post
+        case .withdrawal:
+            return .delete
         }
     }
     
@@ -52,16 +66,26 @@ extension AuthAPI: TargetType {
             return .requestJSONEncodable(request)
         case .checkLoginId(let request):
             return .requestJSONEncodable(request)
+        case .reissue, .logout, .withdrawal:
+            return .requestPlain
         }
     }
     
     var headers: [String: String]? {
         switch self {
-        case .checkLoginId:
+        case .reissue:
+            return [
+                "Content-Type": "application/json",
+                "Authorization": "Bearer \(Config.accessTK)",
+                "X-RefreshToken": "\(Config.refreshTK)"
+            ]
+
+        case .logout, .withdrawal, .checkLoginId:
             return [
                 "Content-Type": "application/json",
                 "Authorization": "Bearer \(Config.accessTK)"
             ]
+
         default:
             return [
                 "Content-Type": "application/json"
