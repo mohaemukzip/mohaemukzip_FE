@@ -32,12 +32,13 @@ struct LoginView: View {
 
             Spacer().frame(height: 44)
 
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 // 아이디
                 TextField("아이디", text: $viewModel.loginId)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
+                    .textFieldStyle(.plain)
                     .focused($focusedField, equals: .loginId)
                     .padding(.horizontal, 14)
                     .frame(height: 52)
@@ -56,6 +57,7 @@ struct LoginView: View {
                 SecureField("비밀번호", text: $viewModel.password)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
+                    .textFieldStyle(.plain)
                     .focused($focusedField, equals: .password)
                     .padding(.horizontal, 14)
                     .frame(height: 52)
@@ -71,7 +73,7 @@ struct LoginView: View {
                             )
                     )
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 17)
 
             // 에러 문구
             HStack(spacing: 6) {
@@ -82,7 +84,6 @@ struct LoginView: View {
             }
             .foregroundStyle(Color.red)
             .padding(.top, 10)
-            .padding(.horizontal, 20)
             .opacity(viewModel.showError ? 1 : 0)
 
             // 로그인 버튼
@@ -91,7 +92,7 @@ struct LoginView: View {
                 Task {
                     let ok = await viewModel.login()
                     if ok, let access = viewModel.tokens?.accessToken {
-                        let refresh = viewModel.tokens?.refreshToken
+                        let refresh = viewModel.tokens?.refreshToken ?? ""
                         appState.loginSucceeded(accessToken: access, refreshToken: refresh)
                     }
                 }
@@ -106,11 +107,11 @@ struct LoginView: View {
                             .fill((viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty) ? Color.grey400 : Color.main400)
                     )
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, 17)
             .padding(.top, 18)
             .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
 
-            HStack(spacing: 18) {
+            HStack(spacing: 34) {
                 Button { }
                 label: {
                     Text("아이디 찾기")
@@ -129,7 +130,7 @@ struct LoginView: View {
                         .foregroundStyle(Color.grey300)
                 }
             }
-            .padding(.top, 22)
+            .padding(.top, 40)
 
             Spacer()
         }

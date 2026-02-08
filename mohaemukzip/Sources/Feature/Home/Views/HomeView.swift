@@ -236,13 +236,14 @@ private extension HomeView {
                 Image(.icnMission)
                     .frame(width: 80, height: 80)
                 
-                VStack(alignment: .center, spacing: 6) {
+                VStack(alignment: .center, spacing: 8) {
                     Text(home.todayMission.title)
                         .font(.PretendardSemibold20)
                         .lineLimit(1)
                         .foregroundStyle(.grey900)
                     
                     Text(home.todayMission.description)
+                        .multilineTextAlignment(.center)
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
                         .lineLimit(2)
@@ -273,9 +274,19 @@ private extension HomeView {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
                 }
                 .disabled(home.todayMission.status == .completed)
+                .padding(.top, 8)
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 0)
+            .padding(.top, 24)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 32)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.white)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.grey300, lineWidth: 1)
+                    )
+            )
         }
         .padding(.bottom, 66)
         .frame(maxWidth: .infinity, alignment: .leading)
