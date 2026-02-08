@@ -63,8 +63,8 @@ struct RecipeListView: View {
     /// 앱 전역 네비게이션 라우터
     @Environment(NavigationRouter.self) var router
 
-    /// 요선생 채팅 ViewModel
     @Environment(YoTeacherChatViewModel.self) var yoTeacherVM
+    @Environment(SearchViewModel.self) var searchVM
 
     var body: some View {
         ZStack {
@@ -74,7 +74,8 @@ struct RecipeListView: View {
 
                 // MARK: - Search Entry
                 /// 레시피 검색 화면으로 이동하는 진입 버튼
-                Button( action: { router.push(.recipeSearch(viewModel)) } ) {
+                // 검색창 진입 시 searchText 초기화
+                Button( action: { router.push(.recipeSearch(viewModel)); searchVM.searchText = "" } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)

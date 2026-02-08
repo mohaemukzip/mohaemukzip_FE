@@ -44,8 +44,15 @@ class IngredientSearchViewModel: ObservableObject {
         if (searchText.isEmpty) {
             return categoryFiltered
         } else {
+            
+            // MARK: searchText에서 공백 제거
+            let processedSearchText = searchText.replacingOccurrences(of: " ", with: "")
+            
             return categoryFiltered.filter { ingredient in
-                ingredient.name.localizedCaseInsensitiveContains(searchText)
+                // MARK: 검색된 재료 이름에서도 공백 제거
+                let processedName = ingredient.name.replacingOccurrences(of: " ", with: "")
+                
+                return processedName.localizedCaseInsensitiveContains(processedSearchText)
             }
         }
     }

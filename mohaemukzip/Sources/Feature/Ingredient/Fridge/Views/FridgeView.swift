@@ -63,6 +63,9 @@ struct FridgeView: View {
         }.task {
             await viewModel.fetchList()
         }
+        .onDisappear {
+            self.isEditing = false
+        }
     }
 }
 

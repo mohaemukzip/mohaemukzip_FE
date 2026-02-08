@@ -25,5 +25,5 @@ struct RecommendQuestion: View {
 }
 
 #Preview {
-    RecommendQuestion(text: "이건 어떠세요? 추천 메뉴는 라면입니다. ㅋㅋ")
+    RecommendQuestion(text: "대파가\n들어가는 요리")
 }

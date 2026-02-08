@@ -12,6 +12,7 @@ struct IngredientList: View {
     var onSaveTap: (Int) -> Void
     var onPlusTap: (IngredientForAddition) -> Void
     var onLastAppear: ((IngredientForAddition) -> Void)?
+    var onRequest: (() -> Void)?
     
     var body: some View {
         if (ingredients.isEmpty) {
@@ -49,6 +50,12 @@ struct IngredientList: View {
                             onLastAppear?(ingredient)
                         }
                     }
+                    
+                    if let onTap = onRequest {
+                        Button ( action: { onTap() } ) {
+                            IngredientRequestButton()
+                        }.padding(.bottom)
+                    }
                 }
             }
         }
@@ -56,27 +63,26 @@ struct IngredientList: View {
     }
 }
 
-/*
-#Preview {
-    IngredientList(ingredients: [
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품"),
-        IngredientSearchModel(name: "대파", amount: "1기본량(100g)", category: "가공/유제품")
-    ])
+
+#Preview("데이터 있음") {
+    let mockIngredients = [
+        IngredientForAddition(id: 1, name: "대파", category: .vegetable, unit: "g", amount: 100, isSaved: true),
+        IngredientForAddition(id: 2, name: "양파", category: .vegetable, unit: "개", amount: 2, isSaved: false),
+        IngredientForAddition(id: 3, name: "삼겹살", category: .dairy, unit: "g", amount: 600, isSaved: false),
+        IngredientForAddition(id: 4, name: "우유", category: .dairy, unit: "ml", amount: 500, isSaved: true)
+    ]
+    
+    IngredientList(
+        ingredients: mockIngredients,
+        onSaveTap: { id in
+            print("⭐ 즐겨찾기 탭됨 - ID: \(id)")
+        },
+        onPlusTap: { ingredient in
+            print("➕ 추가 버튼 탭됨 - 재료명: \(ingredient.name)")
+        },
+        onLastAppear: { ingredient in
+            print("👀 마지막 아이템 노출(무한스크롤용) - ID: \(ingredient.id)")
+        },
+        onRequest: { print("") }
+    )
 }
-*/

@@ -55,6 +55,8 @@ struct IngredientBox: View {
                 }
             }.frame(width: 327)
                 .padding()
+        }.onDisappear {
+            self.isExpanded = false
         }
         
     }
