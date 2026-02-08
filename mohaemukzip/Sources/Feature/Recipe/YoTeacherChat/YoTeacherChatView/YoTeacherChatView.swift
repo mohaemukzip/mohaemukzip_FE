@@ -94,17 +94,13 @@ struct YoTeacherChatView: View {
                 VStack {
                     
                     if viewModel.messages.isEmpty {
-                        ScrollView(.horizontal) {
-                            LazyHStack {
-                                ForEach(viewModel.recommendQ) { q in
-                                    Button ( action: { Task {await viewModel.sendMessage(message: q.text)} } ) {
-                                        RecommendQuestion(text: q.text)
-                                            .padding(.trailing, 2)
-                                    }
-                                }
+                        HStack(spacing: 17) {
+                            ForEach(viewModel.recommendQ) { q in
+                                Button ( action: { Task {await viewModel.sendMessage(message: q.text)} } ) {
+                                    RecommendQuestion(text: q.text)
+                                }.frame(height: 66)
                             }
-                        }.padding(.leading, 17)
-                            .frame(height: 66)
+                        }.padding(.horizontal)
                     }
                     
                     ZStack {

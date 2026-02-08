@@ -18,9 +18,9 @@ enum ResponseState {
 @Observable
 class YoTeacherChatViewModel {
     var messages: [ChatMessages] = []
-    var recommendQ: [ChatMessages] = [ChatMessages(text: "지금 있는 재료로 만들 요리 추천"),
-                                                ChatMessages(text: "허니콤보랑 먹을 떡볶이 추천"),
-                                                ChatMessages(text: "엽떡 착한맛 래시피")]
+    var recommendQ: [ChatMessages] = [ChatMessages(text: "10분 이내로\n만들 수 있는 요리"),
+                                                ChatMessages(text: "대파가\n들어가는 요리"),
+                                                ChatMessages(text: "다이어터를 위한\n저녁 레시피")]
     var responseState: ResponseState = .idle
     var responseVideos: [RecipeVideo]? = nil
     var service = YoTeacherService()
