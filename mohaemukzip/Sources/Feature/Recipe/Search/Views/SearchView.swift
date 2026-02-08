@@ -43,7 +43,6 @@ struct SearchView: View {
                         Button ( action: { viewModel.selectedDishId = suggestion.id
                                            router.push(.videoList(recipeVideoVM)) } ) {
                             SearchSuggestion(inputText: viewModel.searchText, suggestionText: suggestion.text)
-                                .padding(.horizontal)
                                 // MARK: onAppear 활용해서 무한스크롤 구현
                                 .onAppear {
                                     if suggestion.id == viewModel.suggestions.last?.id {
