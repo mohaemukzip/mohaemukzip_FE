@@ -668,7 +668,7 @@ private struct RecipeStepCard: View {
 // MARK: - Preview
 
 #Preview("RecipeDetailView") {
-    NavigationStack {
+		    NavigationStack {
         RecipeDetailView(
             recipeId: 1,
             base: RecipeVideo(
