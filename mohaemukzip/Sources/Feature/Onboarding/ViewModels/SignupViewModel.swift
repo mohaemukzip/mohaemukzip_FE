@@ -140,11 +140,11 @@ final class SignupViewModel {
     }
 
     func helperTextForIdFormat() -> String {
-        "6~15자 영문, 숫자를 입력해주세요."
+        "아이디는 영문과 숫자를 사용해 4자 이상 입력해주세요."
     }
 
     func helperTextForPasswordFormat() -> String {
-        "6~20자 영문, 숫자, 특수문자를 입력해주세요."
+        "6~20자 영문, 숫자, 특수문자로 입력해주세요."
     }
 
     private func validatePasswordMatch() {
@@ -156,8 +156,8 @@ final class SignupViewModel {
     }
 
     private func isValidIdFormat(_ text: String) -> Bool {
-        // 6~15자 영문/숫자
-        let pattern = "^[A-Za-z0-9]{6,15}$"
+        // 영문/숫자, 4자 이상
+        let pattern = "^[A-Za-z0-9]{4,}$"
         return text.range(of: pattern, options: .regularExpression) != nil
     }
 
