@@ -24,10 +24,8 @@ final class AppState: ObservableObject {
 
     /// 앱 시작 시 토큰 확인 후 루트 결정
     func boot() {
-        
         // Splash 를 먼저 보여주고, 토큰 로딩 후 루트를 결정
         root = .splash
-        TokenStore.clear() // << 자동로그인 제거용
         Task { @MainActor in
             // 스플래시가 너무 빨리 사라져서 안 보이는 문제 방지 (필요 시 시간 조절)
             try? await Task.sleep(nanoseconds: 1500_000_000)
@@ -42,7 +40,28 @@ final class AppState: ObservableObject {
             Config.accessTK = accessToken ?? ""
             Config.refreshTK = refreshToken ?? ""
 
-            root = (accessToken == nil) ? .auth : .main
+            // accessToken이 있으면 바로 메인
+            if let accessToken, !accessToken.isEmpty {
+                root = .main
+                return
+            }
+
+            // accessToken이 없고 refreshToken만 있으면 1회 재발급 시도
+            if let refreshToken, !refreshToken.isEmpty {
+                print("[AppState] boot -> accessToken nil, try reissue")
+                do {
+                    let tokens = try await AuthService.shared.reissue()
+                    loginSucceeded(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+                    print("[AppState] boot -> reissue success, go main")
+                } catch {
+                    print("[AppState] boot -> reissue fail, go auth | error=\(error)")
+                    clearSession(reason: "boot reissue fail")
+                }
+                return
+            }
+
+            // 둘 다 없으면 인증 루트
+            root = .auth
         }
     }
 
@@ -54,20 +73,57 @@ final class AppState: ObservableObject {
         Config.accessTK = accessToken
         Config.refreshTK = refreshToken ?? ""
 
+        print("[AppState] loginSucceeded -> save tokens & go main")
         root = .main
     }
-    
-// 로그아웃 미구현
-//    func logout() {
-//        TokenStore.clear()
-//        accessToken = nil
-//        refreshToken = nil
-//
-//        Config.accessTK = nil
-//        Config.refreshTK = nil
-//
-//        root = .auth
-//    }
+
+
+    // MARK: - Session Control
+
+    /// 토큰/루트 전환을 한 곳에서 처리
+    @MainActor
+    private func clearSession(reason: String) {
+        print("[AppState] clearSession | reason=\(reason)")
+
+        TokenStore.clear()
+        accessToken = nil
+        refreshToken = nil
+
+        Config.accessTK = ""
+        Config.refreshTK = ""
+
+        root = .auth
+    }
+
+    /// 마이페이지 로그아웃 버튼에서 호출할 예정
+    @MainActor
+    func logout() async {
+        print("[AppState] logout -> start")
+        do {
+            try await AuthService.shared.logout()
+            print("[AppState] logout -> api success")
+            clearSession(reason: "logout")
+        } catch {
+            // 서버가 이미 세션을 만료/차단한 경우에도 로컬은 안전하게 정리
+            print("[AppState] logout -> api fail, clear local anyway | error=\(error)")
+            clearSession(reason: "logout api fail")
+        }
+    }
+
+    /// 마이페이지 회원탈퇴 버튼에서 호출할 예정
+    @MainActor
+    func withdrawal() async {
+        print("[AppState] withdrawal -> start")
+        do {
+            try await AuthService.shared.withdrawal()
+            print("[AppState] withdrawal -> api success")
+            clearSession(reason: "withdrawal")
+        } catch {
+            // 탈퇴 API 실패여도 토큰이 꼬였을 수 있으니 로컬은 정리
+            print("[AppState] withdrawal -> api fail, clear local anyway | error=\(error)")
+            clearSession(reason: "withdrawal api fail")
+        }
+    }
 }
 
 // MARK: - Token Store (임시: UserDefaults)

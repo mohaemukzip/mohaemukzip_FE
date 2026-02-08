@@ -1,5 +1,6 @@
 import Foundation
 import Moya
+import Alamofire
 
 // MARK: - 공용 BaseResposneDTO
 struct BaseResponse<T: Decodable>: Decodable {
@@ -20,13 +21,200 @@ final class NetworkManager {
     static let shared = NetworkManager()
     init() {}
 
+    private let authInterceptor = AuthInterceptor()
+
     private let plugins: [PluginType] = [
         NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
         NetworkDebugPlugin()
     ]
 
     func makeProvider<T: TargetType>(for target: T.Type) -> MoyaProvider<T> {
-        return MoyaProvider<T>(plugins: plugins)
+        // Alamofire 레벨에서 401을 감지해 토큰 재발급 후 원 요청을 1회 재시도합니다.
+        let session = Session(interceptor: authInterceptor)
+        return MoyaProvider<T>(session: session, plugins: plugins)
+    }
+}
+
+// MARK: - 401 자동 토큰 재발급 Interceptor
+
+/// 401 응답을 감지하면 /auth/reissue 를 호출해서 토큰을 갱신한 뒤,
+/// 실패한 요청을 1회 재시도하는 Alamofire Interceptor 입니다.
+///
+/// ⚠️ 주의
+/// - 동시에 여러 요청이 401을 맞는 경우, 재발급은 1번만 수행하고 나머지 요청은 대기 후 함께 재시도합니다.
+/// - /auth/reissue 자체가 401을 맞을 때는 재시도 루프를 방지하기 위해 재발급을 시도하지 않습니다.
+private final class AuthInterceptor: RequestInterceptor {
+
+    private let lock = NSLock()
+    private var isRefreshing = false
+    private var retryCompletions: [(RetryResult) -> Void] = []
+
+    // 재발급 호출은 Interceptor가 붙지 않은 별도 Provider로 수행(무한루프 방지)
+    private let refreshProvider: MoyaProvider<AuthAPI> = {
+        // 기본 Provider는 별도의 Session을 사용하므로 현재 Interceptor(Session)과 분리됩니다.
+        MoyaProvider<AuthAPI>()
+    }()
+
+    func adapt(
+        _ urlRequest: URLRequest,
+        for session: Session,
+        completion: @escaping (Result<URLRequest, Error>) -> Void
+    ) {
+        var request = urlRequest
+
+        // 이미 Authorization이 있으면 그대로
+        if request.value(forHTTPHeaderField: "Authorization") != nil {
+            completion(.success(request))
+            return
+        }
+
+        // accessToken 없으면 건드리지 않음
+        guard !Config.accessTK.isEmpty else {
+            completion(.success(request))
+            return
+        }
+
+        // auth 관련 일부 엔드포인트는 Authorization이 불필요할 수 있어 제외
+        if let urlString = request.url?.absoluteString {
+            if urlString.contains("/auth/login") ||
+                urlString.contains("/auth/signup") ||
+                urlString.contains("/auth/check-loginid") ||
+                urlString.contains("/auth/reissue") {
+                completion(.success(request))
+                return
+            }
+        }
+
+        request.setValue("Bearer \(Config.accessTK)", forHTTPHeaderField: "Authorization")
+
+        #if DEBUG
+        if let urlString = request.url?.absoluteString {
+            let prefix = String(Config.accessTK.prefix(16))
+            print("[AuthInterceptor] adapt Authorization added | tokenPrefix=\(prefix)... url=\(urlString)")
+        }
+        #endif
+
+        completion(.success(request))
+    }
+
+    func retry(
+        _ request: Request,
+        for session: Session,
+        dueTo error: Error,
+        completion: @escaping (RetryResult) -> Void
+    ) {
+        // status code가 없으면 재시도 판단 불가
+        guard let response = request.task?.response as? HTTPURLResponse else {
+            completion(.doNotRetry)
+            return
+        }
+
+        // 401이 아니면 재시도하지 않음
+        guard response.statusCode == 401 else {
+            completion(.doNotRetry)
+            return
+        }
+
+        // reissue 요청 자체가 401이면 루프 방지
+        if let urlString = request.request?.url?.absoluteString,
+           urlString.contains("/auth/reissue") {
+            #if DEBUG
+            print("[AuthInterceptor] 401 on /auth/reissue -> doNotRetry")
+            #endif
+            completion(.doNotRetry)
+            return
+        }
+
+        // refreshToken이 없으면 재발급 불가
+        guard !Config.refreshTK.isEmpty else {
+            #if DEBUG
+            print("[AuthInterceptor] 401 but refresh token is empty -> doNotRetry")
+            #endif
+            completion(.doNotRetry)
+            return
+        }
+
+        // 동시 401 단일화: 현재 요청을 대기열에 넣고, 재발급이 진행 중이면 종료
+        lock.lock()
+        retryCompletions.append(completion)
+        let shouldStartRefresh = !isRefreshing
+        if shouldStartRefresh { isRefreshing = true }
+        lock.unlock()
+
+        if !shouldStartRefresh {
+            #if DEBUG
+            if let urlString = request.request?.url?.absoluteString {
+                print("[AuthInterceptor] 401 queued (refresh in progress) | url=\(urlString)")
+            }
+            #endif
+            return
+        }
+
+        #if DEBUG
+        let accessPrefix = String(Config.accessTK.prefix(16))
+        let refreshPrefix = String(Config.refreshTK.prefix(16))
+        print("[AuthInterceptor] 401 detected -> start reissue | access=\(accessPrefix)... refresh=\(refreshPrefix)...")
+        #endif
+
+        // 실제 재발급 수행
+        refreshProvider.request(.reissue) { [weak self] result in
+            guard let self else { return }
+
+            switch result {
+            case .success(let response):
+                do {
+                    let decoded = try response.map(ReissueResponseDTO.self)
+                    let newAccess = decoded.result.accessToken
+                    let newRefresh = decoded.result.refreshToken
+
+                    // 토큰 저장(앱 재시작 대비) + Config 동기화
+                    TokenStore.saveTokens(access: newAccess, refresh: newRefresh)
+                    Config.accessTK = newAccess
+                    Config.refreshTK = newRefresh
+
+                    #if DEBUG
+                    let newAccessPrefix = String(newAccess.prefix(16))
+                    let newRefreshPrefix = String(newRefresh.prefix(16))
+                    print("[AuthInterceptor] reissue success | newAccess=\(newAccessPrefix)... newRefresh=\(newRefreshPrefix)...")
+                    #endif
+
+                    self.finishRefreshing(with: .retry)
+
+                } catch {
+                    #if DEBUG
+                    let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
+                    print("[AuthInterceptor] reissue decode fail | status=\(response.statusCode)")
+                    print("[AuthInterceptor] rawBody: \(raw)")
+                    print("[AuthInterceptor] error: \(error)")
+                    #endif
+                    self.finishRefreshing(with: .doNotRetryWithError(error))
+                }
+
+            case .failure(let error):
+                #if DEBUG
+                print("[AuthInterceptor] reissue request fail | error=\(error)")
+                if let response = error.response {
+                    let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
+                    print("[AuthInterceptor] errorBody: \(raw)")
+                }
+                #endif
+                self.finishRefreshing(with: .doNotRetryWithError(error))
+            }
+        }
+    }
+
+    private func finishRefreshing(with result: RetryResult) {
+        lock.lock()
+        let completions = retryCompletions
+        retryCompletions.removeAll()
+        isRefreshing = false
+        lock.unlock()
+
+        #if DEBUG
+        print("[AuthInterceptor] finishRefreshing -> callbacks=\(completions.count) result=\(result)")
+        #endif
+
+        completions.forEach { $0(result) }
     }
 }
 

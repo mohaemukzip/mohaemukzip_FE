@@ -14,6 +14,12 @@ struct ProfileSettingsView: View {
 
     @Environment(NavigationRouter.self) private var router
 
+    @EnvironmentObject private var appState: AppState
+
+    @State private var isPerformingAuthAction: Bool = false
+    @State private var showLogoutConfirm: Bool = false
+    @State private var showWithdrawalConfirm: Bool = false
+
     private let appVersionText: String = {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0.0.0"
         let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "0"
@@ -46,6 +52,34 @@ struct ProfileSettingsView: View {
             }
         }
         .navigationBarHidden(true)
+        .alert("로그아웃", isPresented: $showLogoutConfirm) {
+            Button("취소", role: .cancel) {}
+            Button("로그아웃", role: .destructive) {
+                Task { @MainActor in
+                    isPerformingAuthAction = true
+                    defer { isPerformingAuthAction = false }
+
+                    print("[ProfileSettingsView] logout -> confirm")
+                    await appState.logout()
+                }
+            }
+        } message: {
+            Text("정말 로그아웃할까요?")
+        }
+        .alert("회원탈퇴", isPresented: $showWithdrawalConfirm) {
+            Button("취소", role: .cancel) {}
+            Button("회원탈퇴", role: .destructive) {
+                Task { @MainActor in
+                    isPerformingAuthAction = true
+                    defer { isPerformingAuthAction = false }
+
+                    print("[ProfileSettingsView] withdrawal -> confirm")
+                    await appState.withdrawal()
+                }
+            }
+        } message: {
+            Text("탈퇴하면 계정 정보가 삭제될 수 있어요. 계속할까요?")
+        }
     }
 
     private var header: some View {
@@ -97,13 +131,21 @@ struct ProfileSettingsView: View {
     private var actionSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             settingsRow(title: "로그아웃", showsChevron: false) {
-                print("[ProfileSettingsView] 로그아웃")
+                guard !isPerformingAuthAction else {
+                    print("[ProfileSettingsView] logout ignored (busy)")
+                    return
+                }
+                showLogoutConfirm = true
             }
 
        
 
             settingsRow(title: "회원탈퇴", showsChevron: false, titleColor: .black) {
-                print("[ProfileSettingsView] 회원탈퇴")
+                guard !isPerformingAuthAction else {
+                    print("[ProfileSettingsView] withdrawal ignored (busy)")
+                    return
+                }
+                showWithdrawalConfirm = true
             }
 
             Text(appVersionText)
@@ -145,6 +187,7 @@ struct ProfileSettingsView: View {
             .padding(.vertical, 14)
             .contentShape(Rectangle())
         }
+        .disabled(isPerformingAuthAction)
         .buttonStyle(.plain)
     }
 }
@@ -152,9 +195,11 @@ struct ProfileSettingsView: View {
 
 #Preview {
     let router = NavigationRouter()
+    let appState = AppState()
 
     NavigationStack {
         ProfileSettingsView()
     }
     .environment(router)
+    .environmentObject(appState)
 }
