@@ -111,6 +111,7 @@ struct SignupView: View {
                             set: { viewModel.onChangeUserId($0) }
                         ))
                         .textInputAutocapitalization(.never)
+                        .textFieldStyle(.plain)
                         .autocorrectionDisabled()
                         .padding(.leading, 14)
                         .font(.PretendardRegular16)
@@ -143,7 +144,7 @@ struct SignupView: View {
 
             if let msg = (viewModel.idCheckMessage ?? viewModel.idCheckState.message) {
                 HStack(spacing: 6) {
-                    Image(systemName: viewModel.idCheckState.isSuccess ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                    Image(systemName: viewModel.idCheckState.isSuccess ? "checkmark.circle" : "exclamationmark.circle")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
 
@@ -184,6 +185,7 @@ struct SignupView: View {
                 ))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .textFieldStyle(.plain)
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }
@@ -218,6 +220,7 @@ struct SignupView: View {
                 ))
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
+                .textFieldStyle(.plain)
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }

@@ -38,23 +38,24 @@ struct SignupFinishView: View {
                     .frame(maxWidth: .infinity, alignment: .center)
 
                 Spacer(minLength: 0)
-                
-                Button {
-                    router.push(.login)
-                } label: {
-                    Text("시작하기")
-                        .font(.PretendardSemibold18)
-                        .foregroundStyle(Color.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 57)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.main400)
-                        )
-                }
-                .padding(.horizontal, 17)
-                .padding(.bottom, 38)
             }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            Button {
+                router.push(.login)
+            } label: {
+                Text("시작하기")
+                    .font(.PretendardSemibold18)
+                    .foregroundStyle(Color.white)
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 57)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.main400)
+                    )
+            }
+            .padding(.horizontal, 17)
+            .padding(.bottom, 0)
         }
         .navigationBarBackButtonHidden()
     }

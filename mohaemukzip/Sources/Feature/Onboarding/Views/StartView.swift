@@ -36,7 +36,6 @@ struct StartView: View {
                         Text("로그인")
                             .font(.PretendardMedium16)
                             .foregroundStyle(Color.main400)
-                            .underline(true, color: Color.main400)
                     }
                 }
                 .buttonStyle(.plain)
