@@ -70,10 +70,6 @@ struct SearchView: View {
                     await viewModel.resetAndSearch()
                 }
             }
-            .onDisappear {
-                // MARK: 뷰가 사라질 때 searchText 초기화
-                viewModel.searchText = ""
-            }
     }
 }
 
