@@ -87,12 +87,7 @@ private final class AuthInterceptor: RequestInterceptor {
 
         request.setValue("Bearer \(Config.accessTK)", forHTTPHeaderField: "Authorization")
 
-        #if DEBUG
-        if let urlString = request.url?.absoluteString {
-            let prefix = String(Config.accessTK.prefix(16))
-            print("[AuthInterceptor] adapt Authorization added | tokenPrefix=\(prefix)... url=\(urlString)")
-        }
-        #endif
+        // DEBUG LOG REMOVED
 
         completion(.success(request))
     }
@@ -118,18 +113,14 @@ private final class AuthInterceptor: RequestInterceptor {
         // reissue 요청 자체가 401이면 루프 방지
         if let urlString = request.request?.url?.absoluteString,
            urlString.contains("/auth/reissue") {
-            #if DEBUG
-            print("[AuthInterceptor] 401 on /auth/reissue -> doNotRetry")
-            #endif
+            // DEBUG LOG REMOVED
             completion(.doNotRetry)
             return
         }
 
         // refreshToken이 없으면 재발급 불가
         guard !Config.refreshTK.isEmpty else {
-            #if DEBUG
-            print("[AuthInterceptor] 401 but refresh token is empty -> doNotRetry")
-            #endif
+            // DEBUG LOG REMOVED
             completion(.doNotRetry)
             return
         }
@@ -142,19 +133,11 @@ private final class AuthInterceptor: RequestInterceptor {
         lock.unlock()
 
         if !shouldStartRefresh {
-            #if DEBUG
-            if let urlString = request.request?.url?.absoluteString {
-                print("[AuthInterceptor] 401 queued (refresh in progress) | url=\(urlString)")
-            }
-            #endif
+            // DEBUG LOG REMOVED
             return
         }
 
-        #if DEBUG
-        let accessPrefix = String(Config.accessTK.prefix(16))
-        let refreshPrefix = String(Config.refreshTK.prefix(16))
-        print("[AuthInterceptor] 401 detected -> start reissue | access=\(accessPrefix)... refresh=\(refreshPrefix)...")
-        #endif
+        // DEBUG LOG REMOVED
 
         // 실제 재발급 수행
         refreshProvider.request(.reissue) { [weak self] result in
@@ -172,32 +155,17 @@ private final class AuthInterceptor: RequestInterceptor {
                     Config.accessTK = newAccess
                     Config.refreshTK = newRefresh
 
-                    #if DEBUG
-                    let newAccessPrefix = String(newAccess.prefix(16))
-                    let newRefreshPrefix = String(newRefresh.prefix(16))
-                    print("[AuthInterceptor] reissue success | newAccess=\(newAccessPrefix)... newRefresh=\(newRefreshPrefix)...")
-                    #endif
+                    // DEBUG LOG REMOVED
 
                     self.finishRefreshing(with: .retry)
 
                 } catch {
-                    #if DEBUG
-                    let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
-                    print("[AuthInterceptor] reissue decode fail | status=\(response.statusCode)")
-                    print("[AuthInterceptor] rawBody: \(raw)")
-                    print("[AuthInterceptor] error: \(error)")
-                    #endif
+                    // DEBUG LOG REMOVED
                     self.finishRefreshing(with: .doNotRetryWithError(error))
                 }
 
             case .failure(let error):
-                #if DEBUG
-                print("[AuthInterceptor] reissue request fail | error=\(error)")
-                if let response = error.response {
-                    let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
-                    print("[AuthInterceptor] errorBody: \(raw)")
-                }
-                #endif
+                // DEBUG LOG REMOVED
                 self.finishRefreshing(with: .doNotRetryWithError(error))
             }
         }
@@ -210,9 +178,7 @@ private final class AuthInterceptor: RequestInterceptor {
         isRefreshing = false
         lock.unlock()
 
-        #if DEBUG
-        print("[AuthInterceptor] finishRefreshing -> callbacks=\(completions.count) result=\(result)")
-        #endif
+        // DEBUG LOG REMOVED
 
         completions.forEach { $0(result) }
     }
@@ -225,55 +191,11 @@ private final class AuthInterceptor: RequestInterceptor {
 private final class NetworkDebugPlugin: PluginType {
 
     func willSend(_ request: RequestType, target: TargetType) {
-        #if DEBUG
-        guard let urlRequest = request.request else {
-            print("[NetworkDebug] ➡️ willSend | (no URLRequest)")
-            return
-        }
-
-        let method = urlRequest.httpMethod ?? "(nil)"
-        let url = urlRequest.url?.absoluteString ?? "(nil)"
-        print("[NetworkDebug] ➡️ \(method) \(url)")
-
-        if let headers = urlRequest.allHTTPHeaderFields, !headers.isEmpty {
-            // Authorization은 길어서 일부만 표시
-            var safeHeaders = headers
-            if let auth = safeHeaders["Authorization"], auth.count > 24 {
-                safeHeaders["Authorization"] = String(auth.prefix(24)) + "..."
-            }
-            print("[NetworkDebug] headers: \(safeHeaders)")
-        }
-
-        if let body = urlRequest.httpBody,
-           let bodyString = String(data: body, encoding: .utf8),
-           !bodyString.isEmpty {
-            print("[NetworkDebug] body: \(bodyString)")
-        }
-        #endif
+        // DEBUG LOG REMOVED
     }
 
     func didReceive(_ result: Result<Response, MoyaError>, target: TargetType) {
-        #if DEBUG
-        switch result {
-        case let .success(response):
-            let url = response.request?.url?.absoluteString ?? "(nil)"
-            print("[NetworkDebug] ⬅️ status=\(response.statusCode) url=\(url)")
-
-            let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
-            let preview = raw.count > 2000 ? String(raw.prefix(2000)) + "..." : raw
-            print("[NetworkDebug] responseBody: \(preview)")
-
-        case let .failure(error):
-            let url = error.response?.request?.url?.absoluteString ?? "(nil)"
-            print("[NetworkDebug] ⬅️ FAIL url=\(url) error=\(error)")
-
-            if let response = error.response {
-                let raw = String(data: response.data, encoding: .utf8) ?? "(binary/empty)"
-                let preview = raw.count > 2000 ? String(raw.prefix(2000)) + "..." : raw
-                print("[NetworkDebug] errorBody: \(preview)")
-            }
-        }
-        #endif
+        // DEBUG LOG REMOVED
     }
 }
 
@@ -285,13 +207,7 @@ extension Response {
 
             // 서버에서 isSuccess=false 이면 여기서 잡아서 원문을 찍어줍니다.
             guard base.isSuccess else {
-                #if DEBUG
-                let url = request?.url?.absoluteString ?? "(nil)"
-                let raw = String(data: data, encoding: .utf8) ?? "(binary/empty)"
-                print("[NetworkMap] ❌ mapResult fail | status=\(statusCode) url=\(url)")
-                print("[NetworkMap] isSuccess=\(base.isSuccess) code=\(base.code) message=\(base.message)")
-                print("[NetworkMap] rawBody: \(raw)")
-                #endif
+                // DEBUG LOG REMOVED
 
 
                 throw NSError(
@@ -317,13 +233,7 @@ extension Response {
                 return ProfileResponseDTO.EmptyResult() as! T
             }
 
-            #if DEBUG
-            let url = request?.url?.absoluteString ?? "(nil)"
-            let raw = String(data: data, encoding: .utf8) ?? "(binary/empty)"
-            print("[NetworkMap] ❌ mapResult empty result | status=\(statusCode) url=\(url)")
-            print("[NetworkMap] isSuccess=\(base.isSuccess) code=\(base.code) message=\(base.message)")
-            print("[NetworkMap] rawBody: \(raw)")
-            #endif
+            // DEBUG LOG REMOVED
 
             // 성공인데 result가 없고, 호출한 타입이 빈 결과 타입도 아니면 구조 불일치로 에러 처리
             throw NSError(
@@ -336,13 +246,7 @@ extension Response {
                 throw error
             }
             // BaseResponse<T> 자체 디코딩이 실패한 경우(JSON 구조가 다르거나 HTML/텍스트일 가능성)
-            #if DEBUG
-            let url = request?.url?.absoluteString ?? "(nil)"
-            let raw = String(data: data, encoding: .utf8) ?? "(binary/empty)"
-            print("[NetworkMap] ❌ JSON decode fail | status=\(statusCode) url=\(url)")
-            print("[NetworkMap] rawBody: \(raw)")
-            print("[NetworkMap] error: \(error)")
-            #endif
+            // DEBUG LOG REMOVED
             throw error
         }
     }
