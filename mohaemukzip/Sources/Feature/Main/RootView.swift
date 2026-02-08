@@ -65,13 +65,13 @@ final class AppState: ObservableObject {
         }
     }
 
-    func loginSucceeded(accessToken: String, refreshToken: String?) {
+    func loginSucceeded(accessToken: String, refreshToken: String) {
         TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
         self.accessToken = accessToken
         self.refreshToken = refreshToken
 
         Config.accessTK = accessToken
-        Config.refreshTK = refreshToken ?? ""
+        Config.refreshTK = refreshToken
 
         print("[AppState] loginSucceeded -> save tokens & go main")
         root = .main
