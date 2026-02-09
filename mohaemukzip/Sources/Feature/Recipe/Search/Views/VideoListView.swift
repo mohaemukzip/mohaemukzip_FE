@@ -29,7 +29,12 @@ struct VideoListView: View {
                 LazyVStack(spacing: 40) {
                     ForEach(viewModel.searchedVideos) { video in
                         NavigationLink(value: Route.recipeDetail(video)) {
-                            RecipeVideoCard(video: video, onTapBookmark: {recipeVideoVM.toggleBookmark(recipeId: video.id)})
+                            RecipeVideoCard(video: video, onTapBookmark: {recipeVideoVM.toggleBookmark(recipeId: video.id);
+                                // MARK: 북마크 여부 동기화를 위해 배열 내 UI 요소를 직접 토글
+                                if let index = viewModel.searchedVideos.firstIndex(where: { $0.id == video.id }) {
+                                    viewModel.searchedVideos[index].isBookmarked.toggle()
+                                }
+                            })
                                 .padding(.top, 20)
                                 .onAppear {
                                     if video.id == viewModel.searchedVideos.last?.id {

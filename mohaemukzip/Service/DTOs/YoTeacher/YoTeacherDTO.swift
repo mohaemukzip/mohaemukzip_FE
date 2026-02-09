@@ -8,7 +8,7 @@
 import Foundation
 
 struct YoTeacherResponseDTO: Decodable {
-    let id: Int
+    let id: String
     let senderType: String
     let title: String
     let message: String

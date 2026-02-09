@@ -55,7 +55,10 @@ struct FridgeView: View {
                 Rectangle()
                     .foregroundStyle(.white)
                 HStack {
-                    Button ( action: { router.push(.ingredientSearch); ingredientSearchVM.searchText = "" } ) { OrangeButton(text: "재료 입력하기", size: .big)
+                    // MARK: 버튼의 action 안에 초기화 로직
+                    // 뷰모델의 viewId에 UUID를 할당하고 IngredientSearchView에서 이를 감지하여 뷰를 다시 그리게 - 스크롤 원위치
+                    // 뷰모델의 selectedCategory를 .all로 초기화
+                    Button ( action: { router.push(.ingredientSearch); ingredientSearchVM.searchText = ""; ingredientSearchVM.viewId = UUID(); ingredientSearchVM.selectedCategory = .all } ) { OrangeButton(text: "재료 입력하기", size: .big)
                                     .frame(height: 46)}
                 }.padding()
             }.frame(height: 94)

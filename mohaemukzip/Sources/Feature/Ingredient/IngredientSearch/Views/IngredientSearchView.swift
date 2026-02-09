@@ -99,7 +99,7 @@ struct IngredientSearchView: View {
         .navigationBarBackButtonHidden()
         .task(id: viewModel.selectedCategory) {
             await viewModel.resetAndFetchIngredients()
-        }
+        }.id(viewModel.viewId)
         
     }
 }
