@@ -148,19 +148,18 @@ struct RecipeListView: View {
                                 guard !isPushingDetail else { return }
                                 isPushingDetail = true
 
-                                Task {
-                                    // 짧은 딜레이로 빠른 연타를 흡수
-                                    try? await Task.sleep(nanoseconds: detailPushDelayNanoseconds)
+                                // ✅ 즉시 상세 화면으로 전환 (상세 화면에서 API 로딩)
+                                router.push(.recipeDetail(video))
 
-                                    // 상세 데이터 준비 후 화면 전환
-                                    if let detail = await viewModel.prepareDetailVideo(recipeId: video.id) {
-                                        router.push(.recipeDetail(detail))
-                                        // push 이후에는 목록 화면이 사라지므로 별도 해제 불필요
-                                    } else {
-                                        // 데이터 준비 실패 시에는 다시 탭 가능하게 해제
-                                        isPushingDetail = false
-                                    }
+                                // ✅ 잠깐 뒤에 잠금 해제 (사용자가 바로 뒤로 왔을 때 재진입 가능)
+                                Task {
+                                    try? await Task.sleep(nanoseconds: detailPushDelayNanoseconds)
+                                    isPushingDetail = false
                                 }
+
+                                // (선택) 백그라운드로 미리 상세 데이터를 준비하고 싶다면 여기서 호출하되,
+                                // push를 막지 않는다.
+                                // Task { _ = await viewModel.prepareDetailVideo(recipeId: video.id) }
                             }
                         }
                     }

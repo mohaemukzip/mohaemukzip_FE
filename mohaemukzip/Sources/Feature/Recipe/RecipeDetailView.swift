@@ -45,18 +45,14 @@ struct RecipeDetailView: View {
 
     var body: some View {
         Group {
-            /// 화면 상태 분기
-            /// - 로딩 중: ProgressView 표시
-            /// - 성공: 상세 컨텐츠 렌더링
-            /// - 실패: 에러 안내 UI 표시
-            if viewModel.isLoading {
-                ProgressView()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else if let recipe = viewModel.recipe {
+            // 화면 상태 분기 (레시피가 있으면 항상 상세 뷰 표시, 로딩 중이면 오버레이)
+            if let recipe = viewModel.recipe {
                 RecipeVideoDetailView(
                     video: recipe,
                     isBookmarkUpdating: viewModel.isBookmarkUpdating,
                     isSubmittingCookingComplete: viewModel.isCompletingCooking,
+                    isGeneratingSummary: viewModel.isGeneratingSummary,
+                    summaryErrorMessage: viewModel.summaryErrorMessage,
                     onTapBookmark: {
                         /// 북마크 버튼 탭 이벤트를 ViewModel로 전달
                         print("[RecipeDetailView] ✅ parent onTapBookmark called")
@@ -69,6 +65,17 @@ struct RecipeDetailView: View {
                 )
                 /// 북마크 상태 변경 시 View 강제 갱신 목적
                 .id("\(recipe.id)-\(recipe.isBookmarked)")
+                .overlay {
+                    // 상세를 아직 못 받아온 아주 짧은 구간에만 전체 로딩을 표시한다.
+                    if viewModel.isLoading {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.black.opacity(0.03))
+                    }
+                }
+            } else if viewModel.isLoading {
+                ProgressView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 /// 데이터 로드 실패 시 에러 안내 UI
                 VStack(spacing: 10) {
@@ -114,6 +121,13 @@ struct RecipeVideoDetailView: View {
     /// 모달 UI 비활성화 제어 목적
     let isSubmittingCookingComplete: Bool
 
+    /// 요약(스텝) 생성 중 여부
+    /// summaryExists == false일 때 placeholder UI 노출 목적
+    let isGeneratingSummary: Bool
+
+    /// 요약(스텝) 생성 실패 메시지
+    let summaryErrorMessage: String?
+
     /// 북마크 버튼 탭 이벤트 콜백
     let onTapBookmark: () -> Void
 
@@ -139,12 +153,16 @@ struct RecipeVideoDetailView: View {
         video: RecipeVideo,
         isBookmarkUpdating: Bool = false,
         isSubmittingCookingComplete: Bool = false,
+        isGeneratingSummary: Bool = false,
+        summaryErrorMessage: String? = nil,
         onTapBookmark: @escaping () -> Void,
         onSubmitCookingComplete: @escaping (Int) -> Void = { _ in }
     ) {
         self.video = video
         self.isBookmarkUpdating = isBookmarkUpdating
         self.isSubmittingCookingComplete = isSubmittingCookingComplete
+        self.isGeneratingSummary = isGeneratingSummary
+        self.summaryErrorMessage = summaryErrorMessage
         self.onTapBookmark = onTapBookmark
         self.onSubmitCookingComplete = onSubmitCookingComplete
         #if DEBUG
@@ -449,18 +467,42 @@ struct RecipeVideoDetailView: View {
                     }
                 }
             } else {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("요약을 생성 중이에요")
-                        .font(.subheadline.weight(.semibold))
-                    Text("잠시 후 다시 시도해주세요.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                // summaryExists == false 인 동안 placeholder 노출
+                VStack(spacing: 18) {
+                    Spacer(minLength: 8)
+
+                    Image("summary")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 160, height: 160)
+
+                    VStack(spacing: 6) {
+                        if isGeneratingSummary {
+                            Text("요선생님이 열심히 레시피를 요약하고 있어요!")
+                                .font(.subheadline.weight(.semibold))
+                                .multilineTextAlignment(.center)
+                        } else if let message = summaryErrorMessage {
+                            Text(message)
+                                .font(.subheadline.weight(.semibold))
+                                .multilineTextAlignment(.center)
+                            Text("잠시 후 다시 시도해주세요.")
+                                .font(.footnote)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                        } else {
+                            Text("요약을 준비 중이에요")
+                                .font(.subheadline.weight(.semibold))
+                                .multilineTextAlignment(.center)
+                        }
+                    }
+
+                    Spacer(minLength: 8)
                 }
-                .padding(16)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 24)
                 .background(
                     RoundedRectangle(cornerRadius: 14)
-                        .fill(Color(.systemGray6))
+                        .fill(Color(.systemBackground))
                 )
             }
         }
@@ -668,7 +710,7 @@ private struct RecipeStepCard: View {
 // MARK: - Preview
 
 #Preview("RecipeDetailView") {
-		    NavigationStack {
+            NavigationStack {
         RecipeDetailView(
             recipeId: 1,
             base: RecipeVideo(

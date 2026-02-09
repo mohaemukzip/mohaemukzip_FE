@@ -77,7 +77,7 @@ extension AuthAPI: TargetType {
             return [
                 "Content-Type": "application/json",
                 "Authorization": "Bearer \(Config.accessTK)",
-                "X-RefreshToken": "\(Config.refreshTK)"
+                "X-Refresh-Token": "\(Config.refreshTK)"
             ]
 
         case .logout, .withdrawal, .checkLoginId:

@@ -67,7 +67,8 @@ final class RecipeService {
     }
 
     /// 요약 레시피 생성 요청
-    /// 서버 미구현 또는 실패 시 fallback 값 반환
+    /// - Note: 실패를 성공처럼 처리하지 않는다. (중복 호출/더미 스텝 주입 원인)
+    ///         실패 시 (false, 0)을 반환하고, 상위(ViewModel)에서 UI 상태(요약 생성 중/실패)를 처리한다.
     func generateSummary(
         recipeId: Int
     ) async -> (summaryExists: Bool, stepCount: Int) {
@@ -78,8 +79,10 @@ final class RecipeService {
             )
             return (response.summaryExists, response.stepCount)
         } catch {
-            /// 서버 미구현 / 오류 상황 대비 fallback
-            return (true, 6)
+            #if DEBUG
+            print("[RecipeService] SUMMARY GENERATE ❌ recipeId=\(recipeId) error=\(error)")
+            #endif
+            return (false, 0)
         }
     }
 
@@ -304,8 +307,8 @@ final class RecipeService {
         )
     }
 
-    /// 요약 API 실패 시 사용할 더미 스텝 생성
-    /// 일정 간격의 videoTime 값으로 기본 스텝 구성
+    /// (Legacy) 과거 요약 실패 시 더미 스텝을 만들던 헬퍼
+    /// 현재 정책: 더미 스텝을 주입하지 않고, 요약 생성 완료 후 상세 재조회로 steps를 채운다.
     func makeFallbackSteps(stepCount: Int = 6) -> [RecipeStep] {
         let count = max(1, stepCount)
 
