@@ -54,9 +54,33 @@ final class RecipeDetailViewModel: ObservableObject {
         return (level * 10).rounded() / 10
     }
 
+    /// 요약(스텝) 생성 진행 여부 (summaryExists == false일 때 사용)
+    @Published private(set) var isGeneratingSummary: Bool = false
+
+    /// 요약(스텝) 생성 실패 메시지 (필요 시 View에서 노출)
+    @Published private(set) var summaryErrorMessage: String?
+
     // MARK: - 초기화
 
     private let service: RecipeService
+
+    /// 상세 로딩 중복 호출 방지용 Task
+    private var loadTask: Task<Void, Never>?
+
+    /// 동일 recipeId에 대해 summary 생성 API 중복 호출 방지
+    private var lastSummaryRequestedRecipeId: Int?
+
+    /// summary 생성 이후 상세 재조회(steps 반영) 폴링 Task
+    private var summaryPollingTask: Task<Void, Never>?
+
+    /// 요약 생성 요청이 이미 진행 중일 때, 같은 recipeId는 같은 Task를 await해서 중복 호출을 막는다.
+    private var summaryGenerationTask: Task<(summaryExists: Bool, stepCount: Int), Never>?
+
+    /// summaryGenerationTask가 어떤 recipeId에 대한 것인지 추적
+    private var summaryGenerationRecipeId: Int?
+
+    /// 동일 recipeId 로딩 중 onAppear 등으로 중복 호출되는 것을 막기 위한 값
+    private var currentLoadingRecipeId: Int?
 
     /// 서비스 주입용 init
     /// - Note:
@@ -85,7 +109,26 @@ final class RecipeDetailViewModel: ObservableObject {
     /// - base: 목록 화면에서 전달받은 기본 레시피 정보 (선택)
     ///         없을 경우 최소 정보만으로 더미 데이터 구성
     func load(recipeId: Int, base: RecipeVideo? = nil) {
+        // 중복 로드 방지
+        // - 같은 recipeId를 로딩 중인데 onAppear 등으로 다시 호출되는 경우는 무시
+        if currentLoadingRecipeId == recipeId, loadTask != nil {
+            #if DEBUG
+            print("[RecipeDetailVM] ⚠️ load ignored | already loading recipeId=\(recipeId)")
+            #endif
+            return
+        }
+
+        currentLoadingRecipeId = recipeId
+
+        loadTask?.cancel()
+        summaryPollingTask?.cancel()
+        summaryGenerationTask?.cancel()
+        summaryGenerationTask = nil
+        summaryGenerationRecipeId = nil
+
         isLoading = true
+        isGeneratingSummary = false
+        summaryErrorMessage = nil
         errorMessage = nil
         shouldDismissAfterComplete = false
         lastSubmittedRating = nil
@@ -96,90 +139,133 @@ final class RecipeDetailViewModel: ObservableObject {
             recipe = base
         }
 
-        Task {
+        loadTask = Task { [weak self] in
+            guard let self else { return }
+
             do {
-                let categoryId = categoryId(from: base)
-                var detail = try await service.fetchRecipeDetail(
+                let categoryId = self.categoryId(from: base)
+
+                // 1) 상세 조회 먼저
+                let detail = try await self.service.fetchRecipeDetail(
                     recipeId: recipeId,
                     categoryId: categoryId
                 )
 
-                // summary API가 미구현/500/빈 바디일 수 있어 별도로 확인한다.
-                // 실패 시에는 고정 더미 스텝 규칙(4개)을 적용한다.
-                let summary = await service.generateSummary(recipeId: recipeId)
-                let summaryExists = summary.summaryExists
+                // 상세 정보는 즉시 반영해서 UI를 먼저 띄운다.
+                self.recipe = detail
+                self.isLoading = false
+                self.currentLoadingRecipeId = nil
 
-                if summaryExists {
-                    // 상세 API에서 steps가 비어있으면 fallback steps를 주입한다.
-                    if detail.steps == nil || detail.steps?.isEmpty == true {
-                        detail = RecipeVideo(
-                            id: detail.id,
-                            title: detail.title,
-                            videoUrl: detail.videoUrl,
-                            videoId: detail.videoId,
-                            channelId: detail.channelId,
-                            videoDuration: detail.videoDuration,
-                            channelName: detail.channelName,
-                            viewCount: detail.viewCount,
-                            cookingTimeMinutes: detail.cookingTimeMinutes,
-                            difficulty: detail.difficulty,
-                            level: detail.level,
-                            ratingCount: detail.ratingCount,
-                            ingredients: detail.ingredients,
-                            steps: makeFallbackSummarySteps(),
-                            summaryExists: true,
-                            cuisine: detail.cuisine,
-                            koreanSubCategory: detail.koreanSubCategory,
-                            chineseSubCategory: detail.chineseSubCategory,
-                            japaneseSubCategory: detail.japaneseSubCategory,
-                            westernSubCategory: detail.westernSubCategory,
-                            southeastAsianSubCategory: detail.southeastAsianSubCategory,
-                            isBookmarked: detail.isBookmarked,
-                            channelProfileImageUrl: detail.channelProfileImageUrl
+                #if DEBUG
+                print("[RecipeDetailVM] ✅ detail fetched | recipeId=\(recipeId) steps=\(detail.steps?.count ?? 0) summaryExists=\(detail.summaryExists ?? false)")
+                #endif
+
+                // 2) summaryExists == false이면 요약 생성(중복 방지) → steps 반영될 때까지 백오프 폴링
+                guard detail.summaryExists == false else { return }
+
+                self.isGeneratingSummary = true
+                self.summaryErrorMessage = nil
+
+                // 동일 recipeId에 대해 요약 생성 요청이 이미 진행 중이면 같은 Task를 await해서
+                // "응답(summaryExists=true) 확인 후"에만 상세 재조회(폴링)를 시작한다.
+                let generationTask: Task<(summaryExists: Bool, stepCount: Int), Never>
+
+                if let existing = self.summaryGenerationTask,
+                   self.summaryGenerationRecipeId == recipeId {
+                    generationTask = existing
+
+                    #if DEBUG
+                    print("[RecipeDetailVM] ⏳ await existing generateSummary | recipeId=\(recipeId)")
+                    #endif
+                } else {
+                    self.summaryGenerationRecipeId = recipeId
+                    let newTask = Task { [service = self.service] in
+                        await service.generateSummary(recipeId: recipeId)
+                    }
+                    self.summaryGenerationTask = newTask
+                    generationTask = newTask
+
+                    #if DEBUG
+                    print("[RecipeDetailVM] 🚀 generateSummary start | recipeId=\(recipeId)")
+                    #endif
+                }
+
+                let summary = await generationTask.value
+
+                // 같은 recipeId의 생성 Task는 여기서 정리한다.
+                if self.summaryGenerationRecipeId == recipeId {
+                    self.summaryGenerationTask = nil
+                    self.summaryGenerationRecipeId = nil
+                }
+
+                // generateSummary는 실패 시 (false, 0)을 반환한다.
+                // 응답에서 summaryExists=true가 확인된 경우에만 상세 재조회(폴링)로 넘어간다.
+                guard summary.summaryExists == true else {
+                    self.isGeneratingSummary = false
+                    self.summaryErrorMessage = "요약 레시피 생성에 실패했습니다."
+
+                    #if DEBUG
+                    print("[RecipeDetailVM] ❌ summary generate failed | recipeId=\(recipeId) stepCount=\(summary.stepCount)")
+                    #endif
+                    return
+                }
+
+                #if DEBUG
+                print("[RecipeDetailVM] ✅ summary generated | recipeId=\(recipeId) stepCount=\(summary.stepCount)")
+                #endif
+
+                // 요약 생성 응답에서 summaryExists=true가 확인되면,
+                // steps가 실제로 붙을 때까지 상세 조회를 짧게 백오프로 재시도한다.
+                self.summaryPollingTask = Task { [weak self] in
+                    guard let self else { return }
+
+                    do {
+                        let refreshed = try await self.pollDetailUntilStepsReady(
+                            recipeId: recipeId,
+                            categoryId: categoryId
                         )
+
+                        self.recipe = refreshed
+                        self.isGeneratingSummary = false
+
+                        #if DEBUG
+                        print("[RecipeDetailVM] ✅ detail refreshed after polling | recipeId=\(recipeId) steps=\(refreshed.steps?.count ?? 0) summaryExists=\(refreshed.summaryExists ?? false)")
+                        #endif
+                    } catch is CancellationError {
+                        #if DEBUG
+                        print("[RecipeDetailVM] ⚠️ polling cancelled | recipeId=\(recipeId)")
+                        #endif
+                        return
+                    } catch {
+                        self.isGeneratingSummary = false
+                        self.summaryErrorMessage = "요약이 아직 반영되지 않았습니다. 잠시 후 다시 시도해주세요."
+
+                        #if DEBUG
+                        print("[RecipeDetailVM] ❌ polling failed | recipeId=\(recipeId) error=\(error)")
+                        #endif
                     }
                 }
-
-                // 서버 summaryExists를 모델에 반영 (steps가 이미 존재하더라도 표시 여부는 summaryExists를 따른다)
-                if detail.summaryExists != summaryExists {
-                    detail = RecipeVideo(
-                        id: detail.id,
-                        title: detail.title,
-                        videoUrl: detail.videoUrl,
-                        videoId: detail.videoId,
-                        channelId: detail.channelId,
-                        videoDuration: detail.videoDuration,
-                        channelName: detail.channelName,
-                        viewCount: detail.viewCount,
-                        cookingTimeMinutes: detail.cookingTimeMinutes,
-                        difficulty: detail.difficulty,
-                        level: detail.level,
-                        ratingCount: detail.ratingCount,
-                        ingredients: detail.ingredients,
-                        steps: detail.steps,
-                        summaryExists: summaryExists,
-                        cuisine: detail.cuisine,
-                        koreanSubCategory: detail.koreanSubCategory,
-                        chineseSubCategory: detail.chineseSubCategory,
-                        japaneseSubCategory: detail.japaneseSubCategory,
-                        westernSubCategory: detail.westernSubCategory,
-                        southeastAsianSubCategory: detail.southeastAsianSubCategory,
-                        isBookmarked: detail.isBookmarked,
-                        channelProfileImageUrl: detail.channelProfileImageUrl
-                    )
-                }
-
-                self.recipe = detail
+            } catch is CancellationError {
+                // 취소는 무시
                 #if DEBUG
-                print("[RecipeDetailVM] ✅ load success | recipeId=\(recipeId) title=\(detail.title) ingredients=\(detail.ingredients?.count ?? 0) steps=\(detail.steps?.count ?? 0) summaryExists=\(detail.summaryExists ?? false)")
+                print("[RecipeDetailVM] ⚠️ load cancelled | recipeId=\(recipeId)")
                 #endif
-                self.isLoading = false
+                self.currentLoadingRecipeId = nil
+                self.summaryGenerationTask?.cancel()
+                self.summaryGenerationTask = nil
+                self.summaryGenerationRecipeId = nil
+                return
             } catch {
                 #if DEBUG
                 print("[RecipeDetailVM] ❌ load fail | recipeId=\(recipeId) error=\(error)")
                 #endif
+                self.currentLoadingRecipeId = nil
                 self.isLoading = false
+                self.isGeneratingSummary = false
                 self.errorMessage = "레시피 상세를 불러오지 못했습니다."
+                self.summaryGenerationTask?.cancel()
+                self.summaryGenerationTask = nil
+                self.summaryGenerationRecipeId = nil
             }
         }
     }
@@ -275,6 +361,42 @@ final class RecipeDetailViewModel: ObservableObject {
         recipe = current
     }
 
+    // MARK: - Summary Polling
+
+    /// 요약 생성 직후 상세 조회를 바로 하면 steps가 아직 반영되지 않을 수 있어,
+    /// 짧은 백오프(점진적 지연)로 제한 횟수만 재시도한다.
+    private func pollDetailUntilStepsReady(
+        recipeId: Int,
+        categoryId: Int?
+    ) async throws -> RecipeVideo {
+        // 너무 공격적으로 호출하지 않도록 점진적 백오프 적용
+        let delays: [UInt64] = [800_000_000, 1_200_000_000, 2_000_000_000, 3_000_000_000, 4_000_000_000]
+
+        // 첫 시도는 즉시 1회
+        var latest = try await service.fetchRecipeDetail(recipeId: recipeId, categoryId: categoryId)
+        if (latest.steps?.isEmpty == false) || (latest.summaryExists == true) {
+            return latest
+        }
+
+        for (idx, ns) in delays.enumerated() {
+            try Task.checkCancellation()
+            try await Task.sleep(nanoseconds: ns)
+
+            latest = try await service.fetchRecipeDetail(recipeId: recipeId, categoryId: categoryId)
+
+            #if DEBUG
+            print("[RecipeDetailVM] 🔄 polling detail | attempt=\(idx + 2) recipeId=\(recipeId) steps=\(latest.steps?.count ?? 0) summaryExists=\(latest.summaryExists ?? false)")
+            #endif
+
+            if (latest.steps?.isEmpty == false) || (latest.summaryExists == true) {
+                return latest
+            }
+        }
+
+        // 여기까지 왔는데도 steps가 없으면 타임아웃으로 처리
+        return latest
+    }
+
     // MARK: - CategoryId Mapping
 
     /// 상세 API에는 categoryId가 없어서, 목록에서 전달된 base를 기준으로 categoryId를 복원한다.
@@ -358,31 +480,6 @@ final class RecipeDetailViewModel: ObservableObject {
             }
         case .none:
             return nil
-        }
-    }
-
-    // MARK: - Summary Fallback
-
-    /// 요약 생성 API가 실패했을 때 사용할 고정 스텝 더미 데이터
-    /// - Rule:
-    ///   - summaryExists = true
-    ///   - stepCount = 4 고정
-    ///   - title/description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
-    ///   - timestamp = 1:00, 1:30, 2:00, 2:30
-    private func makeFallbackSummarySteps() -> [RecipeStep] {
-        let title = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
-        let description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
-
-        // 1:00, 1:30, 2:00, 2:30
-        let times: [Int] = [60, 90, 120, 150]
-
-        return times.enumerated().map { index, seconds in
-            RecipeStep(
-                stepNumber: index + 1,
-                title: title,
-                description: description,
-                videoTime: seconds
-            )
         }
     }
 }

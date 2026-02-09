@@ -2,7 +2,7 @@
 //  AuthService.swift
 //  mohaemukzip
 //
-//  Created by 이서현 on 1/31/26.
+//  Created by 고석현 on 1/31/26.
 //
 
 
@@ -10,6 +10,7 @@ import Foundation
 import Moya
 
 final class AuthService {
+    // Singleton instance used across the app
     static let shared = AuthService()
     private let provider = NetworkManager.shared.makeProvider(for: AuthAPI.self)
 
@@ -48,7 +49,31 @@ final class AuthService {
                 case .success(let response):
                     do {
                         let decoded = try response.map(LoginResponseDTO.self)
-                        continuation.resume(returning: decoded.result.toModel())
+                        let model = decoded.result.toModel()
+
+                        // 정상 동작: 로그인 성공 시 토큰을 저장하고 상위(AppState 등)에서 화면 전환을 처리한다.
+                        // 아래 TEST ONLY 블록은 "access 토큰이 깨진 상태에서 401 → reissue → 재시도" 흐름이
+                        // 자동으로 동작하는지 확인하기 위한 테스트 코드다.
+                        // - 평소엔 주석 상태로 두고,
+                        // - 테스트할 때만 주석을 풀어 사용한 뒤 반드시 제거한다.
+                        /*
+                        // ================================
+                        // TEST ONLY: accessToken 강제 오염
+                        // 자동 reissue 동작 확인용
+                        // ================================
+                        let corruptedAccess = String(model.accessToken.dropLast(8)) + "TESTTEST"
+
+                        // UserDefaults/Keychain 저장소에 오염된 access를 덮어쓴다.
+                        TokenStore.saveTokens(access: corruptedAccess, refresh: model.refreshToken)
+
+                        // 런타임에서 사용하는 Config도 함께 갱신한다.
+                        Config.accessTK = corruptedAccess
+                        Config.refreshTK = model.refreshToken
+
+                        print("[TEST] access token intentionally corrupted")
+                        */
+
+                        continuation.resume(returning: model)
                     } catch {
                         continuation.resume(throwing: error)
                     }
