@@ -492,11 +492,11 @@ struct RecipeVideoDetailView: View {
                                 .onAppear { isSummarySpinnerAnimating = true }
                                 .onDisappear { isSummarySpinnerAnimating = false }
 
-                            Text("새롭게 요약 생성 중")
+                            Text("[로딩중]")
                                 .font(.subheadline.weight(.semibold))
                                 .multilineTextAlignment(.center)
 
-                            Text("약 20초 정도 소요된답니다!")
+                            Text("요선생이 레시피 핵심만 정리하고 있어요.\n조금만 기다리면 바로 확인할 수 있어요!")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)

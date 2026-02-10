@@ -226,7 +226,7 @@ final class RecipeDetailViewModel: ObservableObject {
                 // 응답에서 summaryExists=true가 확인된 경우에만 상세 재조회(폴링)로 넘어간다.
                 guard summary.summaryExists == true else {
                     self.isGeneratingSummary = false
-                    self.summaryErrorMessage = "해당 영상은 자막을 제공하지 않아 요약할 수 없어요!"
+                    self.summaryErrorMessage = "이 레시피는 요약된 설명을 제공하기 어려워요.\n대신 원본 영상을 참고해 주세요!"
 
                     #if DEBUG
                     print("[RecipeDetailVM] ❌ summary generate failed | recipeId=\(recipeId) stepCount=\(summary.stepCount)")
