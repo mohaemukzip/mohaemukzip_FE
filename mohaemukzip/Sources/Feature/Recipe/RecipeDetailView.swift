@@ -502,7 +502,7 @@ struct RecipeVideoDetailView: View {
                                 .multilineTextAlignment(.center)
                         }
                     } else if let message = summaryErrorMessage {
-                        VStack(spacing: 6) {
+                        VStack(spacing: 10) {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(.secondary)
