@@ -707,37 +707,3 @@ private struct RecipeStepCard: View {
 
 
 
-// MARK: - Preview
-
-#Preview("RecipeDetailView") {
-            NavigationStack {
-        RecipeDetailView(
-            recipeId: 1,
-            base: RecipeVideo(
-                id: 1,
-                title: "프리뷰용 제육볶음",
-                videoUrl: nil,
-                videoId: "sHpMVI8wQuk",
-                channelId: "UC_TEST",
-                videoDuration: "10:00",
-                channelName: "프리뷰 채널",
-                viewCount: 12_345,
-                cookingTimeMinutes: 20,
-                difficulty: 3,
-                level: nil,
-                ratingCount: nil,
-                ingredients: [],
-                steps: [],
-                summaryExists: false,
-                cuisine: .korean,
-                koreanSubCategory: .soupStew,
-                chineseSubCategory: nil,
-                japaneseSubCategory: nil,
-                westernSubCategory: nil,
-                southeastAsianSubCategory: nil,
-                isBookmarked: false,
-                channelProfileImageUrl: nil
-            )
-        )
-    }
-}
