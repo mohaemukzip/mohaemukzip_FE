@@ -15,6 +15,19 @@ struct IngredientBox: View {
     let ingredients: [FridgeIngredient]
     var onDelete: (Int) -> Void
     
+    // 4열 그리드를 만들기 위한 배열을 4개씩 묶어주는 헬퍼
+    private var chunkedIngredients: [[FridgeIngredient?]] {
+        let displayCount = isExpanded ? max(ingredients.count, 8) : 8
+        var items: [FridgeIngredient?] = Array(ingredients.prefix(displayCount))
+        
+        while items.count < displayCount {
+            items.append(nil)
+        }
+        
+        return stride(from: 0, to: items.count, by: 4).map {
+            Array(items[$0..<min($0 + 4, items.count)])
+        }
+    }
     
     var body: some View {
         
@@ -37,19 +50,24 @@ struct IngredientBox: View {
                 
                 Spacer().frame(height: 20)
                 
-                LazyVGrid(columns: columns, spacing: 16) {
-                    let displayCount = isExpanded ? max(ingredients.count, 8) : 8
-                    
-                    ForEach(0..<displayCount, id: \.self) { index in
-                        if index < ingredients.count {
-                            IngredientManagementCard(ingredientInfo: ingredients[index],
-                                                     color: ingredients[index].color.displayColor,
-                                                     isEditing: $isEditing,
-                                                     onDelete: { onDelete(ingredients[index].id) } )
-                        } else {
-                            Rectangle()
-                                .frame(width: 76, height: 80)
-                                .foregroundStyle(.clear)
+                // LazyVGrid 사용 시 FridgeView에서 스크롤이 동작할 때 렌더링이 늦어져 순간적으로 재료가 안보이는 버그
+                // MARK: VStack과 HStack을 합쳐서 Grid 구현해 UI 안정성 확보
+                VStack(spacing: 16) {
+                    ForEach(0..<chunkedIngredients.count, id: \.self) { rowIndex in
+                        HStack(spacing: 7.5) {
+                            ForEach(0..<4, id: \.self) { colIndex in
+                                if colIndex < chunkedIngredients[rowIndex].count,
+                                   let item = chunkedIngredients[rowIndex][colIndex] {
+                                    IngredientManagementCard(ingredientInfo: item,
+                                                             color: item.color.displayColor,
+                                                             isEditing: $isEditing,
+                                                             onDelete: { onDelete(item.id) })
+                                } else {
+                                    Rectangle()
+                                        .frame(width: 76, height: 80)
+                                        .foregroundStyle(.clear)
+                                }
+                            }
                         }
                     }
                 }
@@ -62,18 +80,17 @@ struct IngredientBox: View {
     }
 }
 
-/*
+
 #Preview {
-    IngredientBox(text: "냉장", ingredients: [IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen),
-                                            IngredientModel(name: "양배추", amount: "100g", expirationDate: 100, ty: .frozen)
-                                            ])
+    @Previewable
+    @State var x = false
+    IngredientBox(isEditing: $x, text: "냉장", ingredients: [FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300")], onDelete: { _ in })
 }
-*/

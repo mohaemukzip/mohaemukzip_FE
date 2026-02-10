@@ -11,6 +11,7 @@ import Combine
 @Observable
 class IngredientSearchViewModel: ObservableObject {
     var service = IngredientService()
+    var viewId: UUID?
     
     var selectedCategory: Category
     var searchText: String = ""
