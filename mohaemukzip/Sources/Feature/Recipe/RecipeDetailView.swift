@@ -41,6 +41,7 @@ struct RecipeDetailView: View {
         self.recipeId = recipeId
         self.base = base
         _viewModel = StateObject(wrappedValue: RecipeDetailViewModel(recipe: base))
+        print("DeatilView init")
     }
 
     var body: some View {
@@ -148,6 +149,9 @@ struct RecipeVideoDetailView: View {
 
     /// 사용자가 선택한 별점 값
     @State private var selectedRating: Int = 0
+
+    /// 요약 로딩 아이콘 회전 애니메이션 제어
+    @State private var isSummarySpinnerAnimating: Bool = false
 
     init(
         video: RecipeVideo,
@@ -468,7 +472,7 @@ struct RecipeVideoDetailView: View {
                 }
             } else {
                 // summaryExists == false 인 동안 placeholder 노출
-                VStack(spacing: 18) {
+                VStack(spacing: 14) {
                     Spacer(minLength: 8)
 
                     Image("summary")
@@ -476,20 +480,42 @@ struct RecipeVideoDetailView: View {
                         .scaledToFit()
                         .frame(width: 160, height: 160)
 
-                    VStack(spacing: 6) {
-                        if isGeneratingSummary {
-                            Text("요선생님이 열심히 레시피를 요약하고 있어요!")
+                    if isGeneratingSummary {
+                        VStack(spacing: 10) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 22, weight: .semibold))
+                                .rotationEffect(.degrees(isSummarySpinnerAnimating ? 360 : 0))
+                                .animation(
+                                    .linear(duration: 0.9).repeatForever(autoreverses: false),
+                                    value: isSummarySpinnerAnimating
+                                )
+                                .onAppear { isSummarySpinnerAnimating = true }
+                                .onDisappear { isSummarySpinnerAnimating = false }
+
+                            Text("새롭게 요약 생성 중")
                                 .font(.subheadline.weight(.semibold))
                                 .multilineTextAlignment(.center)
-                        } else if let message = summaryErrorMessage {
-                            Text(message)
-                                .font(.subheadline.weight(.semibold))
-                                .multilineTextAlignment(.center)
-                            Text("잠시 후 다시 시도해주세요.")
+
+                            Text("약 20초 정도 소요된답니다!")
                                 .font(.footnote)
                                 .foregroundStyle(.secondary)
                                 .multilineTextAlignment(.center)
-                        } else {
+                        }
+                    } else if let message = summaryErrorMessage {
+                        VStack(spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(.secondary)
+
+                            Text(message)
+                                .font(.subheadline.weight(.semibold))
+                                .multilineTextAlignment(.center)
+
+                          
+                        }
+                    } else {
+                        VStack(spacing: 10) {
+                            ProgressView()
                             Text("요약을 준비 중이에요")
                                 .font(.subheadline.weight(.semibold))
                                 .multilineTextAlignment(.center)
@@ -498,6 +524,7 @@ struct RecipeVideoDetailView: View {
 
                     Spacer(minLength: 8)
                 }
+                .onAppear { isSummarySpinnerAnimating = false }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
                 .background(

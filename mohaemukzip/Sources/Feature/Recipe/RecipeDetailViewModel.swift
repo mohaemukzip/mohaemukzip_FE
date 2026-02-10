@@ -13,6 +13,45 @@ import Foundation
 import Combine
 
 
+// MARK: - SummaryGenerationCoordinator
+// 여러 ViewModel 인스턴스가 동시에 생성되더라도(예: SwiftUI 재렌더/네비게이션),
+// 동일 recipeId에 대한 요약 생성 POST(/summary)은 앱 전체에서 1번만 날아가도록 보장한다.
+private actor SummaryGenerationCoordinator {
+    static let shared = SummaryGenerationCoordinator()
+
+    private var inFlight: [Int: Task<(summaryExists: Bool, stepCount: Int), Never>] = [:]
+
+    func task(recipeId: Int, service: RecipeService) -> Task<(summaryExists: Bool, stepCount: Int), Never> {
+        if let existing = inFlight[recipeId] {
+            return existing
+        }
+
+        let task = Task { [service] in
+            await service.generateSummary(recipeId: recipeId)
+        }
+
+        inFlight[recipeId] = task
+
+        Task { [weak self] in
+            _ = await task.value
+            await self?.remove(recipeId: recipeId)
+        }
+
+        return task
+    }
+
+    private func remove(recipeId: Int) {
+        inFlight[recipeId] = nil
+    }
+
+    func cancel(recipeId: Int) {
+        inFlight[recipeId]?.cancel()
+        inFlight[recipeId] = nil
+    }
+}
+
+
+
 
 @MainActor
 final class RecipeDetailViewModel: ObservableObject {
@@ -73,11 +112,6 @@ final class RecipeDetailViewModel: ObservableObject {
     /// summary 생성 이후 상세 재조회(steps 반영) 폴링 Task
     private var summaryPollingTask: Task<Void, Never>?
 
-    /// 요약 생성 요청이 이미 진행 중일 때, 같은 recipeId는 같은 Task를 await해서 중복 호출을 막는다.
-    private var summaryGenerationTask: Task<(summaryExists: Bool, stepCount: Int), Never>?
-
-    /// summaryGenerationTask가 어떤 recipeId에 대한 것인지 추적
-    private var summaryGenerationRecipeId: Int?
 
     /// 동일 recipeId 로딩 중 onAppear 등으로 중복 호출되는 것을 막기 위한 값
     private var currentLoadingRecipeId: Int?
@@ -118,13 +152,16 @@ final class RecipeDetailViewModel: ObservableObject {
             return
         }
 
-        currentLoadingRecipeId = recipeId
-
-        loadTask?.cancel()
+        // 이전 레시피 로딩/요약 작업이 남아있는데 다른 recipeId로 진입하면 정리한다.
+        if let inFlightId = currentLoadingRecipeId, inFlightId != recipeId {
+            loadTask?.cancel()
         summaryPollingTask?.cancel()
-        summaryGenerationTask?.cancel()
-        summaryGenerationTask = nil
-        summaryGenerationRecipeId = nil
+        } else {
+            // 같은 recipeId로 재진입(onAppear 중복 등)인 경우:
+            // - 진행 중인 생성/폴링 Task를 살려두고, 아래의 loadTask 중복 방지 가드로 막는다.
+        }
+
+        currentLoadingRecipeId = recipeId
 
         isLoading = true
         isGeneratingSummary = false
@@ -141,6 +178,13 @@ final class RecipeDetailViewModel: ObservableObject {
 
         loadTask = Task { [weak self] in
             guard let self else { return }
+            defer {
+                // 이 load 작업이 완전히 끝난 뒤에만 로딩 상태를 해제한다.
+                if self.currentLoadingRecipeId == recipeId {
+                    self.currentLoadingRecipeId = nil
+                }
+                self.loadTask = nil
+            }
 
             do {
                 let categoryId = self.categoryId(from: base)
@@ -154,7 +198,6 @@ final class RecipeDetailViewModel: ObservableObject {
                 // 상세 정보는 즉시 반영해서 UI를 먼저 띄운다.
                 self.recipe = detail
                 self.isLoading = false
-                self.currentLoadingRecipeId = nil
 
                 #if DEBUG
                 print("[RecipeDetailVM] ✅ detail fetched | recipeId=\(recipeId) steps=\(detail.steps?.count ?? 0) summaryExists=\(detail.summaryExists ?? false)")
@@ -166,43 +209,24 @@ final class RecipeDetailViewModel: ObservableObject {
                 self.isGeneratingSummary = true
                 self.summaryErrorMessage = nil
 
-                // 동일 recipeId에 대해 요약 생성 요청이 이미 진행 중이면 같은 Task를 await해서
-                // "응답(summaryExists=true) 확인 후"에만 상세 재조회(폴링)를 시작한다.
-                let generationTask: Task<(summaryExists: Bool, stepCount: Int), Never>
+                // 동일 recipeId에 대한 요약 생성은 앱 전체에서 1번만 호출되도록(coordinator) 보장한다.
+                // - SwiftUI에서 View/VM이 중복 생성되더라도 POST가 2번 나가지 않게 함
+                let generationTask = await SummaryGenerationCoordinator.shared.task(
+                    recipeId: recipeId,
+                    service: self.service
+                )
 
-                if let existing = self.summaryGenerationTask,
-                   self.summaryGenerationRecipeId == recipeId {
-                    generationTask = existing
-
-                    #if DEBUG
-                    print("[RecipeDetailVM] ⏳ await existing generateSummary | recipeId=\(recipeId)")
-                    #endif
-                } else {
-                    self.summaryGenerationRecipeId = recipeId
-                    let newTask = Task { [service = self.service] in
-                        await service.generateSummary(recipeId: recipeId)
-                    }
-                    self.summaryGenerationTask = newTask
-                    generationTask = newTask
-
-                    #if DEBUG
-                    print("[RecipeDetailVM] 🚀 generateSummary start | recipeId=\(recipeId)")
-                    #endif
-                }
+                #if DEBUG
+                print("[RecipeDetailVM] ⏳ await generateSummary (coalesced) | recipeId=\(recipeId)")
+                #endif
 
                 let summary = await generationTask.value
-
-                // 같은 recipeId의 생성 Task는 여기서 정리한다.
-                if self.summaryGenerationRecipeId == recipeId {
-                    self.summaryGenerationTask = nil
-                    self.summaryGenerationRecipeId = nil
-                }
 
                 // generateSummary는 실패 시 (false, 0)을 반환한다.
                 // 응답에서 summaryExists=true가 확인된 경우에만 상세 재조회(폴링)로 넘어간다.
                 guard summary.summaryExists == true else {
                     self.isGeneratingSummary = false
-                    self.summaryErrorMessage = "요약 레시피 생성에 실패했습니다."
+                    self.summaryErrorMessage = "해당 영상은 자막을 제공하지 않아 요약할 수 없어요!."
 
                     #if DEBUG
                     print("[RecipeDetailVM] ❌ summary generate failed | recipeId=\(recipeId) stepCount=\(summary.stepCount)")
@@ -216,56 +240,47 @@ final class RecipeDetailViewModel: ObservableObject {
 
                 // 요약 생성 응답에서 summaryExists=true가 확인되면,
                 // steps가 실제로 붙을 때까지 상세 조회를 짧게 백오프로 재시도한다.
-                self.summaryPollingTask = Task { [weak self] in
-                    guard let self else { return }
+                do {
+                    let refreshed = try await self.pollDetailUntilStepsReady(
+                        recipeId: recipeId,
+                        categoryId: categoryId
+                    )
 
-                    do {
-                        let refreshed = try await self.pollDetailUntilStepsReady(
-                            recipeId: recipeId,
-                            categoryId: categoryId
-                        )
+                    self.recipe = refreshed
+                    self.isGeneratingSummary = false
 
-                        self.recipe = refreshed
-                        self.isGeneratingSummary = false
+                    #if DEBUG
+                    print("[RecipeDetailVM] ✅ detail refreshed after polling | recipeId=\(recipeId) steps=\(refreshed.steps?.count ?? 0) summaryExists=\(refreshed.summaryExists ?? false)")
+                    #endif
+                } catch is CancellationError {
+                    #if DEBUG
+                    print("[RecipeDetailVM] ⚠️ polling cancelled | recipeId=\(recipeId)")
+                    #endif
+                    self.isGeneratingSummary = false
+                    return
+                } catch {
+                    self.isGeneratingSummary = false
+                    self.summaryErrorMessage = "요약이 아직 반영되지 않았습니다. 잠시 후 다시 시도해주세요."
 
-                        #if DEBUG
-                        print("[RecipeDetailVM] ✅ detail refreshed after polling | recipeId=\(recipeId) steps=\(refreshed.steps?.count ?? 0) summaryExists=\(refreshed.summaryExists ?? false)")
-                        #endif
-                    } catch is CancellationError {
-                        #if DEBUG
-                        print("[RecipeDetailVM] ⚠️ polling cancelled | recipeId=\(recipeId)")
-                        #endif
-                        return
-                    } catch {
-                        self.isGeneratingSummary = false
-                        self.summaryErrorMessage = "요약이 아직 반영되지 않았습니다. 잠시 후 다시 시도해주세요."
-
-                        #if DEBUG
-                        print("[RecipeDetailVM] ❌ polling failed | recipeId=\(recipeId) error=\(error)")
-                        #endif
-                    }
+                    #if DEBUG
+                    print("[RecipeDetailVM] ❌ polling failed | recipeId=\(recipeId) error=\(error)")
+                    #endif
                 }
             } catch is CancellationError {
                 // 취소는 무시
                 #if DEBUG
                 print("[RecipeDetailVM] ⚠️ load cancelled | recipeId=\(recipeId)")
                 #endif
-                self.currentLoadingRecipeId = nil
-                self.summaryGenerationTask?.cancel()
-                self.summaryGenerationTask = nil
-                self.summaryGenerationRecipeId = nil
+                // defer에서 공통 정리
                 return
             } catch {
                 #if DEBUG
                 print("[RecipeDetailVM] ❌ load fail | recipeId=\(recipeId) error=\(error)")
                 #endif
-                self.currentLoadingRecipeId = nil
                 self.isLoading = false
                 self.isGeneratingSummary = false
                 self.errorMessage = "레시피 상세를 불러오지 못했습니다."
-                self.summaryGenerationTask?.cancel()
-                self.summaryGenerationTask = nil
-                self.summaryGenerationRecipeId = nil
+                // defer에서 공통 정리
             }
         }
     }
