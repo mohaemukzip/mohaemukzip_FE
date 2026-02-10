@@ -194,57 +194,7 @@ final class RecipeVideoViewModel: ObservableObject {
     ///     - stepCount = 4
     ///     - title/description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
     ///     - timestamp = 1:00, 1:30, 2:00, 2:30
-    func prepareDetailVideo(recipeId: Int) async -> RecipeVideo? {
-        let categoryId = currentCategoryId()
 
-        do {
-            var detail = try await service.fetchRecipeDetail(recipeId: recipeId, categoryId: categoryId)
-
-            // 요약 생성 API는 서버가 미구현일 수 있어 별도로 한 번 더 확인한다.
-            let summary = await service.generateSummary(recipeId: recipeId)
-
-            // summary API가 실패하면 service.generateSummary가 (true, 6) fallback을 반환하도록 구성돼 있지만,
-            // 이 화면의 규칙은 stepCount=4 고정이므로 여기서 한 번 더 덮어쓴다.
-            if summary.summaryExists {
-                let fixedSteps = makeFallbackSummarySteps()
-
-                // 상세 API 응답에 steps가 비어있거나(summary API가 실패한 케이스)
-                // 혹은 서버가 아직 steps를 안 내려주는 케이스를 대비해서 fallback을 주입한다.
-                if detail.steps == nil || detail.steps?.isEmpty == true {
-                    detail = RecipeVideo(
-                        id: detail.id,
-                        title: detail.title,
-                        videoUrl: detail.videoUrl,
-                        videoId: detail.videoId,
-                        channelId: detail.channelId,
-                        videoDuration: detail.videoDuration,
-                        channelName: detail.channelName,
-                        viewCount: detail.viewCount,
-                        cookingTimeMinutes: detail.cookingTimeMinutes,
-                        difficulty: detail.difficulty,
-                        level: detail.level,
-                        ratingCount: detail.ratingCount,
-                        ingredients: detail.ingredients,
-                        steps: fixedSteps,
-                        summaryExists: true,
-                        cuisine: detail.cuisine,
-                        koreanSubCategory: detail.koreanSubCategory,
-                        chineseSubCategory: detail.chineseSubCategory,
-                        japaneseSubCategory: detail.japaneseSubCategory,
-                        westernSubCategory: detail.westernSubCategory,
-                        southeastAsianSubCategory: detail.southeastAsianSubCategory,
-                        isBookmarked: detail.isBookmarked,
-                        channelProfileImageUrl: detail.channelProfileImageUrl
-                    )
-                }
-            }
-
-            return detail
-        } catch {
-            errorMessage = "레시피 상세를 불러오지 못했습니다."
-            return nil
-        }
-    }
 
     // MARK: - CategoryId Mapping
 
@@ -332,25 +282,7 @@ final class RecipeVideoViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Summary Fallback
-
-    /// 요약 생성 API가 실패했을 때 사용할 고정 스텝 더미 데이터
-    private func makeFallbackSummarySteps() -> [RecipeStep] {
-        let title = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
-        let description = "서버에서 아직 개발중 ㅠㅠ 화이팅 "
-
-        // 1:00, 1:30, 2:00, 2:30
-        let times: [Int] = [60, 90, 120, 150]
-
-        return times.enumerated().map { index, seconds in
-            RecipeStep(
-                stepNumber: index + 1,
-                title: title,
-                description: description,
-                videoTime: seconds
-            )
-        }
-    }
+    
 }
 extension RecipeVideoViewModel: Hashable {
     static func == (lhs: RecipeVideoViewModel, rhs: RecipeVideoViewModel) -> Bool {

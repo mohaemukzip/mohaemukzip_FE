@@ -157,9 +157,7 @@ struct RecipeListView: View {
                                     isPushingDetail = false
                                 }
 
-                                // (선택) 백그라운드로 미리 상세 데이터를 준비하고 싶다면 여기서 호출하되,
-                                // push를 막지 않는다.
-                                // Task { _ = await viewModel.prepareDetailVideo(recipeId: video.id) }
+                              
                             }
                         }
                     }
