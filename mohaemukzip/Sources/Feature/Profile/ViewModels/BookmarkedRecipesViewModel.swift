@@ -1,10 +1,3 @@
-//
-//  BookmarkedRecipesViewModel.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import Foundation
 import Combine
 

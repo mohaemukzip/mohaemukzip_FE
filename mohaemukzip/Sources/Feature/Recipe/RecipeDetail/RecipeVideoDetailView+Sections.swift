@@ -1,17 +1,10 @@
-//
-//  RecipeVideoDetailView+Sections.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/11/26.
-//
-
 import SwiftUI
 import YouTubePlayerKit
 import UIKit
 
 extension RecipeVideoDetailView {
 
-    // MARK: - Navigation Bar
+    // MARK: - 네비바
     var navigationBar: some View {
         HStack(spacing: 12) {
             Button {

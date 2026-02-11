@@ -1,10 +1,3 @@
-//
-//  REcipeDetailComponents.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/11/26.
-//
-
 import SwiftUI
 
 struct RecipeIngredientChip: View {

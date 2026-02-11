@@ -1,10 +1,3 @@
-//
-//  Route.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/26/26.
-//
-
 import Foundation
 
 enum Route: Hashable {

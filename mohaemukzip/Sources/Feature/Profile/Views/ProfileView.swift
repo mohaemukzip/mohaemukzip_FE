@@ -1,10 +1,3 @@
-//
-//  ProfileView.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/13/26.
-//
-
 import SwiftUI
 import Combine
 // MARK: - 마이페이지 메인 화면
@@ -440,20 +433,3 @@ private struct ProfileSimpleRow: View {
 
 
 
-#Preview {
-    PreviewWrapper()
-}
-
-private struct PreviewWrapper: View {
-    @State private var router = NavigationRouter()
-    @StateObject private var viewModel = ProfileViewModel()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            ProfileView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-        .environmentObject(viewModel)
-    }
-}

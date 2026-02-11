@@ -1,15 +1,10 @@
-// MARK: - RecipeVideoViewModel
-// 레시피 목록 화면(RecipeListView)을 위한 전용 ViewModel
-// API 연동 후에는 카테고리 선택 -> 목록 조회 -> 북마크 토글까지 이 ViewModel에서 담당한다.
-
 import Foundation
 import Combine
 
-// MARK: - RecipeVideoViewModel
 
 final class RecipeVideoViewModel: ObservableObject {
 
-    // MARK: - Dependencies
+
 
     /// 레시피 API 호출 및 DTO -> 모델 변환을 담당하는 서비스
     private let service: RecipeService

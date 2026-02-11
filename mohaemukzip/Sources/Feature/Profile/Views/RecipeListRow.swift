@@ -1,10 +1,3 @@
-//
-//  RecipeListRow.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import SwiftUI
 
 struct RecipeListRow: View {

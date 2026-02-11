@@ -1,11 +1,4 @@
-//
-//  CookingCompleteReviewModalView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/29/26.
-//
 
-// MARK: - 요리 완료 확인 모달 (UI 전용)
 
 /// 별점 1점 이상 선택 시에만 제출 버튼 활성화
 /// 제출 시(onSubmit) 상위 뷰에서 요리 완료 API 호출 연결

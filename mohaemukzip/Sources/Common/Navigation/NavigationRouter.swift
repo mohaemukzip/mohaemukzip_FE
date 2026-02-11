@@ -1,10 +1,3 @@
-//
-//  NavigationRouter.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/26/26.
-//
-
 import SwiftUI
 
 @Observable

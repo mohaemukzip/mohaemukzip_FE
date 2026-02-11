@@ -1,10 +1,3 @@
-//
-//  RecipeListView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/16/26.
-//
-
 import SwiftUI
 
 // MARK: - 카테고리별 검색 뷰 !!!

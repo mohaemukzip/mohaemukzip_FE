@@ -1,10 +1,3 @@
-//
-//  ProfileChangeView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import SwiftUI
 import PhotosUI
 import UIKit
@@ -307,7 +300,7 @@ private extension ProfileChangeView {
         let nicknameChanged = nickname != originalNickname
         let imageToSend = selectedImageData
 
-        // ✅ 요청 바디는 변경된 값만 포함
+        //  요청 바디는 변경된 값만 포함
         // - 닉네임만 변경: nickname만 전송
         // - 이미지만 변경: nickname은 nil (전송 안 함)
         // - 둘 다 변경: nickname + imageData 전송
