@@ -1,10 +1,3 @@
-//
-//  HomeViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/26/26.
-//
-//
 
 import SwiftUI
 
@@ -19,14 +12,14 @@ final class HomeViewModel {
     
     func load() async {
         loadTask?.cancel()
-
+        
         loadTask = Task { [weak self] in
             guard let self else { return }
-
+            
             self.isLoading = true
             self.errorMessage = nil
             defer { self.isLoading = false }
-
+            
             do {
                 let resultDTO = try await self.homeService.fetchHomeDashboard()
                 guard !Task.isCancelled else { return }

@@ -1,9 +1,3 @@
-//
-//  SignupViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 2/2/26.
-//
 
 import SwiftUI
 
