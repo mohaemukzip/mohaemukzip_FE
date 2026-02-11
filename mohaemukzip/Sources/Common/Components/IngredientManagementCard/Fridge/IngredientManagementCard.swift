@@ -1,10 +1,3 @@
-//
-//  IngredientManagementCard.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/15/26.
-//
-
 import SwiftUI
 
 struct IngredientManagementCard: View {
@@ -51,9 +44,3 @@ struct IngredientManagementCard: View {
         .onLongPressGesture { withAnimation { isEditing.toggle() } }
     }
 }
-
-/*
-#Preview {
-    IngredientManagementCard(ingredientInfo: IngredientModel(name: "배추", amount: "100g", expirationDate: 100, ty: .chilled), color: .green)
-}
-*/

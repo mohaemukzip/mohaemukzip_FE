@@ -1,13 +1,5 @@
-//
-//  VideoListView.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 2/2/26.
-//
-
 import SwiftUI
-
-// TODO: SearchView에서 검색 후 이쪽 뷰로 넘어오게 하기
+// MARK: SearchView에서 검색 후 이쪽 뷰로 넘어오게 하기
 
 struct VideoListView: View {
     @Environment(NavigationRouter.self) var router

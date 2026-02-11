@@ -1,10 +1,3 @@
-//
-//  RecentSearch.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/22/26.
-//
-
 import SwiftUI
 
 struct RecentSearch: View {
@@ -35,7 +28,6 @@ struct RecentSearch: View {
             .buttonStyle(.plain)
     }
 }
-
 
 #Preview {
     RecentSearch(text: "대파", onTap: {print("")}, onDelete: {print("")})

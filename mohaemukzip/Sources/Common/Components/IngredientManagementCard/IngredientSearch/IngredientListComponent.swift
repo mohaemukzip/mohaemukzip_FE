@@ -1,10 +1,3 @@
-//
-//  IngredientListComponent.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/21/26.
-//
-
 import SwiftUI
 
 struct IngredientListComponent: View {
@@ -43,7 +36,6 @@ struct IngredientListComponent: View {
         .padding(.bottom, 30)
     }
 }
-
 
 #Preview {
     IngredientListComponent(name: "대파", amount: "1기본량(100g)", category: "가공/유제품", isSaved: false, onSaveTap: { }, onPlusTap: { })

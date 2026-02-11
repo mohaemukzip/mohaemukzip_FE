@@ -1,10 +1,3 @@
-//
-//  SearchService.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 2/4/26.
-//
-
 import Foundation
 import Moya
 

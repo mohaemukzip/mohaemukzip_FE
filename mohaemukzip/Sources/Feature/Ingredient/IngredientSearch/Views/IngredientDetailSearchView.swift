@@ -1,10 +1,3 @@
-//
-//  IngredientDetailSearchView.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/22/26.
-//
-
 import SwiftUI
 
 struct IngredientDetailSearchView: View {

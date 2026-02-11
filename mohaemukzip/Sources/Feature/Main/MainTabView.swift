@@ -1,10 +1,3 @@
-//
-//  MainTabView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/15/26.
-//
-
 import SwiftUI
 
 struct MainTabView: View {
@@ -16,7 +9,6 @@ struct MainTabView: View {
     }
     
     //기본 설정된 상태 -> home
-    // ✅ 탭 선택을 외부(상세 화면 등)에서도 제어할 수 있도록 라우터로 분리
     @State private var tabRouter = TabRouter()
     
     // MARK: - 각 뷰에서 사용하는 뷰모델은 MainTabView에서 소유(@State)
@@ -110,12 +102,12 @@ struct MainTabView: View {
             router.navigateToRoot()
         }
         .onChange(of: tabRouter.goHomeToken) { _, _ in
-            // ✅ 이미 홈 탭인 상태에서 goHome()이 호출될 수도 있어서
+            // 이미 홈 탭인 상태에서 goHome()이 호출될 수도 있어서
             // selection 변화가 없어도 스택을 루트로 확실히 초기화한다.
             router.navigateToRoot()
         }
         .environment(router)
-        // ✅ 탭 이동(특히 "항상 홈으로")을 위해 탭 라우터 주입
+        // 탭 이동(특히 "항상 홈으로")을 위해 탭 라우터 주입
         // 상세 화면/모달에서 tabRouter.goHome() 호출 가능
         .environment(tabRouter)
         .environment(fridgeVM)
@@ -128,7 +120,7 @@ struct MainTabView: View {
 }
 
 // MARK: - TabRouter
-// ✅ 상세 화면 등 어디서든 "홈으로" 이동을 요청할 수 있게 하는 탭 라우터
+// 상세 화면 등 어디서든 "홈으로" 이동을 요청할 수 있게 하는 탭 라우터
 // 사용 예: @Environment(TabRouter.self) private var tabRouter
 //         tabRouter.goHome()
 @Observable
@@ -166,7 +158,6 @@ extension View {
             case .videoList(let vm):
                 VideoListView(recipeVideoVM: vm)
 
-            // ✅ 추가
             case .profileSettings:
                 ProfileSettingsView()
 

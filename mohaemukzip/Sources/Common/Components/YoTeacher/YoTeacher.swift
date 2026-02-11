@@ -1,10 +1,3 @@
-//
-//  YoTeacher.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/24/26.
-//
-
 import SwiftUI
 
 struct YoTeacher: View {

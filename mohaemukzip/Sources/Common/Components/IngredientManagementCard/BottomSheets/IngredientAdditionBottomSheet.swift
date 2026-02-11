@@ -1,10 +1,3 @@
-//
-//  IngredientAdditionBottomSheet.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/23/26.
-//
-
 import SwiftUI
 
 struct IngredientAdditionBottomSheet: View {
@@ -108,7 +101,6 @@ struct IngredientAdditionBottomSheet: View {
                         }
                     }
                 }.padding(.bottom, 16) // end of VStack
-                
                 
                 HStack {
                     Text("재료 소비 기한")

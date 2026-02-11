@@ -24,9 +24,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Service/.gitkeep,
-				Sources/.gitkeep,
-				Sources/Common/.gitkeep,
 				Sources/Common/Extensions/.gitkeep,
 				Sources/Common/Utilities/.gitkeep,
 			);

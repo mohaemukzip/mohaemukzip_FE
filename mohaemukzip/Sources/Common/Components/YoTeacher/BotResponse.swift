@@ -1,10 +1,3 @@
-//
-//  BotResponse.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/25/26.
-//
-
 import SwiftUI
 
 struct BotResponse: View {
@@ -70,23 +63,7 @@ struct BotResponse: View {
     }
 }
 
-/*
-#Preview("response is not empty") {
-    BotResponse(response: [YoTeacherMessage(id: 1,
-                                            title: "",
-                                            thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!),
-                           YoTeacherMessage(id: 2,
-                                                                   title: "",
-                                                                   thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!),
-                           YoTeacherMessage(id: 3,
-                                                                   title: "",
-                                            thumbnailURL: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)],
-                title: "제목",
-                text: "내용",
-                onTapVideo: { _ in  } )
-}
-*/
-#Preview("response is empty") {
+#Preview {
     BotResponse(response: [],
                 title: "제목",
                 text: "내용",
