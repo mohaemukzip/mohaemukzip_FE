@@ -1,9 +1,3 @@
-//
-//  SignupRequestDTO.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
 
 import SwiftUI
 import Foundation

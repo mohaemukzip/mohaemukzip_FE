@@ -1,10 +1,3 @@
-//
-//  CheckLoginIdDTO.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
-
 
 struct CheckLoginIdRequestDTO: Encodable {
     let loginId: String

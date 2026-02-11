@@ -1,19 +1,14 @@
-//
-//  LoginResponseDTO.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
 
+import Foundation
 
-struct LoginResponseDTO: Decodable {
+struct SignUpResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
     let message: String
-    let result: LoginResultDTO
+    let result: SignUpResultDTO
 }
 
-struct LoginResultDTO: Decodable {
+struct SignUpResultDTO: Decodable {
     let id: Int
     let accessToken: String
     let refreshToken: String
