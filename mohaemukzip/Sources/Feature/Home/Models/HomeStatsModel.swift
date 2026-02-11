@@ -1,10 +1,3 @@
-//
-//  HomeStatsModel.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
-
 import Foundation
 
 struct HomeStatsModel {
@@ -38,7 +31,7 @@ extension HomeStatsResponseDTO {
         })
         
         let points: [MonthlyCookingPoint] = (1...12).map { month in
-            .init(month: month, count: monthDict[month] ?? 0)
+                .init(month: month, count: monthDict[month] ?? 0)
         }
         
         return HomeStatsModel(
