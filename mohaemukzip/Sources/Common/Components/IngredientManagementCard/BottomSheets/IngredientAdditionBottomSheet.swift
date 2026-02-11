@@ -192,7 +192,7 @@ struct IngredientAdditionBottomSheet: View {
                             .padding(.leading, 10)
                             .keyboardType(.numberPad)
                         Spacer()
-                        Text("g")
+                        Text(ingredient.unit)
                             .font(.PretendardRegular16)
                             .foregroundStyle(.grey500)
                             .padding(.trailing, 10)
