@@ -1,33 +1,27 @@
-//
-//  SignupView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/28/26.
-//
 
 import SwiftUI
 import Observation
 
 struct SignupView: View {
-
+    
     @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = SignupViewModel()
-
+    
     var body: some View {
         VStack(spacing: 0) {
             topBar
-                VStack(alignment: .leading, spacing: 32) {
-                    header
-                    nicknameSection
-                    idSection
-                    passwordSection
-                    passwordConfirmSection
-
-                    Spacer(minLength: 24)
-                }
-                .padding(.horizontal, 17)
-                .padding(.top, 12)
+            VStack(alignment: .leading, spacing: 32) {
+                header
+                nicknameSection
+                idSection
+                passwordSection
+                passwordConfirmSection
+                
+                Spacer(minLength: 24)
             }
+            .padding(.horizontal, 17)
+            .padding(.top, 12)
+        }
         .background(Color.white)
         .safeAreaInset(edge: .bottom, spacing: 0) {
             startButton
@@ -35,9 +29,9 @@ struct SignupView: View {
         }
         .navigationBarBackButtonHidden()
     }
-
+    
     // MARK: - Components
-
+    
     private var topBar: some View {
         HStack {
             Button(action: { router.pop() }) {
@@ -50,28 +44,28 @@ struct SignupView: View {
         .padding(.horizontal, 12)
         .padding(.top, 6)
     }
-
+    
     private var header: some View {
         Text("아이디와 비밀번호만으로\n뭐해먹집?을 이용할 수 있어요.")
             .font(.PretendardSemibold20)
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
-            // ✅ 높이 제약으로 인해 말줄임표가 생기지 않도록 세로로 확장 허용
+        // ✅ 높이 제약으로 인해 말줄임표가 생기지 않도록 세로로 확장 허용
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 4)
     }
-
+    
     private var nicknameSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("닉네임")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey700)
-
+            
             ZStack {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.grey100)
                     .frame(height: 44)
-
+                
                 HStack(spacing: 10) {
                     TextField("뭐해먹집", text: Binding(
                         get: { viewModel.model.nickname },
@@ -81,9 +75,9 @@ struct SignupView: View {
                     .autocorrectionDisabled()
                     .padding(.leading, 14)
                     .font(.PretendardRegular16)
-
+                    
                     Spacer(minLength: 0)
-
+                    
                     Text(viewModel.nicknameCountText)
                         .font(.PretendardRegular14)
                         .foregroundStyle(.grey500)
@@ -92,19 +86,19 @@ struct SignupView: View {
             }
         }
     }
-
+    
     private var idSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("아이디")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey600)
-
+            
             HStack(spacing: 10) {
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.grey100)
                         .frame(height: 44)
-
+                    
                     HStack(spacing: 10) {
                         TextField("아이디를 입력해주세요.", text: Binding(
                             get: { viewModel.model.userId },
@@ -115,16 +109,16 @@ struct SignupView: View {
                         .autocorrectionDisabled()
                         .padding(.leading, 14)
                         .font(.PretendardRegular16)
-
+                        
                         Spacer(minLength: 0)
-
+                        
                         Text(viewModel.userIdCountText)
                             .font(.PretendardRegular14)
                             .foregroundStyle(.grey500)
                             .padding(.trailing, 12)
                     }
                 }
-
+                
                 Button {
                     Task { await viewModel.checkDuplicateId() }
                 } label: {
@@ -141,13 +135,13 @@ struct SignupView: View {
                 .disabled(viewModel.isCheckingId)
                 .opacity(viewModel.isCheckingId ? 0.6 : 1)
             }
-
+            
             if let msg = (viewModel.idCheckMessage ?? viewModel.idCheckState.message) {
                 HStack(spacing: 6) {
                     Image(systemName: viewModel.idCheckState.isSuccess ? "checkmark.circle" : "exclamationmark.circle")
                         .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
-
+                    
                     Text(msg)
                         .font(.system(size: 12))
                         .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
@@ -158,7 +152,7 @@ struct SignupView: View {
                     Image(systemName: "info.circle")
                         .font(.system(size: 12))
                         .foregroundStyle(.grey500)
-
+                    
                     Text(viewModel.helperTextForIdFormat())
                         .font(.system(size: 12))
                         .foregroundStyle(.grey500)
@@ -167,18 +161,18 @@ struct SignupView: View {
             }
         }
     }
-
+    
     private var passwordSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("비밀번호")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey700)
-
+            
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.grey100)
                     .frame(height: 44)
-
+                
                 SecureField("비밀번호를 입력해주세요.", text: Binding(
                     get: { viewModel.model.password },
                     set: { viewModel.onChangePassword($0) }
@@ -189,12 +183,12 @@ struct SignupView: View {
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }
-
+            
             HStack(spacing: 6) {
                 Image(systemName: "info.circle")
                     .font(.PretendardRegular13)
                     .foregroundStyle(.grey500)
-
+                
                 Text(viewModel.helperTextForPasswordFormat())
                     .font(.PretendardRegular13)
                     .foregroundStyle(.grey500)
@@ -202,18 +196,18 @@ struct SignupView: View {
             .padding(.top, 2)
         }
     }
-
+    
     private var passwordConfirmSection: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("비밀번호 확인")
                 .font(.PretendardRegular16)
                 .foregroundStyle(.grey600)
-
+            
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 10)
                     .fill(.grey100)
                     .frame(height: 44)
-
+                
                 SecureField("비밀번호 확인", text: Binding(
                     get: { viewModel.model.passwordConfirm },
                     set: { viewModel.onChangePasswordConfirm($0) }
@@ -224,13 +218,13 @@ struct SignupView: View {
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }
-
+            
             if let error = viewModel.errorMessage {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.PretendardRegular13)
                         .foregroundStyle(Color.red)
-
+                    
                     Text(error)
                         .font(.PretendardRegular13)
                         .foregroundStyle(Color.red)
@@ -241,7 +235,7 @@ struct SignupView: View {
                     Image(systemName: "exclamationmark.circle.fill")
                         .font(.PretendardRegular13)
                         .foregroundStyle(Color.red)
-
+                    
                     Text("비밀번호가 서로 일치하지 않아요.")
                         .font(.PretendardRegular13)
                         .foregroundStyle(Color.red)
@@ -250,7 +244,7 @@ struct SignupView: View {
             }
         }
     }
-
+    
     private var startButton: some View {
         Button {
             Task {

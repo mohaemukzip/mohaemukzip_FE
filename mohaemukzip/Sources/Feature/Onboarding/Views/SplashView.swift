@@ -1,9 +1,3 @@
-//
-//  SplashView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/30/26.
-//
 
 import SwiftUI
 
@@ -29,9 +23,4 @@ struct SplashView: View {
             }
         }
     }
-}
-
-#Preview {
-    SplashView()
-        .environment(NavigationRouter())
 }

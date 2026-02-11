@@ -1,26 +1,20 @@
-//
-//  SignupFinishView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/30/26.
-//
 
 import SwiftUI
 
 struct SignupFinishView: View {
     @EnvironmentObject private var router: AuthRouter
-
+    
     var body: some View {
         ZStack {
             Color.white
                 .ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("가입이 완료되었어요!")
                         .font(.PretendardSemibold24)
                         .foregroundStyle(.grey900)
-
+                    
                     Text("뭐해먹집과 함께 집밥 요리 루틴을 만들어보아요.")
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
@@ -28,15 +22,15 @@ struct SignupFinishView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 17)
                 .padding(.top, 58)
-
+                
                 Spacer(minLength: 0)
-
+                
                 Image("signupLogo")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 200)
                     .frame(maxWidth: .infinity, alignment: .center)
-
+                
                 Spacer(minLength: 0)
             }
         }
@@ -59,9 +53,4 @@ struct SignupFinishView: View {
         }
         .navigationBarBackButtonHidden()
     }
-}
-
-#Preview {
-    SignupFinishView()
-        .environmentObject(AuthRouter())
 }
