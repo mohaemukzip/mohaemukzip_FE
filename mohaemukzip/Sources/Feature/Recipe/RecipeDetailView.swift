@@ -94,7 +94,7 @@ struct RecipeDetailView: View {
             /// 화면 최초 진입 시 상세 데이터 로드
             viewModel.load(recipeId: recipeId, base: base)
         }
-        .onChange(of: viewModel.shouldDismissAfterComplete) { shouldDismiss in
+        .onChange(of: viewModel.shouldDismissAfterComplete) { _, shouldDismiss in
             /// 요리 완료 성공 후 항상 HomeView로 이동
             /// - 탭을 home으로 강제 변경
             /// - 이미 home 탭인 상태여도 goHomeToken으로 스택을 루트로 초기화
