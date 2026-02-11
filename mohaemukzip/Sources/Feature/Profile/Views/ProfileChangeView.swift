@@ -328,20 +328,3 @@ private extension ProfileChangeView {
     }
 }
 
-#Preview {
-    ProfileChangePreviewWrapper()
-}
-
-private struct ProfileChangePreviewWrapper: View {
-    @State private var router = NavigationRouter()
-    @StateObject private var viewModel = ProfileViewModel()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            ProfileChangeView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-        .environmentObject(viewModel)
-    }
-}

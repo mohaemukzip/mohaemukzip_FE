@@ -182,14 +182,3 @@ struct ProfileSettingsView: View {
     }
 }
 
-
-#Preview {
-    let router = NavigationRouter()
-    let appState = AppState()
-
-    NavigationStack {
-        ProfileSettingsView()
-    }
-    .environment(router)
-    .environmentObject(appState)
-}

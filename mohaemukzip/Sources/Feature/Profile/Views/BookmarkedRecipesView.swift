@@ -90,18 +90,3 @@ struct BookmarkedRecipesView: View {
     }
 }
 
-#Preview {
-    BookmarkedRecipesPreviewWrapper()
-}
-
-private struct BookmarkedRecipesPreviewWrapper: View {
-    @State private var router = NavigationRouter()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            BookmarkedRecipesView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-    }
-}

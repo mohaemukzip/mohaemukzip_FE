@@ -330,144 +330,15 @@ struct RecipeListView: View {
     }
 }
 
-// MARK: - RecipeVideoCard
-/// 레시피 영상 요약 카드 UI
-/// 제목, 채널, 북마크 버튼, 썸네일 표시
-struct RecipeVideoCard: View {
 
-    /// 카드에 표시할 레시피 영상 데이터
-    let video: RecipeVideo
 
-    /// 북마크 버튼 탭 이벤트 콜백
-    /// 목록 ViewModel에서 토글 처리
-    let onTapBookmark: () -> Void
 
-    init(
-        video: RecipeVideo,
-        onTapBookmark: @escaping () -> Void
-    ) {
-        self.video = video
-        self.onTapBookmark = onTapBookmark
-    }
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            /// 제목 및 채널 정보 영역
-            HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(video.title)
-                        .font(.custom("Pretendard-SemiBold", size: 18))
-                        .foregroundColor(.primary)
-
-                    Text("\(video.channelName) · 조회수 \(video.viewCount.formattedViewCount)회")
-                        .font(.system(size: 13))
-                        .foregroundColor(.secondary)
-                }
-
-                Spacer()
-
-                /// 북마크 토글 버튼
-                Button {
-                    onTapBookmark()
-                } label: {
-                    Image(video.isBookmarked ? "bookmark.fill" : "bookmark")
-                        .renderingMode(.original)
-                }
-            }
-            .padding(.horizontal, 16)
-
-            /// 유튜브 썸네일 영역
-            ThumbnailView(videoId: video.videoId, durationText: video.videoDuration ?? "")
-                .frame(maxWidth: .infinity)
-                .frame(height: 200)
-                .clipped()
-                .cornerRadius(12)
-                .padding(.horizontal, 16)
-        }
-    }
-}
-
-// MARK: - ThumbnailView
-/// 유튜브 영상 썸네일 표시 뷰
-/// maxres 이미지 우선, 실패 시 hq 이미지 사용
-private struct ThumbnailView: View {
-
-    let videoId: String
-    let durationText: String
-
-    /// maxres 썸네일 실패 여부
-    /// 실패 시 hq 썸네일로 대체
-    @State private var useFallbackHQ = false
-
-    private var maxResURL: URL? {
-        URL(string: "https://img.youtube.com/vi/\(videoId)/maxresdefault.jpg")
-    }
-
-    private var hqURL: URL? {
-        URL(string: "https://img.youtube.com/vi/\(videoId)/hqdefault.jpg")
-    }
-
-    private var currentURL: URL? {
-        useFallbackHQ ? hqURL : maxResURL
-    }
-
-    var body: some View {
-        ZStack {
-            /// 썸네일 이미지 로딩 상태 처리
-            AsyncImage(url: currentURL) { phase in
-                switch phase {
-                case .empty:
-                    Color.black.opacity(0.12)
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                case .failure:
-                    Color.black.opacity(0.12)
-                        .onAppear {
-                            if !useFallbackHQ {
-                                useFallbackHQ = true
-                            }
-                        }
-                @unknown default:
-                    Color.black.opacity(0.12)
-                }
-            }
-            .clipped()
-
-            /// 영상 재생 시간 오버레이 표시
-            if !durationText.isEmpty {
-                Text(durationText)
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.black.opacity(0.6))
-                    .cornerRadius(6)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
-                    .padding(.trailing, 10)
-                    .padding(.bottom, 10)
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
- // MARK: - Preview
-#Preview {
-    NavigationStack {
-        RecipeListView()
-            .setupNavigationDestinations()
-    }
-        .environment(NavigationRouter())
-        .environment(YoTeacherChatViewModel())
-        
-}
 
 // MARK: - 조회수 변환
 /// 조회수 숫자를 화면 표시용 문자열로 변환
 
-private extension Int {
+extension Int {
     var formattedViewCount: String {
         if self < 10_000 {
             return self.formatted()
