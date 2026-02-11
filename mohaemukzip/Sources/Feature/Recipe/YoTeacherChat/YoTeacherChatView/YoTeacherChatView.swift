@@ -86,8 +86,10 @@ struct YoTeacherChatView: View {
                                     proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
                                 }
                             }
+                            .onAppear() {
+                                proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                            }
                     }
-                    
                 }
                 
                 Spacer()
