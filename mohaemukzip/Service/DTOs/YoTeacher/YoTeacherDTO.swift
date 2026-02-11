@@ -14,7 +14,7 @@ struct YoTeacherResponseDTO: Decodable {
     let message: String
     let createdAt: String
     let formattedTime: String
-    let recommendRecipes: [YoTeacherDTO]
+    let recommendRecipes: [YoTeacherDTO]?
 }
 
 struct YoTeacherDTO: Decodable {

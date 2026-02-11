@@ -54,6 +54,18 @@ struct BotResponse: View {
                         .scrollIndicators(.hidden)
                 }
             }
+        } else {
+            VStack {
+                HStack {
+                    Image("icon-yoteacher-floating")
+                        .padding(.trailing, 10)
+                    Text("앗, 아직 제가 잘 못 알아들었어요.\n다시 한 번 알려주실래요?")
+                        .font(.PretendardRegular16)
+                        .lineSpacing(5)
+                        .foregroundStyle(.grey900)
+                    Spacer()
+                }.padding(.bottom)
+            }
         }
     }
 }
