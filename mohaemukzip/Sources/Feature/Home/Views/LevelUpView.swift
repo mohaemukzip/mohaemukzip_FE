@@ -1,46 +1,40 @@
-//
-//  LevelUpView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 2/4/26.
-//
 
 import SwiftUI
 
 struct LevelUpView: View {
     let level: Int
     var onConfirm: (() -> Void)? = nil
-
+    
     private var content: LevelUpContent {
         LevelUpContent(level: level)
     }
-
+    
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
-
+            
             VStack(spacing: 0) {
                 Spacer().frame(height: 96)
-
+                
                 VStack(spacing: 10) {
                     Text("레벨업 성공!")
                         .font(.PretendardSemibold24)
                         .foregroundStyle(.grey900)
-
+                    
                     Text(level == 2 ? "\(content.title)이 되었어요." : "\(content.title)가 되었어요.")
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey500)
                 }
-
+                
                 Spacer().frame(height: 56)
-
+                
                 Image(content.imageName)
                     .resizable()
                     .scaledToFit()
                     .frame(maxWidth: 260)
-
+                
                 Spacer().frame(height: 44)
-
+                
                 HStack(spacing: 6) {
                     Text("Lv.\(content.level)")
                         .font(.PretendardRegular14)
@@ -50,13 +44,13 @@ struct LevelUpView: View {
                         .background(
                             Capsule().fill(.grey700)
                         )
-
+                    
                     Text(content.title)
                         .font(.PretendardSemibold18)
                         .kerning(-0.5)
                         .foregroundStyle(.black)
                 }
-
+                
                 Spacer()
             }
         }
@@ -75,7 +69,6 @@ struct LevelUpView: View {
                     )
             }
             .padding(.horizontal, 17)
-            .padding(.bottom, 38)
         }
     }
 }
@@ -84,11 +77,11 @@ private struct LevelUpContent {
     let level: Int
     let title: String
     let imageName: String
-
+    
     init(level: Int) {
         let clamped = min(max(level, 1), 4)
         self.level = clamped
-
+        
         switch clamped {
         case 1:
             self.title = "집밥 입문자"
@@ -104,8 +97,4 @@ private struct LevelUpContent {
             self.imageName = "icnLv4"
         }
     }
-}
-
-#Preview {
-    LevelUpView(level: 1)
 }

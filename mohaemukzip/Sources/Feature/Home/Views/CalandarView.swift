@@ -1,24 +1,15 @@
-//
-//  CalandarView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/28/26.
-//
 
 import SwiftUI
-
-/// 캘린더 뷰 다 완성하고 모델 나누기 할 생각..!!
-/// 서버에서 내려준 날짜Set)에 해당하면, 그 날짜 셀 "위"에 스티커 이미지를 올리는 뷰
 struct CalandarView: View {
+    
     // MARK: - Inputs
     
     @State private var displayedMonth: Date
     private let stickerDates: Set<Date>
-    
-    /// 스티커 이미지 이름 (Asset 이름)
     private let stickerImageName: String
     
     // MARK: - Init
+    
     init(
         initialMonth: Date = Date(),
         stickerDates: Set<Date> = [],
@@ -221,7 +212,6 @@ private extension CalandarView {
 }
 
 extension CalandarView {
-    /// 서버가 "yyyy-MM-dd" 문자열 배열을 준다면, 이걸로 Set<Date>로 바꿔서 stickerDates에 넣으면 됨!!!
     static func makeStickerDates(from serverDateStrings: [String]) -> Set<Date> {
         let formatter = DateFormatter()
         formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -237,17 +227,4 @@ extension CalandarView {
         }
         return set
     }
-}
-
-#Preview {
-    // 예시: 서버에서 "스티커 표시할 날짜"가 내려온다고 가정하면....
-    let serverDates = ["2026-02-08", "2026-01-09", "2026-01-10", "2026-01-13", "2026-01-14", "2026-01-15"]
-    
-    CalandarView(
-        initialMonth: Calendar.current.date(from: DateComponents(year: 2026, month: 1, day: 1)) ?? Date(),
-        stickerDates: CalandarView.makeStickerDates(from: serverDates),
-        stickerImageName: "icn_bab"
-    )
-    .padding()
-    .background(Color(.systemGroupedBackground))
 }

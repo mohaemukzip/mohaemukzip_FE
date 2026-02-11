@@ -1,14 +1,6 @@
-//
-//  StatsView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/27/26.
-//
 
 import SwiftUI
 
-
-// MARK: - Stats View (Scaffold)
 struct StatsView: View {
     @Binding var isHomePowerInfoPresented: Bool
     @State private var viewModel = StatsViewModel()
@@ -103,10 +95,4 @@ private extension StatsView {
         )
         .padding(.bottom, 20)
     }
-}
-
-// MARK: - Preview
-#Preview {
-    StatsView(isHomePowerInfoPresented: .constant(false))
-        .background(Color(.systemGroupedBackground))
 }
