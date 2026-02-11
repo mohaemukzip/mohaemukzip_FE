@@ -64,7 +64,7 @@ struct IngredientList: View {
                         proxy.scrollTo("TOP", anchor: .top)
                     }
                 }
-            }
+            }.scrollIndicators(.hidden)
         }
     }
 }
