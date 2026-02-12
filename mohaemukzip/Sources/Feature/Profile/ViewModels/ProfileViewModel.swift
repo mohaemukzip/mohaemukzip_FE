@@ -1,18 +1,5 @@
-//
-//  ProfileViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/13/26.
-//
-
 import Foundation
 import Combine
-
-// MARK: - ProfileViewModel
-
-/// 마이페이지(프로필) 화면용 ViewModel
-/// - NOTE: Service(API) 결과(DTO)를 ProfileModel(Domain Model)로 변환해서 View에 제공합니다.
-/// - IMPORTANT: 네트워크 콜백 스레드는 보장되지 않으므로, UI 상태 변경은 main thread에서 처리합니다.
 
 final class ProfileViewModel: ObservableObject {
 

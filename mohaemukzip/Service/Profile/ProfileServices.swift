@@ -1,15 +1,7 @@
-//
-//  ProfileServices.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/2/26.
-//
-
 import Foundation
 import Moya
 
-/// Profile / MyPage 관련 Service
-/// - NOTE: 현재 프로젝트의 `NetworkManager.shared.makeProvider(for:)` + `Response.mapResult(_:)` 패턴을 그대로 사용합니다.
+
 
 final class ProfileService {
 

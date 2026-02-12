@@ -1,10 +1,3 @@
-//
-//  BookmarkedRecipesView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import SwiftUI
 
 struct BookmarkedRecipesView: View {
@@ -15,14 +8,10 @@ struct BookmarkedRecipesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ===============================
-            // 🔽 NEW: 고정 헤더 (로딩/빈 상태에서도 위치 고정)
-            // ===============================
+        
             listHeader(title: "저장한 레시피")
                 .background(Color.white)
-            // ===============================
-            // 🔼 END NEW
-            // ===============================
+        
 
             if viewModel.isLoading && viewModel.items.isEmpty {
                 ProgressView().padding(.top, 20)
@@ -61,16 +50,7 @@ struct BookmarkedRecipesView: View {
                 .scrollIndicators(.hidden)
             }
         }
-        // ===============================
-        // 🔽 LEGACY: safeAreaInset 기반 헤더 (로딩 시 위치 점프 발생)
-        // ===============================
-//        .safeAreaInset(edge: .top) {
-//            listHeader(title: "저장한 레시피")
-//                .background(Color.white)
-//        }
-        // ===============================
-        // 🔼 LEGACY END
-        // ===============================
+
         .navigationBarHidden(true)
         .task {
             viewModel.fetchFirstPage()
@@ -110,18 +90,3 @@ struct BookmarkedRecipesView: View {
     }
 }
 
-#Preview {
-    BookmarkedRecipesPreviewWrapper()
-}
-
-private struct BookmarkedRecipesPreviewWrapper: View {
-    @State private var router = NavigationRouter()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            BookmarkedRecipesView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-    }
-}

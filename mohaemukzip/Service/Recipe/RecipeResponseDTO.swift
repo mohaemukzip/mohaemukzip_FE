@@ -1,25 +1,7 @@
-//
-//  RecipeResponseDTO.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/4/26.
-//
-
 import Foundation
-
-// MARK: - RecipeResponseDTO
-// 레시피 도메인에서 사용하는 Response DTO 모음
-//
-// 서버 응답(JSON)을 그대로 매핑하기 위한 전용 구조체들이다.
-// ViewModel이나 View에서는 이 DTO를 직접 사용하지 않고,
-// Service 계층에서 RecipeModel로 변환해서 사용한다.
-//
-// 서버 필드명과 앱 내부 모델 필드명이 다른 경우가 많기 때문에
-// 가능한 한 서버 명세에 맞게 그대로 정의한다.
 
 enum RecipeResponseDTO {
 
-    // MARK: - Common Wrapper
     /// 레시피 API 공통 응답 래퍼
     struct BaseResponse<T: Decodable>: Decodable {
         let isSuccess: Bool

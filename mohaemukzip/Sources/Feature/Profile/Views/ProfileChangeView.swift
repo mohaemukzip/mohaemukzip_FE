@@ -1,10 +1,3 @@
-//
-//  ProfileChangeView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import SwiftUI
 import PhotosUI
 import UIKit
@@ -74,7 +67,7 @@ struct ProfileChangeView: View {
                 isNicknameFocused = true
             }
         }
-        .onChange(of: viewModel.myPage.profile.nickname) { _ in
+        .onChange(of: viewModel.myPage.profile.nickname) { _, _ in
             seedNicknameIfNeeded(force: false)
         }
         .overlay {
@@ -191,7 +184,7 @@ private extension ProfileChangeView {
             .frame(maxWidth: .infinity)
         }
         .buttonStyle(.plain)
-        .onChange(of: selectedPhotoItem) { newItem in
+        .onChange(of: selectedPhotoItem) { _, newItem in
             guard let newItem else { return }
 
             Task {
@@ -215,7 +208,7 @@ private extension ProfileChangeView {
                     .foregroundStyle(Color.black)
                     .focused($isNicknameFocused)
                     .submitLabel(.done)
-                    .onChange(of: nickname) { newValue in
+                    .onChange(of: nickname) { _, newValue in
                         // 서버 seed로 바뀌는 건 제외하고, 포커스 있을 때만 “유저 편집” 처리
                         if isNicknameFocused { didUserEditNickname = true }
 
@@ -307,7 +300,7 @@ private extension ProfileChangeView {
         let nicknameChanged = nickname != originalNickname
         let imageToSend = selectedImageData
 
-        // ✅ 요청 바디는 변경된 값만 포함
+        //  요청 바디는 변경된 값만 포함
         // - 닉네임만 변경: nickname만 전송
         // - 이미지만 변경: nickname은 nil (전송 안 함)
         // - 둘 다 변경: nickname + imageData 전송
@@ -335,20 +328,3 @@ private extension ProfileChangeView {
     }
 }
 
-#Preview {
-    ProfileChangePreviewWrapper()
-}
-
-private struct ProfileChangePreviewWrapper: View {
-    @State private var router = NavigationRouter()
-    @StateObject private var viewModel = ProfileViewModel()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            ProfileChangeView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-        .environmentObject(viewModel)
-    }
-}

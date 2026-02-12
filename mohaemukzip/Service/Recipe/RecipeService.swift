@@ -1,15 +1,8 @@
-//
-//  RecipeService.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/4/26.
-//
-
 import Foundation
 import Moya
 import Alamofire
 
-// MARK: - RecipeService
+
 /// 레시피 관련 API
 /// 네트워크 요청 → DTO 디코딩 → 앱 모델 변환 역할 수행
 /// 목록 / 상세 / 요약 / 북마크 / 요리 완료 API 포함
@@ -129,7 +122,7 @@ final class RecipeService {
     }
 
     // MARK: - Mapping Helpers
-    /// 서버 categoryId 및 DTO를 앱 내부 모델로 변환하는 헬퍼 모음
+    /// 서버 categoryId 및 DTO를 앱 내부 모델로 변환하는 헬퍼
 
     /// categoryId를 앱 내부 카테고리 구조로 변환
     /// 상위 cuisine + 해당 하위 카테고리 매핑

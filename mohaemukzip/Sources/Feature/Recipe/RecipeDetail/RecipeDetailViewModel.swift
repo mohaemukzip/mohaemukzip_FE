@@ -1,20 +1,6 @@
-//
-// MARK: - RecipeDetailViewModel
-// 레시피 상세 화면(RecipeDetailView)을 위한 전용 ViewModel
-// 목록 화면용 ViewModel과 분리되어 있지만, 동일한 RecipeVideo 모델을 사용함
-
-//  RecipeDetailViewModel.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/23/26.
-//
-
 import Foundation
 import Combine
 
-
-// MARK: - SummaryGenerationCoordinator
-// 여러 ViewModel 인스턴스가 동시에 생성되더라도(예: SwiftUI 재렌더/네비게이션),
 // 동일 recipeId에 대한 요약 생성 POST(/summary)은 앱 전체에서 1번만 날아가도록 보장한다.
 private actor SummaryGenerationCoordinator {
     static let shared = SummaryGenerationCoordinator()

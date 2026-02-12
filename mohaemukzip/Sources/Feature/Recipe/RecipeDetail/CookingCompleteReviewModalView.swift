@@ -1,20 +1,13 @@
-//
-//  CookingCompleteReviewModalView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 1/29/26.
-//
+import SwiftUI
 
-// MARK: - 요리 완료 확인 모달 (UI 전용)
 
 /// 별점 1점 이상 선택 시에만 제출 버튼 활성화
 /// 제출 시(onSubmit) 상위 뷰에서 요리 완료 API 호출 연결
 /// 제출 중(isSubmitting)에는 닫기/취소 동작 비활성화
-import SwiftUI
 
 struct CookingCompleteReviewModalView: View {
 
-    // MARK: - Properties
+
 
     /// 모달 표시 여부
     @Binding var isPresented: Bool
@@ -153,7 +146,6 @@ struct CookingCompleteReviewModalView: View {
 
 struct StarRatingPicker: View {
 
-    // MARK: - Properties
 
     /// 현재 선택된 별점
     @Binding var selectedRating: Int
@@ -161,7 +153,7 @@ struct StarRatingPicker: View {
     /// 최대 별점(기본 5)
     let maxRating: Int
 
-    // MARK: - Body
+
 
     var body: some View {
         HStack(spacing: 10) {

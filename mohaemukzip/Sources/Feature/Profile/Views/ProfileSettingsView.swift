@@ -1,14 +1,4 @@
-//
-//  ProfileSettingsView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
-
 import SwiftUI
-
-
-
 
 struct ProfileSettingsView: View {
 
@@ -192,14 +182,3 @@ struct ProfileSettingsView: View {
     }
 }
 
-
-#Preview {
-    let router = NavigationRouter()
-    let appState = AppState()
-
-    NavigationStack {
-        ProfileSettingsView()
-    }
-    .environment(router)
-    .environmentObject(appState)
-}

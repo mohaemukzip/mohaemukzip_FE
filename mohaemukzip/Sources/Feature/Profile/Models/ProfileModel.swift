@@ -1,17 +1,8 @@
-
-//
-//  ProfileModel.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/13/26.
-//
-
 import Foundation
 
 // MARK: - 마이페이지 화면 모델 (Domain Model)
 
-/// 마이페이지 화면에서 사용하는 최상위 모델
-/// - NOTE: ResponseDTO(서버 응답)와 View에서 쓰는 값을 분리하기 위해 Domain Model을 둡니다.
+
 struct ProfileMyPageModel: Equatable {
     var profile: ProfileUserProfile
     var pointInfo: ProfilePointInfo
