@@ -1,12 +1,4 @@
-//
-//  HomeResponseDTO.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/27/26.
-//
 
-
-// MARK: - Root
 struct HomeResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
@@ -14,7 +6,6 @@ struct HomeResponseDTO: Decodable {
     let result: HomeResultDTO
 }
 
-// MARK: - Result
 struct HomeResultDTO: Decodable {
     let level: Int
     let title: String
@@ -41,7 +32,6 @@ struct HomeResultDTO: Decodable {
     }
 }
 
-// MARK: - WeeklyCooking
 struct WeeklyCookingDTO: Decodable {
     let monday: Bool
     let tuesday: Bool
@@ -79,7 +69,6 @@ enum MissionStatusDTO: String, Decodable {
     case completed = "COMPLETED"
 }
 
-// MARK: - RecommendedRecipe
 struct RecommendedRecipeDTO: Decodable, Identifiable {
     let recipeId: Int
     let title: String

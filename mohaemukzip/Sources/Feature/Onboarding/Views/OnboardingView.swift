@@ -1,25 +1,17 @@
-//
-//  OnboardingView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/28/26.
-//
 
 import SwiftUI
 
 struct OnboardingView: View {
-
-    // MARK: - Types
+    
     struct Page: Identifiable, Hashable {
         let id: Int
         let imageName: String
         let title: String
         let subtitle: String?
-
+        
         var hasSubtitle: Bool { (subtitle?.isEmpty == false) }
     }
-
-    // MARK: - Data
+    
     private let pages: [Page] = [
         .init(
             id: 0,
@@ -46,8 +38,7 @@ struct OnboardingView: View {
             subtitle: "메뉴부터 레시피 요약까지, 요선생이 전 과정을 도와줘요."
         )
     ]
-
-    // MARK: - State
+    
     @State private var selection: Int = 0
     @EnvironmentObject private var router: AuthRouter
     
@@ -66,20 +57,19 @@ struct OnboardingView: View {
         .navigationBarBackButtonHidden()
     }
     
-
+    
     private var bottomControls: some View {
-        // 고정 값 (디자인 스펙)
         let indicatorTop: CGFloat = 16
         let buttonTopGap: CGFloat = 34
         let buttonHeight: CGFloat = 57
-
+        
         return VStack(spacing: 0) {
             PageIndicator(total: pages.count, current: selection)
                 .padding(.top, indicatorTop)
-
+            
             Spacer().frame(height: buttonTopGap)
-
-            // ✅ 버튼 영역도 항상 같은 높이를 차지하게 (있을 때/없을 때 동일)
+            
+            // 버튼 영역도 항상 같은 높이를 차지하게 (있을 때/없을 때 동일)
             if selection == pages.count - 1 {
                 Button {
                     router.push(.start)
@@ -123,31 +113,30 @@ struct OnboardingView: View {
 
 private struct OnboardingPageView: View {
     let page: OnboardingView.Page
-
+    
     var body: some View {
         VStack(spacing: 0) {
             header
                 .padding(.top, 75)
                 .padding(.horizontal, 17)
                 .padding(.bottom, 60)
-
+            
             Image(page.imageName)
                 .resizable()
                 .scaledToFit()
-
+            
             Spacer(minLength: 0)
         }
-        // ✅ TabView가 페이지를 세로 중앙 정렬하지 않도록, 화면을 꽉 채우고 top 정렬
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
-
+    
     private var header: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(page.title)
                 .font(.PretendardSemibold24)
                 .foregroundStyle(.grey900)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
+            
             if page.hasSubtitle {
                 Text(page.subtitle ?? "")
                     .font(.PretendardRegular16)
@@ -164,7 +153,7 @@ private struct OnboardingPageView: View {
 private struct PageIndicator: View {
     let total: Int
     let current: Int
-
+    
     var body: some View {
         HStack(spacing: 8) {
             ForEach(0..<total, id: \.self) { index in
@@ -180,9 +169,4 @@ private struct PageIndicator: View {
             }
         }
     }
-}
-
-#Preview {
-    OnboardingView()
-        .environment(NavigationRouter())
 }

@@ -1,9 +1,3 @@
-//
-//  HomStatsViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
 
 import SwiftUI
 
@@ -18,7 +12,7 @@ final class StatsViewModel {
     private(set) var stickerDates: Set<Date> = []
     private(set) var calendarYear: Int = Calendar.current.component(.year, from: Date())
     private(set) var calendarMonth: Int = Calendar.current.component(.month, from: Date())
-
+    
     var initialMonthDate: Date {
         Calendar.current.date(from: DateComponents(year: calendarYear, month: calendarMonth, day: 1)) ?? Date()
     }
@@ -41,7 +35,7 @@ final class StatsViewModel {
             totalCookingCount = statsModel.totalCookingCount
             averageDifficulty = statsModel.averageDifficulty
             monthlyPoints = statsModel.monthlyPoints
-
+            
             // 2) 캘린더 스티커 날짜
             let calendarModel = try await homeService.fetchHomeStatsCalendar(year: calendarYear, month: calendarMonth)
             stickerDates = Self.makeStickerDates(

@@ -1,9 +1,3 @@
-//
-//  AuthAPI.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/31/26.
-//
 
 import Foundation
 import Moya
@@ -79,13 +73,13 @@ extension AuthAPI: TargetType {
                 "Authorization": "Bearer \(Config.accessTK)",
                 "X-Refresh-Token": "\(Config.refreshTK)"
             ]
-
+            
         case .logout, .withdrawal, .checkLoginId:
             return [
                 "Content-Type": "application/json",
                 "Authorization": "Bearer \(Config.accessTK)"
             ]
-
+            
         default:
             return [
                 "Content-Type": "application/json"

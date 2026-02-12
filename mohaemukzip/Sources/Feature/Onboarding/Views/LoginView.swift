@@ -1,37 +1,30 @@
-////
-////  LoginView.swift
-////  mohaemukzip
-////
-////  Created by 이서현 on 1/28/26.
-////
-//
 
 import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AuthRouter
-
+    
     @State private var viewModel = LoginViewModel()
     
     private enum Field {
         case loginId
         case password
     }
-
+    
     @FocusState private var focusedField: Field?
-
+    
     var body: some View {
         VStack(spacing: 0) {
             Spacer().frame(height: 120)
-
+            
             Image("loginLogo")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 70, height: 70)
-
+            
             Spacer().frame(height: 44)
-
+            
             VStack(spacing: 16) {
                 // 아이디
                 TextField("아이디", text: $viewModel.loginId)
@@ -53,7 +46,7 @@ struct LoginView: View {
                                 lineWidth: 1
                             )
                     )
-
+                
                 SecureField("비밀번호", text: $viewModel.password)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
@@ -74,7 +67,7 @@ struct LoginView: View {
                     )
             }
             .padding(.horizontal, 17)
-
+            
             // 에러 문구
             HStack(spacing: 6) {
                 Image(systemName: "exclamationmark.circle")
@@ -85,7 +78,7 @@ struct LoginView: View {
             .foregroundStyle(Color.red)
             .padding(.top, 10)
             .opacity(viewModel.showError ? 1 : 0)
-
+            
             // 로그인 버튼
             Button {
                 focusedField = nil
@@ -110,7 +103,7 @@ struct LoginView: View {
             .padding(.horizontal, 17)
             .padding(.top, 18)
             .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
-
+            
             HStack(spacing: 34) {
                 Button { }
                 label: {
@@ -118,11 +111,11 @@ struct LoginView: View {
                         .font(.PretendardMedium16)
                         .foregroundStyle(Color.grey300)
                 }
-
+                
                 Text("|")
                     .font(.PretendardMedium16)
                     .foregroundStyle(Color.grey300)
-
+                
                 Button { }
                 label: {
                     Text("비밀번호 찾기")
@@ -131,7 +124,7 @@ struct LoginView: View {
                 }
             }
             .padding(.top, 40)
-
+            
             Spacer()
         }
         .navigationBarBackButtonHidden()
@@ -143,10 +136,4 @@ struct LoginView: View {
             viewModel.clearErrorIfNeeded()
         }
     }
-}
-
-#Preview {
-    LoginView()
-        .environmentObject(AppState())
-        .environmentObject(AuthRouter())
 }

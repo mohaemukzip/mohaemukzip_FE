@@ -1,21 +1,15 @@
-//
-//  AgreeView.swift
-//  mohaemukzip
-//
-//  Created by 이서현 on 1/28/26.
-//
 
 import SwiftUI
 
 struct AgreeView: View {
-
+    
     @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = AgreeViewModel()
-
+    
     var body: some View {
         VStack(spacing: 0) {
             topBar
-
+            
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     Text("서비스 이용약관")
@@ -23,36 +17,36 @@ struct AgreeView: View {
                         .foregroundStyle(.black)
                         .padding(.top, 21)
                         .padding(.bottom, 10)
-
+                    
                     AgreeCheckRow(
                         title: "모두 동의",
                         isChecked: $viewModel.isAllAgree,
                         onToggle: { viewModel.toggleAllAgree() }
                     )
                     .padding(.bottom, 6)
-
+                    
                     Divider()
                         .padding(.bottom, 6)
-
+                    
                     VStack(spacing: 0) {
                         AgreeCheckRow(
                             title: "만 14세 이상입니다. (필수)",
                             isChecked: $viewModel.isOver14,
                             onToggle: { viewModel.toggleOver14() }
                         )
-
+                        
                         AgreeCheckRow(
                             title: "서비스 이용약관에 동의 (필수)",
                             isChecked: $viewModel.isServiceAgree,
                             onToggle: { viewModel.toggleServiceAgree() }
                         )
-
+                        
                         AgreeCheckRow(
                             title: "개인정보 수집 및 이용에 동의 (필수)",
                             isChecked: $viewModel.isPrivacyAgree,
                             onToggle: { viewModel.togglePrivacyAgree() }
                         )
-
+                        
                         AgreeCheckRow(
                             title: "광고 및 마케팅 수신에 동의 (선택)",
                             isChecked: $viewModel.isMarketingAgree,
@@ -70,7 +64,7 @@ struct AgreeView: View {
         }
         .navigationBarBackButtonHidden(true)
     }
-
+    
     private var topBar: some View {
         HStack {
             Button(action: { router.pop() }) {
@@ -78,13 +72,13 @@ struct AgreeView: View {
                     .foregroundStyle(.grey700)
                     .frame(width: 44, height: 44, alignment: .leading)
             }
-
+            
             Spacer()
         }
         .padding(.horizontal, 12)
         .padding(.top, 6)
     }
-
+    
     private var bottomButton: some View {
         VStack(spacing: 0) {
             Button {
@@ -110,7 +104,7 @@ private struct AgreeCheckRow: View {
     let title: String
     @Binding var isChecked: Bool
     let onToggle: () -> Void
-
+    
     var body: some View {
         Button {
             onToggle()
@@ -120,11 +114,11 @@ private struct AgreeCheckRow: View {
                     .resizable()
                     .frame(width: 22, height: 22)
                     .foregroundStyle(isChecked ? Color.main400 : Color.grey300)
-
+                
                 Text(title)
                     .font(.PretendardRegular16)
                     .foregroundStyle(Color.black)
-
+                
                 Spacer()
             }
             .frame(maxWidth: .infinity)
