@@ -1,10 +1,3 @@
-//
-//  Button.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/15/26.
-//
-
 import SwiftUI
 
 enum ButtonSize {

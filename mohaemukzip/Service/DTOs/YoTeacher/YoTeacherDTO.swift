@@ -1,10 +1,3 @@
-//
-//  YoTeacherDTO.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/31/26.
-//
-
 import Foundation
 
 struct YoTeacherResponseDTO: Decodable {
@@ -14,7 +7,7 @@ struct YoTeacherResponseDTO: Decodable {
     let message: String
     let createdAt: String
     let formattedTime: String
-    let recommendRecipes: [YoTeacherDTO]
+    let recommendRecipes: [YoTeacherDTO]?
 }
 
 struct YoTeacherDTO: Decodable {

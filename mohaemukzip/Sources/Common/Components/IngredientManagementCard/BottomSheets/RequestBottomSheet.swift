@@ -1,10 +1,3 @@
-//
-//  RequestBottomSheet.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/23/26.
-//
-
 import SwiftUI
 
 struct RequestBottomSheet: View {
@@ -44,9 +37,3 @@ struct RequestBottomSheet: View {
         }.padding(.horizontal)
     }
 }
-
-/*
-#Preview {
-    RequestBottomSheet()
-}
-*/

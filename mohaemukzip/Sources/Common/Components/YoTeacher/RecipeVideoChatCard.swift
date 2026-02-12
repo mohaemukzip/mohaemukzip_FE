@@ -1,10 +1,3 @@
-//
-//  RecipeVideoChatCard.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/25/26.
-//
-
 import SwiftUI
 
 struct RecipeVideoChatCard: View {
@@ -21,9 +14,4 @@ struct RecipeVideoChatCard: View {
             YoSkeleton()
         }
     }
-}
-
-#Preview {
-    RecipeVideoChatCard(url: URL(string: "https://i.ytimg.com/vi/L4NreAnu6a0/mqdefault.jpg")!)
-    
 }

@@ -1,13 +1,7 @@
-//
-//  IngredientList.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/21/26.
-//
-
 import SwiftUI
 
 struct IngredientList: View {
+    @Environment(IngredientSearchViewModel.self) var vm
     var ingredients: [IngredientForAddition]
     var onSaveTap: (Int) -> Void
     var onPlusTap: (IngredientForAddition) -> Void
@@ -36,30 +30,35 @@ struct IngredientList: View {
         
         else {
             ScrollView {
-                LazyVStack {
-                    ForEach(ingredients) { ingredient in
-                        IngredientListComponent(
-                            name: ingredient.name,
-                            amount: "\(ingredient.amount)\(ingredient.unit)",
-                            category: ingredient.category.rawValue,
-                            isSaved: ingredient.isSaved,
-                            onSaveTap: {onSaveTap(ingredient.id)},
-                            onPlusTap: {onPlusTap(ingredient)}
-                        )
-                        .onAppear {
-                            onLastAppear?(ingredient)
+                ScrollViewReader { proxy in
+                    LazyVStack {
+                        // 스크롤을 상단으로 옮기기 위한 anchor
+                        Color.clear.frame(height: 0).id("TOP")
+                        ForEach(ingredients) { ingredient in
+                            IngredientListComponent(
+                                name: ingredient.name,
+                                amount: "\(ingredient.amount)\(ingredient.unit)",
+                                category: ingredient.category.rawValue,
+                                isSaved: ingredient.isSaved,
+                                onSaveTap: {onSaveTap(ingredient.id)},
+                                onPlusTap: {onPlusTap(ingredient)}
+                            )
+                            .onAppear {
+                                onLastAppear?(ingredient)
+                            }
                         }
-                    }
-                    
-                    if let onTap = onRequest {
-                        Button ( action: { onTap() } ) {
-                            IngredientRequestButton()
-                        }.padding(.bottom)
+                        
+                        if let onTap = onRequest {
+                            Button ( action: { onTap() } ) {
+                                IngredientRequestButton()
+                            }.padding(.bottom)
+                        }
+                    }.onChange(of: vm.selectedCategory) {
+                        proxy.scrollTo("TOP", anchor: .top)
                     }
                 }
-            }
+            }.scrollIndicators(.hidden)
         }
-        
     }
 }
 

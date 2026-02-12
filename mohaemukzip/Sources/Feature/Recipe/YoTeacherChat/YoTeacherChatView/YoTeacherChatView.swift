@@ -1,10 +1,3 @@
-//
-//  YoTeacherChatView.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/24/26.
-//
-
 import SwiftUI
 
 struct YoTeacherChatView: View {
@@ -86,8 +79,10 @@ struct YoTeacherChatView: View {
                                     proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
                                 }
                             }
+                            .onAppear() {
+                                proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
+                            }
                     }
-                    
                 }
                 
                 Spacer()

@@ -1,10 +1,3 @@
-//
-//  FridgeDomainModel.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/28/26.
-//
-
 import SwiftUI
 
 enum StorageType: String, CaseIterable {

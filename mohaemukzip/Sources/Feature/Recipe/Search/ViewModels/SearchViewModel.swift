@@ -1,10 +1,3 @@
-//
-//  SearchViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/13/26.
-//
-
 import Foundation
 import Combine
 
@@ -23,6 +16,7 @@ class SearchViewModel {
     var selectedDishId: Int?
     var isLastVideo: Bool = false
     var pageNumForVideo: Int = 0
+    var isLoading: Bool = false
     
     func resetAndSearch() async {
         self.suggestions = []
@@ -47,6 +41,8 @@ class SearchViewModel {
     }
     
     func resetAndGetSearchedVideos() async {
+        guard !isLoading else { return }
+        
         self.searchedVideos = []
         self.pageNumForVideo = 0
         self.isLastVideo = false
@@ -55,16 +51,19 @@ class SearchViewModel {
     }
     
     func getNextSearchedVideos() async {
-        if !isLastVideo {
-            do {
-                let (newItems, isLast) = try await service.getResultForKeyword(dishId: self.selectedDishId ?? 1, page: self.pageNumForVideo)
-                
-                self.searchedVideos.append(contentsOf: newItems)
-                self.isLastVideo = isLast
-                self.pageNumForVideo += 1
-            } catch {
-                print("검색된 레시피 목록을 불러올 수 없습니다: \(error)")
-            }
+        // 중복 호출 방지를 위해 isLoading으로 필터
+        guard !isLoading && !isLastVideo else { return }
+        
+        self.isLoading = true
+        do {
+            let (newItems, isLast) = try await service.getResultForKeyword(dishId: self.selectedDishId ?? 1, page: self.pageNumForVideo)
+            
+            self.searchedVideos.append(contentsOf: newItems)
+            self.isLastVideo = isLast
+            self.pageNumForVideo += 1
+        } catch {
+            print("검색된 레시피 목록을 불러올 수 없습니다: \(error)")
         }
+        self.isLoading = false
     }
 }

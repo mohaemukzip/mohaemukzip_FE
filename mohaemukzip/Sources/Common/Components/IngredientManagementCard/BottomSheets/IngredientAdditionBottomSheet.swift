@@ -1,10 +1,3 @@
-//
-//  IngredientAdditionBottomSheet.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/23/26.
-//
-
 import SwiftUI
 
 struct IngredientAdditionBottomSheet: View {
@@ -109,7 +102,6 @@ struct IngredientAdditionBottomSheet: View {
                     }
                 }.padding(.bottom, 16) // end of VStack
                 
-                
                 HStack {
                     Text("재료 소비 기한")
                         .font(.PretendardMedium13)
@@ -192,7 +184,7 @@ struct IngredientAdditionBottomSheet: View {
                             .padding(.leading, 10)
                             .keyboardType(.numberPad)
                         Spacer()
-                        Text("g")
+                        Text(ingredient.unit)
                             .font(.PretendardRegular16)
                             .foregroundStyle(.grey500)
                             .padding(.trailing, 10)

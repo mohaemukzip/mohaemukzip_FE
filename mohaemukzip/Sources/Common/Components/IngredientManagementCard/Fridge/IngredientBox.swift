@@ -1,10 +1,3 @@
-//
-//  IngredientBox.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/16/26.
-//
-
 import SwiftUI
 
 struct IngredientBox: View {

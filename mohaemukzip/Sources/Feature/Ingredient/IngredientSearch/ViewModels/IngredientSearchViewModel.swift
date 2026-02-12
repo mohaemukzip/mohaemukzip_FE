@@ -1,10 +1,3 @@
-//
-//  IngredientSearchViewModel.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/21/26.
-//
-
 import SwiftUI
 import Combine
 

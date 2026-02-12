@@ -1,10 +1,3 @@
-//
-//  FridgeDTO.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/28/26.
-//
-
 import Foundation
 
 struct FridgeListDTO: Decodable {
