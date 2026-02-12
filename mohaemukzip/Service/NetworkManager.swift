@@ -29,7 +29,7 @@ final class NetworkManager {
     ]
 
     func makeProvider<T: TargetType>(for target: T.Type) -> MoyaProvider<T> {
-        // Alamofire 레벨에서 401을 감지해 토큰 재발급 후 원 요청을 1회 재시도합니다.
+        // Alamofire 레벨에서 401을 감지해 토큰 재발급 후 원 요청을 1회 재시도
         let session = Session(interceptor: authInterceptor)
         return MoyaProvider<T>(session: session, plugins: plugins)
     }
@@ -40,9 +40,7 @@ final class NetworkManager {
 /// 401 응답을 감지하면 /auth/reissue 를 호출해서 토큰을 갱신한 뒤,
 /// 실패한 요청을 1회 재시도하는 Alamofire Interceptor 입니다.
 ///
-/// ⚠️ 주의
-/// - 동시에 여러 요청이 401을 맞는 경우, 재발급은 1번만 수행하고 나머지 요청은 대기 후 함께 재시도합니다.
-/// - /auth/reissue 자체가 401을 맞을 때는 재시도 루프를 방지하기 위해 재발급을 시도하지 않습니다.
+
 private final class AuthInterceptor: RequestInterceptor {
 
     private let lock = NSLock()
@@ -186,8 +184,7 @@ private final class AuthInterceptor: RequestInterceptor {
 
 // MARK: - 디버깅용 네트워크 플러그인
 
-/// NetworkLoggerPlugin이 환경/설정에 따라 출력이 약할 때를 대비해서,
-/// 요청/응답의 핵심 정보를 무조건 콘솔에 찍어주는 보조 플러그인입니다.
+
 private final class NetworkDebugPlugin: PluginType {
 
     func willSend(_ request: RequestType, target: TargetType) {

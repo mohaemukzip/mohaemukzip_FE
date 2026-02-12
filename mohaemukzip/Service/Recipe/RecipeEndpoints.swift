@@ -1,28 +1,9 @@
-
-//
-//  RecipeEndpoints.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/4/26.
-//
-
 import Foundation
 import Moya
 import Alamofire
 import KeychainSwift
 
-// MARK: - RecipeEndpoints
-// 레시피 도메인에서 사용하는 API Target
-//
-// 이 파일은 Moya TargetType 규격에 맞춰 레시피 관련 엔드포인트를 한 곳에서 관리
-// 뷰모델/서비스 계층에서는 RecipeEndpoints의 case만 선택해서 호출
-//
-// 포함된 API
-// 1) GET  /search/recipes                 : 세부 카테고리별 레시피 목록 조회 (categoryId query)
-// 2) GET  /recipes/{recipeId}             : 레시피 상세 조회
-// 3) POST /recipes/{recipeId}/summary     : 요약 레시피 생성 요청 (바디 없음, 서버 미구현/오류 가능)
-// 4) POST /recipes/{recipeId}/bookmark    : 북마크 토글 (바디 없음)
-// 5) POST /recipes/{recipeId}/complete    : 요리 완료 처리 + 평점 등록 (rating query, 1~5)
+
 
 enum RecipeEndpoints {
 

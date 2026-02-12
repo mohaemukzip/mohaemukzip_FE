@@ -8,7 +8,8 @@ struct MainTabView: View {
         case profile
     }
     
-    //기본 설정된 상태 -> home
+    // 기본 설정된 상태 -> home
+    // 탭 선택을 외부(상세 화면 등)에서도 제어할 수 있도록 라우터로 분리
     @State private var tabRouter = TabRouter()
     
     // MARK: - 각 뷰에서 사용하는 뷰모델은 MainTabView에서 소유(@State)

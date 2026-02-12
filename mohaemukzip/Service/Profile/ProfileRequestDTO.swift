@@ -1,14 +1,6 @@
-//
-//  ProfileRequestDTO.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/2/26.
-//
-
 import Foundation
 
-/// Profile/Mypage 관련 Request DTO 모음
-/// - NOTE: GET 요청(마이페이지 조회/최근 본 레시피/저장된 레시피 목록)은 body가 없으므로 RequestDTO가 필요하지 않습니다.
+
 
 enum ProfileRequestDTO {
 

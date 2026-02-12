@@ -1,26 +1,8 @@
-//
-//  MyPageResponseDto.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/2/26.
-//
 
 import Foundation
-
-//
-//  ProfileResponseDTO.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/2/26.
-//
-
-import Foundation
-
-/// Profile / MyPage 관련 Response DTO 모음
 
 enum ProfileResponseDTO {
 
-    // MARK: - 공통 레시피 카드 DTO썼
     /// 마이페이지 / 최근 본 레시피 / 저장된 레시피 목록에서 공통으로 사용
     struct RecipeCard: Decodable {
         let id: Int

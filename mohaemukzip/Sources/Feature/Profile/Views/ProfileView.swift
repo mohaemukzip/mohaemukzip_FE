@@ -1,10 +1,3 @@
-//
-//  ProfileView.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 1/13/26.
-//
-
 import SwiftUI
 import Combine
 // MARK: - 마이페이지 메인 화면
@@ -406,54 +399,3 @@ private struct ProfileYouTubeThumbnailView: View {
     }
 }
 
-// MARK: - 공용 Row
-
-private struct ProfileSimpleRow: View {
-
-    // MARK: - Properties
-
-    let title: String
-
-    // MARK: - Body
-
-    var body: some View {
-        Button {
-            print("[ProfileView] ℹ️ \(title) 탭 - 추후 연결")
-        } label: {
-            HStack {
-                Text(title)
-                    .font(.custom("Pretendard-Regular", size: 16))
-                    .foregroundStyle(Color.black)
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.gray)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-        }
-    }
-}
-
-
-
-
-#Preview {
-    PreviewWrapper()
-}
-
-private struct PreviewWrapper: View {
-    @State private var router = NavigationRouter()
-    @StateObject private var viewModel = ProfileViewModel()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            ProfileView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-        .environmentObject(viewModel)
-    }
-}

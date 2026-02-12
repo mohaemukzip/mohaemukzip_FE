@@ -46,8 +46,3 @@ struct VideoListView: View {
     }
 }
 
-#Preview {
-    VideoListView(recipeVideoVM: RecipeVideoViewModel())
-        .environment(NavigationRouter())
-        .environment(SearchViewModel())
-}

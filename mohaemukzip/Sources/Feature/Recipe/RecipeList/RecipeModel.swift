@@ -1,9 +1,6 @@
 import Foundation
 import SwiftUI
 
-// MARK: - RecipeModel
-// 레시피 도메인에서 사용하는 핵심 모델 정의 파일
-// 목록 화면과 상세 화면에서 공통으로 사용하는 타입들을 모아둠
 
 // MARK: - 음식 종류 (상위 카테고리)
 // 홈/목록 화면에서 사용하는 상위 음식 카테고리

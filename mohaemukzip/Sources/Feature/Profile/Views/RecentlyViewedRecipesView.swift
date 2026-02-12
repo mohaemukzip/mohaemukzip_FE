@@ -1,9 +1,3 @@
-//
-//  RecentlyViewedRecipesView.swift
-//  mohaemukzip
-//
-//  Created by 고석현 on 2/3/26.
-//
 import SwiftUI
 
 struct RecentlyViewedRecipesView: View {
@@ -14,14 +8,10 @@ struct RecentlyViewedRecipesView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            // ===============================
-            // 🔽 NEW: 고정 헤더 (로딩/빈 상태에서도 위치 고정)
-            // ===============================
+        
             listHeader(title: "최근 조회한 레시피")
                 .background(Color.white)
-            // ===============================
-            // 🔼 END NEW
-            // ===============================
+         
             if viewModel.isLoading {
                 ProgressView().padding(.top, 20)
             } else if viewModel.items.isEmpty {
@@ -93,18 +83,3 @@ struct RecentlyViewedRecipesView: View {
     }
 }
 
-#Preview {
-    RecentlyViewedRecipesPreviewWrapper()
-}
-
-private struct RecentlyViewedRecipesPreviewWrapper: View {
-    @State private var router = NavigationRouter()
-
-    var body: some View {
-        NavigationStack(path: $router.path) {
-            RecentlyViewedRecipesView()
-                .setupNavigationDestinations()
-        }
-        .environment(router)
-    }
-}
