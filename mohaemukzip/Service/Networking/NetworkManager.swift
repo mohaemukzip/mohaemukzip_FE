@@ -39,7 +39,6 @@ final class NetworkManager {
 
 /// 401 응답을 감지하면 /auth/reissue 를 호출해서 토큰을 갱신한 뒤,
 /// 실패한 요청을 1회 재시도하는 Alamofire Interceptor 입니다.
-///
 
 private final class AuthInterceptor: RequestInterceptor {
 

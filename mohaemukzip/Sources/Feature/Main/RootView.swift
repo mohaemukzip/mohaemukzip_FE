@@ -121,44 +121,6 @@ final class AppState: ObservableObject {
     }
 }
 
-// MARK: - Token Store (임시: UserDefaults)
-
-enum TokenStore {
-    private static let accessKey = "ACCESS_TOKEN"
-    private static let refreshKey = "REFRESH_TOKEN"
-
-    struct Tokens {
-        let access: String?
-        let refresh: String?
-    }
-
-    static func loadTokens() -> Tokens {
-        return .init(
-            access: UserDefaults.standard.string(forKey: accessKey),
-            refresh: UserDefaults.standard.string(forKey: refreshKey)
-        )
-    }
-
-    static func saveTokens(access: String, refresh: String?) {
-        UserDefaults.standard.set(access, forKey: accessKey)
-        if let refresh {
-            UserDefaults.standard.set(refresh, forKey: refreshKey)
-        } else {
-            UserDefaults.standard.removeObject(forKey: refreshKey)
-        }
-    }
-
-    static func clear() {
-        UserDefaults.standard.removeObject(forKey: accessKey)
-        UserDefaults.standard.removeObject(forKey: refreshKey)
-    }
-
-    /// 개발 중: 자동로그인 상태 해제용
-    static func clearTokenForDebug() {
-        clear()
-    }
-}
-
 // MARK: - RootView
 
 /// ✅ Splash/Auth/Main 을 "push"가 아니라 "뷰 자체 교체"로 전환
