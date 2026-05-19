@@ -69,8 +69,8 @@ extension AuthAPI: TargetType {
         let tokens = TokenStore.loadTokens()
         
         switch self {
-        // NetworkManager에서 의도적으로 reissue는 제외
-        // -> refresh token 수동으로 주입해주어야 함
+            // NetworkManager에서 의도적으로 reissue는 제외
+            // -> refresh token 수동으로 주입해주어야 함
         case .reissue:
             return [
                 "Content-Type": "application/json",
@@ -78,16 +78,12 @@ extension AuthAPI: TargetType {
                 "X-Refresh-Token": tokens.refresh ?? ""
             ]
             
-        case .logout, .withdrawal, .checkLoginId:
+            // access token 필요 없는 API들 (필요하더라도 interceptor에서)
+        case .signup, .login, .logout, .withdrawal, .checkLoginId:
             return [
                 "Content-Type": "application/json",
-                "Authorization": "Bearer \(tokens.access ?? "")"
             ]
             
-        default:
-            return [
-                "Content-Type": "application/json"
-            ]
         }
     }
 }

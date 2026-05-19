@@ -52,6 +52,7 @@ private final class AuthInterceptor: RequestInterceptor {
         MoyaProvider<AuthAPI>()
     }()
 
+    
     func adapt(
         _ urlRequest: URLRequest,
         for session: Session,

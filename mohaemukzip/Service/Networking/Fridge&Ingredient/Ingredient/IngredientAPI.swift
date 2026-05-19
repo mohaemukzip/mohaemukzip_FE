@@ -63,8 +63,7 @@ extension IngredientAPI: TargetType {
     
     var headers: [String: String]? {
         return [
-            "Content-Type" : "application/json",
-            "Authorization" : "Bearer \(Config.accessTK)"
+            "Content-Type" : "application/json"
         ]
     }
 }
