@@ -1,7 +1,7 @@
 import Foundation
 import Moya
 import Alamofire
-import KeychainSwift
+//import KeychainSwift
 
 
 enum ProfileEndpoints {
@@ -77,7 +77,12 @@ extension ProfileEndpoints: TargetType {
 
     // 헤더 한번 수정. 임시용.
     var headers: [String: String]? {
-        let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
+        return [
+            "Content-Type": "application/json"
+        ]
+        
+        /*
+         let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
 
         // 1) Keychain 토큰 우선
         if let accessToken = KeychainSwift().get("serverAccessToken")?
@@ -108,6 +113,7 @@ extension ProfileEndpoints: TargetType {
 
         // 3) 로그인 전
         return contentTypeHeader
+         */
     }
 
     var sampleData: Data {

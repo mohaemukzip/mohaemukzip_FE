@@ -29,7 +29,6 @@ extension YoTeacherAPI: TargetType {
     var headers: [String: String]? {
         return [
             "Content-Type" : "application/json",
-            "Authorization" : "Bearer \(Config.accessTK)"
         ]
     }
 }

@@ -147,10 +147,8 @@ private final class AuthInterceptor: RequestInterceptor {
                     let newAccess = decoded.result.accessToken
                     let newRefresh = decoded.result.refreshToken
 
-                    // 토큰 저장(앱 재시작 대비) + Config 동기화
+                    // 토큰 저장
                     TokenStore.saveTokens(access: newAccess, refresh: newRefresh)
-                    Config.accessTK = newAccess
-                    Config.refreshTK = newRefresh
 
                     // DEBUG LOG REMOVED
 

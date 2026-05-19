@@ -1,9 +1,7 @@
 import Foundation
 import Moya
 import Alamofire
-import KeychainSwift
-
-
+//import KeychainSwift
 
 enum RecipeEndpoints {
 
@@ -119,7 +117,12 @@ extension RecipeEndpoints: TargetType {
 
     // MARK: Headers
     var headers: [String: String]? {
-        let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
+        return [
+            "Content-Type": "application/json"
+        ]
+        
+        /*
+         let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
 
         // 1) Keychain에 저장된 Access Token 우선 사용
         if let accessToken = KeychainSwift().get("serverAccessToken")?
@@ -150,6 +153,7 @@ extension RecipeEndpoints: TargetType {
 
         // 3) 로그인 전/토큰 없음: Content-Type만 유지
         return contentTypeHeader
+         */
     }
 
     // MARK: Sample Data

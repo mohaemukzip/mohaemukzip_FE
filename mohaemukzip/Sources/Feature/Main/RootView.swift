@@ -31,10 +31,6 @@ final class AppState: ObservableObject {
 
             print("boot accessToken:", accessToken ?? "nil")
 
-            // Config 와 동기화 (API 레이어가 Config를 참조하는 구조 유지)
-            Config.accessTK = accessToken ?? ""
-            Config.refreshTK = refreshToken ?? ""
-
             // accessToken이 있으면 바로 메인
             if let accessToken, !accessToken.isEmpty {
                 root = .main
@@ -65,9 +61,6 @@ final class AppState: ObservableObject {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
 
-        Config.accessTK = accessToken
-        Config.refreshTK = refreshToken
-
         print("[AppState] loginSucceeded -> save tokens & go main")
         root = .main
     }
@@ -83,9 +76,6 @@ final class AppState: ObservableObject {
         TokenStore.clear()
         accessToken = nil
         refreshToken = nil
-
-        Config.accessTK = ""
-        Config.refreshTK = ""
 
         root = .auth
     }
