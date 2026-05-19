@@ -66,18 +66,22 @@ extension AuthAPI: TargetType {
     }
     
     var headers: [String: String]? {
+        let tokens = TokenStore.loadTokens()
+        
         switch self {
+        // NetworkManager에서 의도적으로 reissue는 제외
+        // -> refresh token 수동으로 주입해주어야 함
         case .reissue:
             return [
                 "Content-Type": "application/json",
-                "Authorization": "Bearer \(Config.accessTK)",
-                "X-Refresh-Token": "\(Config.refreshTK)"
+                "Authorization": "Bearer \(tokens.access ?? "")",
+                "X-Refresh-Token": tokens.refresh ?? ""
             ]
             
         case .logout, .withdrawal, .checkLoginId:
             return [
                 "Content-Type": "application/json",
-                "Authorization": "Bearer \(Config.accessTK)"
+                "Authorization": "Bearer \(tokens.access ?? "")"
             ]
             
         default:

@@ -1,14 +1,7 @@
-//
-//  TokenStorage.swift
-//  mohaemukzip
-//
-//  Created by 이한결 on 5/7/26.
-//
-
 import Foundation
 import KeychainSwift
 
-enum TokenStorage {
+enum TokenStore {
     
     // 키체인에 접근하기 위한 키
     private static let accessKey = "ACCESS_TOKEN"
@@ -38,7 +31,7 @@ enum TokenStorage {
     }
 
     // 키체인에 저장되어 있는 토큰 삭제하는 함수
-    static func clearTokens() {
+    static func clear() {
         keychain.delete(accessKey)
         keychain.delete(refreshKey)
     }

@@ -58,6 +58,7 @@ private final class AuthInterceptor: RequestInterceptor {
         completion: @escaping (Result<URLRequest, Error>) -> Void
     ) {
         var request = urlRequest
+        let tokens = TokenStore.loadTokens() // 키체인에서 토큰을 불러옴
 
         // 이미 Authorization이 있으면 그대로
         if request.value(forHTTPHeaderField: "Authorization") != nil {
@@ -66,7 +67,7 @@ private final class AuthInterceptor: RequestInterceptor {
         }
 
         // accessToken 없으면 건드리지 않음
-        guard !Config.accessTK.isEmpty else {
+        guard let accessToken = tokens.access, !accessToken.isEmpty else {
             completion(.success(request))
             return
         }
@@ -82,10 +83,7 @@ private final class AuthInterceptor: RequestInterceptor {
             }
         }
 
-        request.setValue("Bearer \(Config.accessTK)", forHTTPHeaderField: "Authorization")
-
-        // DEBUG LOG REMOVED
-
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         completion(.success(request))
     }
 
@@ -95,6 +93,8 @@ private final class AuthInterceptor: RequestInterceptor {
         dueTo error: Error,
         completion: @escaping (RetryResult) -> Void
     ) {
+        let tokens = TokenStore.loadTokens()
+        
         // status code가 없으면 재시도 판단 불가
         guard let response = request.task?.response as? HTTPURLResponse else {
             completion(.doNotRetry)
@@ -116,8 +116,7 @@ private final class AuthInterceptor: RequestInterceptor {
         }
 
         // refreshToken이 없으면 재발급 불가
-        guard !Config.refreshTK.isEmpty else {
-            // DEBUG LOG REMOVED
+        guard let refreshToken = tokens.refresh, !refreshToken.isEmpty else {
             completion(.doNotRetry)
             return
         }

@@ -182,7 +182,6 @@ final class SignupViewModel {
                 terms: terms
             )
             tokens = model
-            Config.accessTK = model.accessToken
             errorMessage = nil
             return true
         } catch {

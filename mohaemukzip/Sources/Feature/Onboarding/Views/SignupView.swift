@@ -249,7 +249,8 @@ struct SignupView: View {
         Button {
             Task {
                 let ok = await viewModel.signup()
-                if ok {
+                if ok/*, let tokens = viewModel.tokens*/ {
+                    //appState.loginSucceeded(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
                     router.push(.signupFinish)
                 }
             }
