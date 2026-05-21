@@ -127,4 +127,8 @@ extension RecipeEndpoints: TargetType {
         // Unit Test용 샘플데이터
         return Data()
     }
+    
+    var validationType: ValidationType {
+        .successCodes
+    }
 }

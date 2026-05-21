@@ -47,4 +47,8 @@ extension FridgeAPI: TargetType {
             "Content-Type" : "application/json"
         ]
     }
+    
+    var validationType: ValidationType {
+        .successCodes
+    }
 }

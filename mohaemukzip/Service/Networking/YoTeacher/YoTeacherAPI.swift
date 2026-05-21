@@ -31,4 +31,8 @@ extension YoTeacherAPI: TargetType {
             "Content-Type" : "application/json",
         ]
     }
+    
+    var validationType: ValidationType {
+        .successCodes
+    }
 }

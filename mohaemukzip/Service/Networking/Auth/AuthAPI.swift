@@ -86,4 +86,8 @@ extension AuthAPI: TargetType {
             
         }
     }
+    
+    var validationType: ValidationType {
+        .successCodes
+    }
 }

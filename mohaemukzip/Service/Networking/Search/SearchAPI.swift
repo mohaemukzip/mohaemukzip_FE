@@ -39,4 +39,8 @@ extension SearchAPI: TargetType {
             "Content-Type" : "application/json",
         ]
     }
+    
+    var validationType: ValidationType {
+        .successCodes
+    }
 }
