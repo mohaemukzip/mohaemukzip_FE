@@ -8,6 +8,7 @@ struct ProfileView: View {
 
     @EnvironmentObject private var viewModel: ProfileViewModel
     @Environment(NavigationRouter.self) private var router
+    @Environment(\.openURL) private var openURL
 
     // ✅ 화면이 다시 보일 때마다 최신 상태로 동기화하기 위한 fetch 타이밍 제어
     // 너무 짧은 간격으로 onAppear가 연속 호출되는 경우를 방지한다.
@@ -214,13 +215,25 @@ private extension ProfileView {
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
 
-            // NOTE: 지원 섹션은 추후 실제 화면/링크로 연결
             ProfileSimpleRow(title: "서비스 이용약관")
-            ProfileSimpleRow(title: "개인정보 처리방침")
+
+            Button {
+                guard let url = URL(
+                    string: "https://app.notion.com/p/37e3dc31532c80b19ca9d940eb648de6?source=copy_link"
+                ) else {
+                    return
+                }
+
+                openURL(url)
+            } label: {
+                ProfileSimpleRow(title: "개인정보 처리방침")
+            }
+            .buttonStyle(.plain)
+
             ProfileSimpleRow(title: "1:1 문의하기")
         }
     }
-
+    
     func activityRowTitle(
         title: String,
         route: Route,
@@ -399,3 +412,9 @@ private struct ProfileYouTubeThumbnailView: View {
     }
 }
 
+
+
+#Preview {
+    ProfileView()
+        
+}
