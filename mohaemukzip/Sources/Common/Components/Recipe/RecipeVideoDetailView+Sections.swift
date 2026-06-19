@@ -61,7 +61,7 @@ extension RecipeVideoDetailView {
         .allowsHitTesting(true)
     }
 
-    // MARK: - Player
+    // MARK: - 플레이어
     var playerSection: some View {
         YouTubePlayerView(player) { state in
             switch state {
@@ -72,8 +72,8 @@ extension RecipeVideoDetailView {
             case .error:
                 VStack(spacing: 8) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                    Text("영상을 불러오지 못했어요")
-                        .font(.footnote)
+                    Text("오류로 인하여 레시피 영상을 불러오지 못했어요")
+                          .font(.custom("Pretendard-Regular", size: 14))
                 }
                 .padding(12)
             }
@@ -84,7 +84,7 @@ extension RecipeVideoDetailView {
         .padding(.bottom, 2)
     }
 
-    // MARK: - Header
+    // MARK: - 헤더
     var headerSection: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(video.title)
@@ -97,7 +97,7 @@ extension RecipeVideoDetailView {
         }
     }
 
-    // MARK: - Stats
+    // MARK: - 스탯
     var statsSection: some View {
         HStack(spacing: 0) {
             VStack(spacing: 10) {
@@ -132,7 +132,7 @@ extension RecipeVideoDetailView {
         )
     }
 
-    // MARK: - Channel
+    // MARK: - 채널
     var channelSection: some View {
         Button {
             openChannelHome(channelId: video.channelId)
@@ -182,7 +182,7 @@ extension RecipeVideoDetailView {
         .buttonStyle(.plain)
     }
 
-    // MARK: - Ingredients
+    // MARK: - 재료
     var ingredientsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("필요한 재료")
@@ -200,7 +200,7 @@ extension RecipeVideoDetailView {
         }
     }
 
-    // MARK: - Summary
+    // MARK: - 요약
     var summarySection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("요선생의 요약 레시피")
@@ -281,7 +281,7 @@ extension RecipeVideoDetailView {
         .padding(.top, 8)
     }
 
-    // MARK: - Bottom Action Bar
+    // MARK: - 하단 액션바
     var bottomActionBar: some View {
         VStack(spacing: 0) {
             Divider().opacity(0.6)
@@ -305,7 +305,7 @@ extension RecipeVideoDetailView {
         }
     }
 
-    // MARK: - Channel Navigation
+    // MARK: - 채널 네비게이션
     func openChannelHome(channelId: String?) {
         let trimmed = (channelId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.isEmpty == false else { return }
@@ -321,7 +321,7 @@ extension RecipeVideoDetailView {
         }
     }
 
-    // MARK: - Player Controls
+    // MARK: - 재생 플레이어 컨트롤 함수
     func seekToTime(_ seconds: Int) {
         Task {
             do {
