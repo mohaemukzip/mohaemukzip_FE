@@ -52,7 +52,7 @@ struct IngredientForAddition: Identifiable {
     let name: String
     let category: Category
     let unit: String
-    let amount: Int
+    let amount: Double
     var isSaved: Bool
 }
 
@@ -66,6 +66,6 @@ struct SavedIngredient: Identifiable {
     let name: String
     let category: Category
     let unit: String
-    let amount: Int
+    let amount: Double
     let isSaved: Bool
 }

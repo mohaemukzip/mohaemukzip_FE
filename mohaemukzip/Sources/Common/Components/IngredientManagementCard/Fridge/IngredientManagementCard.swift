@@ -17,7 +17,10 @@ struct IngredientManagementCard: View {
                     .font(.PretendardMedium13)
                     .foregroundStyle(.grey900)
                 Spacer().frame(height: 4)
-                Text(ingredientInfo.amount)
+                Text(IngredientAmountFormatter.withUnit(
+                    ingredientInfo.amount,
+                    unit: ingredientInfo.unit
+                ))
                     .font(.PretendardMedium13)
                     .foregroundStyle(.grey600)
                 Spacer().frame(height: 6)

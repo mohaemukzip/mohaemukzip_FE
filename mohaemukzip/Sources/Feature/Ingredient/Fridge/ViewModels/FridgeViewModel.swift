@@ -36,7 +36,7 @@ class FridgeViewModel: ObservableObject {
         }
     }
     
-    func addIngredient(id: Int, ty: String, date: Date, amount: Int) async {
+    func addIngredient(id: Int, ty: String, date: Date, amount: Double) async {
         do {
             let dateString = dateFormatter.string(from: date)
             

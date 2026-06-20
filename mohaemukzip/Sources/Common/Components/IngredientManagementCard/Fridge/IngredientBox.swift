@@ -77,13 +77,13 @@ struct IngredientBox: View {
 #Preview {
     @Previewable
     @State var x = false
-    IngredientBox(isEditing: $x, text: "냉장", ingredients: [FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300")], onDelete: { _ in })
+    IngredientBox(isEditing: $x, text: "냉장", ingredients: [FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 0.5, unit: "개", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300"),
+                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: 100, unit: "g", expiryDate: "2025-03-11", dDay: "d-300")], onDelete: { _ in })
 }

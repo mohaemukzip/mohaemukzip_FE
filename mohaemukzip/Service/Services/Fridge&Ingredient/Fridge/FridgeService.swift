@@ -24,7 +24,7 @@ class FridgeService {
         }
     }
     
-    func addIngredient(id: Int, ty: String, date: String, amount: Int) async throws {
+    func addIngredient(id: Int, ty: String, date: String, amount: Double) async throws {
         let requestDTO = AddIngredientRequestDTO(ingredientId: id,
                                                  storageType: ty,
                                                  expireDate: date,

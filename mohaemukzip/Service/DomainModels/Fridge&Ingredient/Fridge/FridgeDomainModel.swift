@@ -33,7 +33,8 @@ struct FridgeIngredient: Identifiable {
     let name: String
     let storage: StorageType
     let color: dDayColor
-    let amount: String
+    let amount: Double
+    let unit: String
     let expiryDate: String
     let dDay: String
 }

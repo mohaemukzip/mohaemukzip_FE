@@ -5,7 +5,7 @@ struct IngredientAdditionBottomSheet: View {
     @State private var storageLocation: StorageType = .chilled
     @State private var expiryDate: Date = Date()
     @State private var amount: String = ""
-    var onAdd: (StorageType, Date, Int) -> Void
+    var onAdd: (StorageType, Date, Double) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
     var onRecommend: () async -> Date?
@@ -182,7 +182,7 @@ struct IngredientAdditionBottomSheet: View {
                             .font(.PretendardMedium16)
                             .foregroundStyle(.grey900)
                             .padding(.leading, 10)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.decimalPad)
                         Spacer()
                         Text(ingredient.unit)
                             .font(.PretendardRegular16)
@@ -196,7 +196,10 @@ struct IngredientAdditionBottomSheet: View {
             
             VStack {
                 Spacer()
-                Button ( action: { onAdd(storageLocation, expiryDate, Int(amount) ?? 0) } ) {
+                Button(action: {
+                    let parsedAmount = Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0
+                    onAdd(storageLocation, expiryDate, parsedAmount)
+                }) {
                     OrangeButton(text: "추가하기", size: .big)
                         .frame(height: 57)
                 }
