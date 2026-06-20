@@ -107,6 +107,12 @@ private final class AuthInterceptor: RequestInterceptor {
             completion(.doNotRetry)
             return
         }
+        
+        // 이미 재시도 요청 보냈으면 중복재시도 X
+        guard request.retryCount == 1 else {
+            completion(.doNotRetry)
+            return
+        }
 
         // reissue 요청 자체가 401이면 루프 방지
         if let urlString = request.request?.url?.absoluteString,
