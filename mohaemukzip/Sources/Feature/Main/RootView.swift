@@ -89,7 +89,6 @@ final class AppState: ObservableObject {
         TokenStore.clear()
         accessToken = nil
         refreshToken = nil
-
         root = .auth
     }
 
@@ -122,7 +121,14 @@ final class AppState: ObservableObject {
             clearSession(reason: "withdrawal api fail")
         }
     }
+    
+    // 세션 만료 (리프레시 토큰 만료)
+    @MainActor
+    func sessionExpired() {
+        clearSession(reason: "refresh token expired")
+    }
 }
+
 
 // MARK: - RootView
 
@@ -150,6 +156,16 @@ struct RootView: View {
             // 첫 진입 시 1번만 부트
             if appState.root == .splash {
                 appState.boot()
+            }
+        }
+        // 리프레시 토큰 만료 알림을 받아 처리
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .authSessionExpired
+            )
+        ) { _ in
+            Task { @MainActor in
+                appState.sessionExpired()
             }
         }
     }
