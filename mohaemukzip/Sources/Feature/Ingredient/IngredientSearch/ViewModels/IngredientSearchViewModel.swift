@@ -60,6 +60,7 @@ class IngredientSearchViewModel: ObservableObject {
     func resetAndFetchIngredients() async {
         pageNum = 0
         isLast = false
+        allIngredients = []
         await fetchNextPage()
     }
     
