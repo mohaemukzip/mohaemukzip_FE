@@ -1,7 +1,6 @@
 import Foundation
 import Moya
 import Alamofire
-import KeychainSwift
 
 
 enum ProfileEndpoints {
@@ -77,40 +76,17 @@ extension ProfileEndpoints: TargetType {
 
     // 헤더 한번 수정. 임시용.
     var headers: [String: String]? {
-        let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
-
-        // 1) Keychain 토큰 우선
-        if let accessToken = KeychainSwift().get("serverAccessToken")?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-           !accessToken.isEmpty {
-
-            #if DEBUG
-            print("[ProfileEndpoints] ✅ Using Keychain token")
-            #endif
-
-            return contentTypeHeader.merging(["Authorization": "Bearer \(accessToken)"]) { $1 }
-        }
-
-        // 2) 개발 편의: Config(accessTK) fallback
-        #if DEBUG
-        let fallback = Config.accessTK.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // 치환 실패하면 보통 '$(ACCESS_TOKEN)' 문자열이 그대로 남음
-        if fallback.contains("$(") {
-            print("[ProfileEndpoints] ❌ ACCESS_TOKEN substitution failed: \(fallback)")
-        } else if !fallback.isEmpty {
-            print("[ProfileEndpoints] ⚠️ Keychain token not found. Using Config.accessTK for DEBUG.")
-            return contentTypeHeader.merging(["Authorization": "Bearer \(fallback)"]) { $1 }
-        } else {
-            print("[ProfileEndpoints] ❌ Config.accessTK is empty. Check Info.plist/xcconfig injection.")
-        }
-        #endif
-
-        // 3) 로그인 전
-        return contentTypeHeader
+        return [ "Content-Type": "application/json" ]
+        
+        // TODO: accessToken 주입은 인터셉터로 역할분리
+        // 필요 시 git history에서 복구
     }
 
     var sampleData: Data {
         return Data()
+    }
+    
+    var validationType: ValidationType {
+        .successCodes
     }
 }

@@ -68,3 +68,11 @@ mohaemukzip/Secret.xcconfig
 mohaemukzip/Secret.xcconfig
 .DS_Store
 
+# Codex / OMX runtime state
+.omx/
+
+# tmux runtime/log files
+.tmux/
+*.tmux
+*.tmux.log
+tmux-*.log

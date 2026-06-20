@@ -32,14 +32,7 @@ final class LoginViewModel {
             print("🟡 [LOGIN] request → loginId: \(loginId)")
             let model = try await authService.login(loginId: loginId, password: password)
             tokens = model
-            print("🟢 [LOGIN] success → userId: \(model.userId)")
-            print("🟢 [LOGIN] accessToken: \(model.accessToken.prefix(20))...")
-            print("🟢 [LOGIN] refreshToken: \(model.refreshToken.prefix(20))...")
-
-            // 토큰 저장
-            Config.accessTK = model.accessToken
-            Config.refreshTK = model.refreshToken
-
+            
             showError = false
             errorMessage = nil
             return true

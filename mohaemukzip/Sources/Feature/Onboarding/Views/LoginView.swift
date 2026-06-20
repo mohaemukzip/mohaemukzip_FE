@@ -79,14 +79,14 @@ struct LoginView: View {
             .padding(.top, 10)
             .opacity(viewModel.showError ? 1 : 0)
             
-            // 로그인 버튼
+            // MARK: 로그인 버튼
             Button {
                 focusedField = nil
                 Task {
-                    let ok = await viewModel.login()
-                    if ok, let access = viewModel.tokens?.accessToken {
-                        let refresh = viewModel.tokens?.refreshToken ?? ""
-                        appState.loginSucceeded(accessToken: access, refreshToken: refresh)
+                    let ok = await viewModel.login() // 로그인 성공시 true
+                    if ok, let tokens = viewModel.tokens {
+                        appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken)
                     }
                 }
             } label: {
