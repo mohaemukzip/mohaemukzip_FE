@@ -26,7 +26,7 @@ struct IngredientBox: View {
         
         ZStack {
             Rectangle()
-                .frame(width: 359)
+                .frame(maxWidth: .infinity)
                 .foregroundStyle(.white)
             
             VStack {
@@ -34,7 +34,7 @@ struct IngredientBox: View {
                     Text(text)
                         .font(.PretendardSemibold16)
                         .foregroundStyle(.grey700)
-                    Spacer().frame(width: 278)
+                    Spacer()
                     Button(action: { withAnimation { isExpanded.toggle() } } ) {
                         Image(isExpanded ? "icon-chevron-down" : "icon-chevron-up")
                             .foregroundStyle(.grey700)
