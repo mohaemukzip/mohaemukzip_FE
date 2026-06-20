@@ -55,14 +55,27 @@ final class AppState: ObservableObject {
             root = .auth
         }
     }
+    
+    // 토큰만 저장, 홈으로 이동은 X
+    func saveSession(accessToken: String, refreshToken: String) {
+        TokenStore.saveTokens(
+            access: accessToken,
+            refresh: refreshToken
+        )
 
-    func loginSucceeded(accessToken: String, refreshToken: String) {
-        TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-
-        print("[AppState] loginSucceeded -> save tokens & go main")
+    }
+    
+    // 홈으로 이동
+    func enterMain() {
         root = .main
+    }
+
+    // 토큰 저장 & 홈으로 이동
+    func loginSucceeded(accessToken: String, refreshToken: String) {
+        saveSession(accessToken: accessToken, refreshToken: refreshToken)
+        enterMain()
     }
 
 

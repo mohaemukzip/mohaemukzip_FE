@@ -3,6 +3,45 @@ import SwiftUI
 
 @Observable
 final class SignupViewModel {
+    
+    enum PasswordValidationState: Equatable {
+        case empty
+        case tooShort
+        case tooLong
+        case containsWhitespace
+        case containsInvalidCharacter
+        case missingLetter
+        case missingNumber
+        case missingSpecialCharacter
+        case valid
+
+        var message: String {
+            switch self {
+            case .empty:
+                return ""
+            case .tooShort:
+                return "비밀번호는 6자 이상 입력해주세요."
+            case .tooLong:
+                return "비밀번호는 20자 이하로 입력해주세요."
+            case .containsWhitespace:
+                return "공백은 사용할 수 없습니다."
+            case .containsInvalidCharacter:
+                return "사용할 수 없는 문자가 포함되어 있습니다."
+            case .missingLetter:
+                return "영문을 포함하여 입력해주세요."
+            case .missingNumber:
+                return "숫자를 포함하여 입력해주세요."
+            case .missingSpecialCharacter:
+                return "특수문자를 포함하여 입력해주세요."
+            case .valid:
+                return "사용 가능한 비밀번호입니다."
+            }
+        }
+
+        var isError: Bool {
+            self != .empty && self != .valid
+        }
+    }
 
     enum IdCheckState: Equatable {
         case none
@@ -121,10 +160,6 @@ final class SignupViewModel {
         !model.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
-    var isValidPassword: Bool {
-        isValidPasswordFormat(model.password)
-    }
-
     var isReadyToStart: Bool {
         isValidNickname
         && idCheckState == .available
@@ -135,10 +170,6 @@ final class SignupViewModel {
 
     func helperTextForIdFormat() -> String {
         "아이디는 영문과 숫자를 사용해 4자 이상 입력해주세요."
-    }
-
-    func helperTextForPasswordFormat() -> String {
-        "6~20자 영문, 숫자, 특수문자로 입력해주세요."
     }
 
     private func validatePasswordMatch() {
@@ -155,9 +186,54 @@ final class SignupViewModel {
         return text.range(of: pattern, options: .regularExpression) != nil
     }
 
-    private func isValidPasswordFormat(_ text: String) -> Bool {
-        let pattern = "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{6,20}$"
-        return text.range(of: pattern, options: .regularExpression) != nil
+    var passwordValidationState: PasswordValidationState {
+        validatePassword(model.password)
+    }
+
+    var isValidPassword: Bool {
+        passwordValidationState == .valid
+    }
+
+    private func validatePassword(_ password: String) -> PasswordValidationState {
+        if password.isEmpty {
+            return .empty
+        }
+
+        if password.count < 6 {
+            return .tooShort
+        }
+
+        if password.count > 20 {
+            return .tooLong
+        }
+
+        if password.contains(where: { $0.isWhitespace }) {
+            return .containsWhitespace
+        }
+
+        guard password.range(of: "[A-Za-z]", options: .regularExpression) != nil else {
+            return .missingLetter
+        }
+
+        guard password.range(of: "[0-9]", options: .regularExpression) != nil else {
+            return .missingNumber
+        }
+
+        guard password.range(
+            of: "[!@#$%^&*()_+\\-=]",
+            options: .regularExpression
+        ) != nil else {
+            return .missingSpecialCharacter
+        }
+
+        guard password.range(
+            of: "^[A-Za-z0-9!@#$%^&*()_+\\-=]+$",
+            options: .regularExpression
+        ) != nil else {
+            return .containsInvalidCharacter
+        }
+
+        return .valid
     }
 
     @MainActor
