@@ -109,7 +109,7 @@ private final class AuthInterceptor: RequestInterceptor {
         }
         
         // 이미 재시도 요청 보냈으면 중복재시도 X
-        guard request.retryCount == 1 else {
+        guard request.retryCount == 0 else {
             completion(.doNotRetry)
             return
         }
