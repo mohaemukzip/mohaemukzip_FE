@@ -37,7 +37,10 @@ struct IngredientList: View {
                         ForEach(ingredients) { ingredient in
                             IngredientListComponent(
                                 name: ingredient.name,
-                                amount: "\(ingredient.amount)\(ingredient.unit)",
+                                amount: IngredientAmountFormatter.withUnit(
+                                    ingredient.amount,
+                                    unit: ingredient.unit
+                                ),
                                 category: ingredient.category.rawValue,
                                 isSaved: ingredient.isSaved,
                                 onSaveTap: {onSaveTap(ingredient.id)},

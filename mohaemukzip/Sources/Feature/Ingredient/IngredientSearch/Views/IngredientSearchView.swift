@@ -60,7 +60,7 @@ struct IngredientSearchView: View {
                            onPlusTap: { item in self.sheetItem = item},
                            // MARK: 무한스크롤 구현 - 마지막 item 나타나면 fetchNextPage() 호출
                            onLastAppear: { item in
-                                            if item.id == viewModel.allIngredients.last?.id {
+                                            if item.id == viewModel.filteredIngredients.last?.id {
                                                 Task { await viewModel.fetchNextPage() } }})
             .padding(.horizontal)
                             

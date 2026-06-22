@@ -4,6 +4,7 @@ import Observation
 
 struct SignupView: View {
     
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = SignupViewModel()
     
@@ -163,7 +164,9 @@ struct SignupView: View {
     }
     
     private var passwordSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let state = viewModel.passwordValidationState
+
+        return VStack(alignment: .leading, spacing: 8) {
             Text("비밀번호")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey700)
@@ -183,17 +186,24 @@ struct SignupView: View {
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }
-            
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle")
-                    .font(.PretendardRegular13)
-                    .foregroundStyle(.grey500)
-                
-                Text(viewModel.helperTextForPasswordFormat())
-                    .font(.PretendardRegular13)
-                    .foregroundStyle(.grey500)
+            if (state != .empty) {
+                HStack(spacing: 6) {
+                    Image(systemName: state == .valid
+                          ? "checkmark.circle"
+                          : "info.circle")
+
+                    Text(state.message)
+                }
+                .font(.PretendardRegular13)
+                .foregroundStyle(
+                    state == .empty
+                        ? Color.grey500
+                        : state.isError
+                            ? Color.red
+                            : Color.green
+                )
+                .padding(.top, 2)
             }
-            .padding(.top, 2)
         }
     }
     
@@ -249,8 +259,9 @@ struct SignupView: View {
         Button {
             Task {
                 let ok = await viewModel.signup()
-                if ok/*, let tokens = viewModel.tokens*/ {
-                    //appState.loginSucceeded(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+                if ok, let tokens = viewModel.tokens {
+                    // 토큰 저장만 하고 signupFinishView로 이동 (아직 홈으로 이동 X)
+                    appState.saveSession(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
                     router.push(.signupFinish)
                 }
             }
@@ -266,4 +277,10 @@ struct SignupView: View {
         }
         .disabled(!viewModel.isReadyToStart || viewModel.isLoading)
     }
+}
+
+#Preview("회원가입") {
+    SignupView()
+        .environmentObject(AuthRouter())
+        .environmentObject(AppState())
 }

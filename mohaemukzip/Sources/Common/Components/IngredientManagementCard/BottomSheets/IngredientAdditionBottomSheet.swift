@@ -5,7 +5,7 @@ struct IngredientAdditionBottomSheet: View {
     @State private var storageLocation: StorageType = .chilled
     @State private var expiryDate: Date = Date()
     @State private var amount: String = ""
-    var onAdd: (StorageType, Date, Int) -> Void
+    var onAdd: (StorageType, Date, Double) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
     var onRecommend: () async -> Date?
@@ -16,6 +16,23 @@ struct IngredientAdditionBottomSheet: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy. MM. dd"
         return formatter
+    }
+    
+    // amount에 유효하지 않은 값이 들어온 경우 에러메세지
+    @State private var amountErrorMessage: String?
+    
+    private var parsedAmount: Double? {
+        let normalizedAmount = amount
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+
+        guard let value = Double(normalizedAmount),
+              value.isFinite,
+              value > 0 else {
+            return nil
+        }
+
+        return value
     }
     
     var body: some View {
@@ -182,7 +199,7 @@ struct IngredientAdditionBottomSheet: View {
                             .font(.PretendardMedium16)
                             .foregroundStyle(.grey900)
                             .padding(.leading, 10)
-                            .keyboardType(.numberPad)
+                            .keyboardType(.decimalPad)
                         Spacer()
                         Text(ingredient.unit)
                             .font(.PretendardRegular16)
@@ -196,7 +213,18 @@ struct IngredientAdditionBottomSheet: View {
             
             VStack {
                 Spacer()
-                Button ( action: { onAdd(storageLocation, expiryDate, Int(amount) ?? 0) } ) {
+                Button(action: {
+                    
+                    // 유효하지 않은 중량인 경우(parsedAmount == nil) 요청 중단
+                    guard let parsedAmount else {
+                        amountErrorMessage = "올바른 중량을 입력해주세요."
+                        return
+                    }
+                    
+                    amountErrorMessage = nil
+                    
+                    onAdd(storageLocation, expiryDate, parsedAmount)
+                }) {
                     OrangeButton(text: "추가하기", size: .big)
                         .frame(height: 57)
                 }

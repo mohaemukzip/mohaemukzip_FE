@@ -55,14 +55,27 @@ final class AppState: ObservableObject {
             root = .auth
         }
     }
+    
+    // 토큰만 저장, 홈으로 이동은 X
+    func saveSession(accessToken: String, refreshToken: String) {
+        TokenStore.saveTokens(
+            access: accessToken,
+            refresh: refreshToken
+        )
 
-    func loginSucceeded(accessToken: String, refreshToken: String) {
-        TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-
-        print("[AppState] loginSucceeded -> save tokens & go main")
+    }
+    
+    // 홈으로 이동
+    func enterMain() {
         root = .main
+    }
+
+    // 토큰 저장 & 홈으로 이동
+    func loginSucceeded(accessToken: String, refreshToken: String) {
+        saveSession(accessToken: accessToken, refreshToken: refreshToken)
+        enterMain()
     }
 
 
@@ -76,7 +89,6 @@ final class AppState: ObservableObject {
         TokenStore.clear()
         accessToken = nil
         refreshToken = nil
-
         root = .auth
     }
 
@@ -109,7 +121,14 @@ final class AppState: ObservableObject {
             clearSession(reason: "withdrawal api fail")
         }
     }
+    
+    // 세션 만료 (리프레시 토큰 만료)
+    @MainActor
+    func sessionExpired() {
+        clearSession(reason: "refresh token expired")
+    }
 }
+
 
 // MARK: - RootView
 
@@ -137,6 +156,16 @@ struct RootView: View {
             // 첫 진입 시 1번만 부트
             if appState.root == .splash {
                 appState.boot()
+            }
+        }
+        // 리프레시 토큰 만료 알림을 받아 처리
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .authSessionExpired
+            )
+        ) { _ in
+            Task { @MainActor in
+                appState.sessionExpired()
             }
         }
     }

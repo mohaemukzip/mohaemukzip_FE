@@ -2,6 +2,11 @@ import Foundation
 import Moya
 import Alamofire
 
+extension Notification.Name {
+    static let authSessionExpired =
+        Notification.Name("authSessionExpired")
+}
+
 // MARK: - 공용 BaseResposneDTO
 struct BaseResponse<T: Decodable>: Decodable {
     let isSuccess: Bool
@@ -166,6 +171,12 @@ private final class AuthInterceptor: RequestInterceptor {
                 }
 
             case .failure(let error):
+                // 재발급 실패한 리프레시 토큰이 만료됐다는 뜻 -> expireSession함수 호출 -> 리프레시 토큰 만료 알림을 보내 RootView에서 처리 
+                if case let .statusCode(response) = error,
+                       response.statusCode == 401 || response.statusCode == 403 {
+                        self.expireSession()
+                    }
+                
                 // DEBUG LOG REMOVED
                 self.finishRefreshing(with: .doNotRetryWithError(error))
             }
@@ -182,6 +193,16 @@ private final class AuthInterceptor: RequestInterceptor {
         // DEBUG LOG REMOVED
 
         completions.forEach { $0(result) }
+    }
+    
+    // 리프레시 토큰 만료 시
+    private func expireSession() {
+        TokenStore.clear()
+
+        NotificationCenter.default.post(
+            name: .authSessionExpired,
+            object: nil
+        )
     }
 }
 

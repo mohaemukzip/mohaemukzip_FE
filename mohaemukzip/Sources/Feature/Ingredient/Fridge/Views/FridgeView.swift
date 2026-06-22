@@ -40,8 +40,9 @@ struct FridgeView: View {
                         .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
                     }.padding()
                 }
-            }.background(.grey100)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }.frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.grey100)
+                
             
             
             ZStack {
