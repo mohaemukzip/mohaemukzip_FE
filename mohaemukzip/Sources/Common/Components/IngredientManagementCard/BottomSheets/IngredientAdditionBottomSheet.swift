@@ -18,6 +18,23 @@ struct IngredientAdditionBottomSheet: View {
         return formatter
     }
     
+    // amount에 유효하지 않은 값이 들어온 경우 에러메세지
+    @State private var amountErrorMessage: String?
+    
+    private var parsedAmount: Double? {
+        let normalizedAmount = amount
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .replacingOccurrences(of: ",", with: ".")
+
+        guard let value = Double(normalizedAmount),
+              value.isFinite,
+              value > 0 else {
+            return nil
+        }
+
+        return value
+    }
+    
     var body: some View {
         ZStack {
             ScrollView {
@@ -197,7 +214,15 @@ struct IngredientAdditionBottomSheet: View {
             VStack {
                 Spacer()
                 Button(action: {
-                    let parsedAmount = Double(amount.replacingOccurrences(of: ",", with: ".")) ?? 0
+                    
+                    // 유효하지 않은 중량인 경우(parsedAmount == nil) 요청 중단
+                    guard let parsedAmount else {
+                        amountErrorMessage = "올바른 중량을 입력해주세요."
+                        return
+                    }
+                    
+                    amountErrorMessage = nil
+                    
                     onAdd(storageLocation, expiryDate, parsedAmount)
                 }) {
                     OrangeButton(text: "추가하기", size: .big)
