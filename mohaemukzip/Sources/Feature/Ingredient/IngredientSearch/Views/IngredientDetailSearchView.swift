@@ -127,6 +127,7 @@ struct IngredientDetailSearchView: View {
                 viewModel.searchText = ""
             }).presentationDetents([.fraction(0.45), .large])
         }
+        // MARK: 재료 추가 바텀시트
         .sheet(item: $sheetItem) { ingredient in
             IngredientAdditionBottomSheet(ingredient: ingredient,
                                           onAdd: { storage, date, weight in
