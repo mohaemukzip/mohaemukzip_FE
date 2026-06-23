@@ -5,6 +5,7 @@ struct IngredientManagementCard: View {
     let color: Color
     @Binding var isEditing: Bool
     let onDelete: () -> Void
+    let onEdit: () -> Void
     
         
     var body: some View {

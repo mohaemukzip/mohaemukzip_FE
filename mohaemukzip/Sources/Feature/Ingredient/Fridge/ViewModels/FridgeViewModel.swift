@@ -3,6 +3,7 @@ import Combine
 @Observable
 class FridgeViewModel: ObservableObject {
     let service = FridgeService()
+    let ingredientService = IngredientService()
     
     var allIngredients: [FridgeIngredient] = []
     
@@ -38,7 +39,7 @@ class FridgeViewModel: ObservableObject {
     
     func addIngredient(id: Int, ty: String, date: Date, amount: Double) async {
         do {
-            let dateString = dateFormatter.string(from: date)
+            let dateString = IngredientDateFormatter.apiString(from: date)
             
             try await service.addIngredient(id: id, ty: ty, date: dateString, amount: amount)
             await fetchList()
@@ -49,9 +50,24 @@ class FridgeViewModel: ObservableObject {
         }
     }
     
-    private var dateFormatter: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
+    // 냉장고 재료 수정 바텀시트에서 북마크 토글 API 호출 함수
+    func toggleSaved(id: Int) async {
+        do {
+            try await ingredientService.addSaved(id: id)
+            await fetchList()
+        } catch {
+            print("즐겨찾기 변경 실패: \(error)")
+        }
+    }
+    
+    // 냉장고 재료 수정 바텀시트에서 소비기한 추천 API 호출 함수
+    func getRecommendedDate(id: Int) async -> Date? {
+        do {
+            let dateString = try await ingredientService.getRecommendedDate(id: id)
+            return IngredientDateFormatter.date(from: dateString)
+        } catch {
+            print("추천 날짜 조회 실패: \(error)")
+            return nil
+        }
     }
 }
