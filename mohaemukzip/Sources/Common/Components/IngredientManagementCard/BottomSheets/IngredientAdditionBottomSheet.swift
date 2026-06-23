@@ -293,9 +293,15 @@ struct IngredientFormResult {
         isSaved: true
     )
     IngredientFormBottomSheet(
+        mode: .add,
         ingredient: mockIngredient,
-        onAdd: { storage, date, amount in
-            print("추가 요청: \(storage.displayName), 날짜: \(date), 중량: \(amount)g")
+        initialValue: IngredientFormInitialValue(
+            storage: .chilled,
+            expiryDate: Date(),
+            amount: "100"
+        ),
+        onSubmit: { result in
+            print("추가 요청: \(result.storage.displayName), 날짜: \(result.expiryDate), 중량: \(result.amount)g")
         },
         onSave: { id in
             print("즐겨찾기 토글 ID: \(id)")

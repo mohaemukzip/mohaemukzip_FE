@@ -63,22 +63,29 @@ struct IngredientSearchView: View {
                                             if item.id == viewModel.filteredIngredients.last?.id {
                                                 Task { await viewModel.fetchNextPage() } }})
             .padding(.horizontal)
-                            
-        }.sheet(item: $sheetItem) { ingredient in
-            IngredientAdditionBottomSheet(ingredient: ingredient,
-                                          onAdd: { storage, date, weight in
+        }
+        // MARK: 재료 추가 바텀시트
+        .sheet(item: $sheetItem) { ingredient in
+            IngredientFormBottomSheet(mode: .add,
+                                      ingredient: ingredient,
+                                      initialValue: IngredientFormInitialValue(
+                                              storage: .chilled,
+                                              expiryDate: Date(),
+                                              amount: ""
+                                          ),
+                                          onSubmit: { result in
                 Task {
                     await fridgeVM.addIngredient(id: ingredient.id,
-                                                 ty: storage.rawValue,
-                                                 date: date,
-                                                 amount: weight)
+                                                 ty: result.storage.rawValue,
+                                                 date: result.expiryDate,
+                                                 amount: result.amount)
                     self.sheetItem = nil
                     router.navigateToRoot()
                     viewModel.searchText = ""
                 }
             },
                                           onSave: { id in
-                Task { await viewModel.toggleSaved(id: ingredient.id) }
+                Task { await viewModel.toggleSaved(id: id) }
                 self.sheetItem?.isSaved.toggle()
             },
                                           onDismiss: {

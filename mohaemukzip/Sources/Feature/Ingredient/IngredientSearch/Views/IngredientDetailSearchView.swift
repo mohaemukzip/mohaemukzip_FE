@@ -129,13 +129,19 @@ struct IngredientDetailSearchView: View {
         }
         // MARK: 재료 추가 바텀시트
         .sheet(item: $sheetItem) { ingredient in
-            IngredientAdditionBottomSheet(ingredient: ingredient,
-                                          onAdd: { storage, date, weight in
+            IngredientFormBottomSheet(mode: .add,
+                                      ingredient: ingredient,
+                                      initialValue: IngredientFormInitialValue(
+                                              storage: .chilled,
+                                              expiryDate: Date(),
+                                              amount: ""
+                                          ),
+                                          onSubmit: { result in
                 Task {
                     await fridgeVM.addIngredient(id: ingredient.id,
-                                                 ty: storage.rawValue,
-                                                 date: date,
-                                                 amount: weight)
+                                                 ty: result.storage.rawValue,
+                                                 date: result.expiryDate,
+                                                 amount: result.amount)
                     self.sheetItem = nil
                     viewModel.searchText = ""
                     router.navigateToRoot()
@@ -143,7 +149,7 @@ struct IngredientDetailSearchView: View {
             },
                                           onSave: { id in
                 self.sheetItem?.isSaved.toggle()
-                Task { await viewModel.toggleSaved(id: ingredient.id) }
+                Task { await viewModel.toggleSaved(id: id) }
             },
                                           onDismiss: {
                 self.sheetItem = nil
