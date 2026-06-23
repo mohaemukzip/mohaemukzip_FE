@@ -130,7 +130,7 @@ struct IngredientDetailSearchView: View {
         // MARK: 재료 추가 바텀시트
         .sheet(item: $sheetItem) { ingredient in
             IngredientFormBottomSheet(mode: .add,
-                                      ingredient: ingredient,
+                                      ingredient: IngredientFormItem(ingredient),
                                       initialValue: IngredientFormInitialValue(
                                               storage: .chilled,
                                               expiryDate: Date(),

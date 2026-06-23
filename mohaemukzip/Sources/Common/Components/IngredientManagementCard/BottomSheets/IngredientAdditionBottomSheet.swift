@@ -2,7 +2,7 @@ import SwiftUI
 
 struct IngredientFormBottomSheet: View {
     let mode: IngredientFormMode
-    var ingredient: IngredientForAddition
+    var ingredient: IngredientFormItem
     var onSubmit: (IngredientFormResult) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
@@ -37,7 +37,7 @@ struct IngredientFormBottomSheet: View {
     
     init(
         mode: IngredientFormMode,
-        ingredient: IngredientForAddition,
+        ingredient: IngredientFormItem,
         initialValue: IngredientFormInitialValue,
         onSubmit: @escaping (IngredientFormResult) -> Void,
         onSave: @escaping (Int) -> Void,
@@ -284,12 +284,10 @@ struct IngredientFormResult {
 }
 
 #Preview {
-    let mockIngredient = IngredientForAddition(
+    let mockIngredient = IngredientFormItem(
         id: 101,
         name: "대파",
-        category: .vegetable,
         unit: "g",
-        amount: 0,
         isSaved: true
     )
     IngredientFormBottomSheet(
