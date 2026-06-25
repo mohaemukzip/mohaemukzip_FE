@@ -86,9 +86,9 @@ extension IngredientFormItem {
     }
 
     init(_ ingredient: FridgeIngredient) {
-        self.id = ingredient.id
+        self.id = ingredient.ingredientId
         self.name = ingredient.name
         self.unit = ingredient.unit
-        self.isSaved = false
+        self.isSaved = ingredient.isSaved
     }
 }

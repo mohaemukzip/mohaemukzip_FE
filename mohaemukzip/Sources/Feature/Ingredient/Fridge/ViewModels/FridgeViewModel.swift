@@ -51,6 +51,7 @@ class FridgeViewModel: ObservableObject {
     }
     
     // 냉장고 재료 수정 바텀시트에서 북마크 토글 API 호출 함수
+    // 여기 쓰이는 id는 ingredientId
     func toggleSaved(id: Int) async {
         do {
             try await ingredientService.addSaved(id: id)
@@ -61,6 +62,7 @@ class FridgeViewModel: ObservableObject {
     }
     
     // 냉장고 재료 수정 바텀시트에서 소비기한 추천 API 호출 함수
+    // 여기 쓰이는 id는 ingredientId
     func getRecommendedDate(id: Int) async -> Date? {
         do {
             let dateString = try await ingredientService.getRecommendedDate(id: id)
@@ -68,6 +70,25 @@ class FridgeViewModel: ObservableObject {
         } catch {
             print("추천 날짜 조회 실패: \(error)")
             return nil
+        }
+    }
+    
+    // 냉장고 재료 수정 바텀시트에서 재료 수정 API 호출 함수
+    // 여기에 쓰이는 id는 memberIngredientId
+    func updateIngredient(id: Int, ty: String, date: Date, amount: Double) async {
+        do {
+            let dateString = IngredientDateFormatter.apiString(from: date)
+
+            try await service.updateIngredient(
+                id: id,
+                ty: ty,
+                date: dateString,
+                amount: amount
+            )
+
+            await fetchList()
+        } catch {
+            print("재료 수정 실패: \(error)")
         }
     }
 }

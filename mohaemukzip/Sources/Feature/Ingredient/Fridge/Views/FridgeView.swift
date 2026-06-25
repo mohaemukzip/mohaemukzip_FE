@@ -78,23 +78,25 @@ struct FridgeView: View {
                     amount: String(describing: ingredient.amount)
                 ),
                 onSubmit: { result in
-                    // TODO: 재료 수정 API
+                    Task {
+                        await viewModel.updateIngredient(
+                            id: ingredient.id,
+                            ty: result.storage.rawValue,
+                            date: result.expiryDate,
+                            amount: result.amount
+                        )
+                    }
+                    
                     editingIngredient = nil
-                    router.navigateToRoot()
                 },
                 onSave: { id in
-                    // TODO: 재료 북마크 API
-                    // TODO: ingredientMemberId가 아닌 ingredientId로 바꿔야 함
                     Task { await viewModel.toggleSaved(id: id) }
                 },
                 onDismiss: {
                     editingIngredient = nil
-                    router.navigateToRoot()
                 },
-                onRecommend: { 
-                    // TODO: 재료 소비기한 추천 API
-                    // TODO: ingredientMemberId가 아닌 ingredientId로 바꿔야 함
-                    return await viewModel.getRecommendedDate(id: ingredient.id)
+                onRecommend: {
+                    return await viewModel.getRecommendedDate(id: ingredient.ingredientId)
                 }
             )
         }
