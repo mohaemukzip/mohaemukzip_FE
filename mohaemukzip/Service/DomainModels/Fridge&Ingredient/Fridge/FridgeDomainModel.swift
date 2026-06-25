@@ -30,11 +30,13 @@ enum dDayColor: String{
 
 struct FridgeIngredient: Identifiable {
     let id: Int
+    let ingredientId: Int
     let name: String
     let storage: StorageType
     let color: dDayColor
     let amount: Double
     let unit: String
     let expiryDate: String
+    var isSaved: Bool
     let dDay: String
 }

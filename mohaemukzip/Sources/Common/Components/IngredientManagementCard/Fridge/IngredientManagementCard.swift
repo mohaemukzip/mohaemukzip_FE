@@ -5,6 +5,7 @@ struct IngredientManagementCard: View {
     let color: Color
     @Binding var isEditing: Bool
     let onDelete: () -> Void
+    let onEdit: () -> Void
     
         
     var body: some View {
@@ -35,7 +36,15 @@ struct IngredientManagementCard: View {
                         .foregroundStyle(color)
                 }
             }
-        }.overlay(alignment: .topTrailing) {
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if isEditing { onEdit() }
+        }
+        .onLongPressGesture {
+            withAnimation { isEditing.toggle() }
+        }
+        .overlay(alignment: .topTrailing) {
             if isEditing {
                 Button( action: onDelete ) {
                     Image(systemName: "xmark.circle.fill")
@@ -44,6 +53,5 @@ struct IngredientManagementCard: View {
                 }.offset(x: 8, y: -8)
             }
         }
-        .onLongPressGesture { withAnimation { isEditing.toggle() } }
     }
 }

@@ -1,14 +1,14 @@
 import SwiftUI
 
-struct IngredientAdditionBottomSheet: View {
-    var ingredient: IngredientForAddition
-    @State private var storageLocation: StorageType = .chilled
-    @State private var expiryDate: Date = Date()
-    @State private var amount: String = ""
-    var onAdd: (StorageType, Date, Double) -> Void
+struct IngredientFormBottomSheet: View {
+    let mode: IngredientFormMode
+    var onSubmit: (IngredientFormResult) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
     var onRecommend: () async -> Date?
+    
+    @State private var ingredient: IngredientFormItem
+    @State private var formValue: IngredientFormInitialValue
     
     @State private var showStorageCase: Bool = false
     @State private var showDatePicker: Bool = false
@@ -22,7 +22,7 @@ struct IngredientAdditionBottomSheet: View {
     @State private var amountErrorMessage: String?
     
     private var parsedAmount: Double? {
-        let normalizedAmount = amount
+        let normalizedAmount = formValue.amount
             .trimmingCharacters(in: .whitespacesAndNewlines)
             .replacingOccurrences(of: ",", with: ".")
 
@@ -35,6 +35,24 @@ struct IngredientAdditionBottomSheet: View {
         return value
     }
     
+    init(
+        mode: IngredientFormMode,
+        ingredient: IngredientFormItem,
+        initialValue: IngredientFormInitialValue,
+        onSubmit: @escaping (IngredientFormResult) -> Void,
+        onSave: @escaping (Int) -> Void,
+        onDismiss: @escaping () -> Void,
+        onRecommend: @escaping () async -> Date?
+    ) {
+        self.mode = mode
+        self.onSubmit = onSubmit
+        self.onSave = onSave
+        self.onDismiss = onDismiss
+        self.onRecommend = onRecommend
+        self._ingredient = State(initialValue: ingredient)
+        self._formValue = State(initialValue: initialValue)
+    }
+    
     var body: some View {
         ZStack {
             ScrollView {
@@ -42,7 +60,10 @@ struct IngredientAdditionBottomSheet: View {
                     Text(ingredient.name)
                         .foregroundStyle(.grey900)
                         .font(.PretendardSemibold20)
-                    Button( action: { onSave(ingredient.id) } ) {
+                    Button(action: {
+                        ingredient.isSaved.toggle()
+                        onSave(ingredient.id)
+                    }) {
                         Image("icon-star")
                             .foregroundStyle(ingredient.isSaved ? .main300 : .grey300)
                     }
@@ -78,7 +99,7 @@ struct IngredientAdditionBottomSheet: View {
                                 .foregroundStyle(showStorageCase ? .main400 : .grey300)
                                 .frame(height: 45)
                             HStack {
-                                Text(storageLocation.displayName)
+                                Text(formValue.storage.displayName)
                                     .font(.PretendardRegular16)
                                     .foregroundStyle(.grey900)
                                     .padding(.leading, 10)
@@ -101,8 +122,8 @@ struct IngredientAdditionBottomSheet: View {
                                     ZStack {
                                         RoundedRectangle(cornerRadius: 4)
                                             .frame(height: 53)
-                                            .foregroundStyle(storageLocation == type ? .main100 : .clear)
-                                        Button( action: {storageLocation = type;
+                                            .foregroundStyle(formValue.storage == type ? .main100 : .clear)
+                                        Button( action: {formValue.storage = type;
                                             withAnimation(.easeInOut(duration: 0.3)) { showStorageCase.toggle() } } ) {
                                                 HStack {
                                                     Text(type.displayName)
@@ -135,7 +156,7 @@ struct IngredientAdditionBottomSheet: View {
                                 .foregroundStyle(.grey100)
                             
                             HStack {
-                                Text(dateFormatter.string(from: expiryDate))
+                                Text(dateFormatter.string(from: formValue.expiryDate))
                                     .font(.PretendardRegular16)
                                     .foregroundStyle(.grey500)
                                     .padding(.leading, 10)
@@ -146,7 +167,7 @@ struct IngredientAdditionBottomSheet: View {
                     
                     Button ( action: { Task {
                         if let newDate = await onRecommend() {
-                            self.expiryDate = newDate
+                            self.formValue.expiryDate = newDate
                         }
                     } } ) {
                         ZStack {
@@ -168,7 +189,7 @@ struct IngredientAdditionBottomSheet: View {
                         
                         DatePicker(
                             "",
-                            selection: $expiryDate,
+                            selection: $formValue.expiryDate,
                             displayedComponents: [.date]
                         )
                         .datePickerStyle(.graphical)
@@ -176,7 +197,7 @@ struct IngredientAdditionBottomSheet: View {
                         .tint(.grey700)
                         .frame(height: 360)
                         .cornerRadius(8)
-                        .onChange(of: expiryDate, { withAnimation(.easeInOut(duration: 0.3)){showDatePicker.toggle()} })
+                        .onChange(of: formValue.expiryDate, { withAnimation(.easeInOut(duration: 0.3)){showDatePicker.toggle()} })
                     }.padding(.bottom, 16)
                         .padding(.top, -10)
                 }
@@ -195,7 +216,7 @@ struct IngredientAdditionBottomSheet: View {
                         .foregroundStyle(.grey100)
                     
                     HStack {
-                        TextField("0", text: $amount)
+                        TextField("0", text: $formValue.amount)
                             .font(.PretendardMedium16)
                             .foregroundStyle(.grey900)
                             .padding(.leading, 10)
@@ -223,9 +244,12 @@ struct IngredientAdditionBottomSheet: View {
                     
                     amountErrorMessage = nil
                     
-                    onAdd(storageLocation, expiryDate, parsedAmount)
+                    let submitValue = IngredientFormResult(storage: formValue.storage,
+                                                           expiryDate: formValue.expiryDate,
+                                                           amount: parsedAmount)
+                    onSubmit(submitValue)
                 }) {
-                    OrangeButton(text: "추가하기", size: .big)
+                    OrangeButton(text: mode.modeTitle, size: .big)
                         .frame(height: 57)
                 }
             }.padding(.bottom, 25)
@@ -233,19 +257,52 @@ struct IngredientAdditionBottomSheet: View {
     } // end of body
 }
 
+// 폼 모드 - 추가/수정
+enum IngredientFormMode {
+    case add
+    case edit
+    
+    var modeTitle: String {
+        switch self {
+        case .add:
+            "추가하기"
+        case .edit:
+            "수정 완료"
+        }
+    }
+}
+
+// 폼 내부 초기값
+struct IngredientFormInitialValue {
+    var storage: StorageType
+    var expiryDate: Date
+    var amount: String
+}
+
+// 폼 내부에서 만들어진 최종 결과값
+struct IngredientFormResult {
+    var storage: StorageType
+    var expiryDate: Date
+    var amount: Double
+}
+
 #Preview {
-    let mockIngredient = IngredientForAddition(
+    let mockIngredient = IngredientFormItem(
         id: 101,
         name: "대파",
-        category: .vegetable,
         unit: "g",
-        amount: 0,
         isSaved: true
     )
-    IngredientAdditionBottomSheet(
+    IngredientFormBottomSheet(
+        mode: .add,
         ingredient: mockIngredient,
-        onAdd: { storage, date, amount in
-            print("추가 요청: \(storage.displayName), 날짜: \(date), 중량: \(amount)g")
+        initialValue: IngredientFormInitialValue(
+            storage: .chilled,
+            expiryDate: Date(),
+            amount: "100"
+        ),
+        onSubmit: { result in
+            print("추가 요청: \(result.storage.displayName), 날짜: \(result.expiryDate), 중량: \(result.amount)g")
         },
         onSave: { id in
             print("즐겨찾기 토글 ID: \(id)")

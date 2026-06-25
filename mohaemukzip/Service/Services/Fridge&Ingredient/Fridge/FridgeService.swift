@@ -54,4 +54,21 @@ class FridgeService {
             }
         }
     }
+    
+    func updateIngredient(id: Int, ty: String, date: String, amount: Double) async throws {
+        let requestDTO = UpdateIngredientRequestDTO(storageType: ty,
+                                                    expireDate: date,
+                                                    weight: amount)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.updateIngredient(id, requestDTO)) { result in
+                switch result {
+                case .success(_):
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }

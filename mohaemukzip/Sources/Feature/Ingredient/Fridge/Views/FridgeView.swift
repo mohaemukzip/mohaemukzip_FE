@@ -5,6 +5,7 @@ struct FridgeView: View {
     @Environment(IngredientSearchViewModel.self) var ingredientSearchVM
     @State var isEditing: Bool = false
     @Environment(NavigationRouter.self) var router
+    @State private var editingIngredient: FridgeIngredient?
     
     var body: some View {
         VStack {
@@ -27,16 +28,19 @@ struct FridgeView: View {
                         IngredientBox(isEditing: $isEditing,
                                       text: "냉동",
                                       ingredients: viewModel.frozenIngredients,
-                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } },
+                                      onEdit: { item in editingIngredient = item })
                         .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
                         IngredientBox(isEditing: $isEditing,
                                       text: "냉장",
                                       ingredients: viewModel.chilledIngredients,
-                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } },
+                                      onEdit: { item in editingIngredient = item })
                         IngredientBox(isEditing: $isEditing,
                                       text: "실온",
                                       ingredients: viewModel.roomIngredients,
-                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } })
+                                      onDelete: { id in Task { await viewModel.deleteIngredient(at: id) } },
+                                      onEdit: { item in editingIngredient = item })
                         .clipShape(UnevenRoundedRectangle(bottomLeadingRadius: 20, bottomTrailingRadius: 20))
                     }.padding()
                 }
@@ -62,6 +66,39 @@ struct FridgeView: View {
         }
         .onDisappear {
             self.isEditing = false
+        }
+        // MARK: 냉장고 재료 수정 바텀시트
+        .sheet(item: $editingIngredient) { ingredient in
+            IngredientFormBottomSheet(
+                mode: .edit,
+                ingredient: IngredientFormItem(ingredient),
+                initialValue: IngredientFormInitialValue(
+                    storage: ingredient.storage,
+                    expiryDate: IngredientDateFormatter.date(from: ingredient.expiryDate) ?? Date(),
+                    amount: String(describing: ingredient.amount)
+                ),
+                onSubmit: { result in
+                    Task {
+                        await viewModel.updateIngredient(
+                            id: ingredient.id,
+                            ty: result.storage.rawValue,
+                            date: result.expiryDate,
+                            amount: result.amount
+                        )
+                    }
+                    
+                    editingIngredient = nil
+                },
+                onSave: { id in
+                    Task { await viewModel.toggleSaved(id: id) }
+                },
+                onDismiss: {
+                    editingIngredient = nil
+                },
+                onRecommend: {
+                    return await viewModel.getRecommendedDate(id: ingredient.ingredientId)
+                }
+            )
         }
     }
 }

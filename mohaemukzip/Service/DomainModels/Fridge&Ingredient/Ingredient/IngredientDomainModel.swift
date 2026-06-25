@@ -69,3 +69,26 @@ struct SavedIngredient: Identifiable {
     let amount: Double
     let isSaved: Bool
 }
+
+struct IngredientFormItem: Identifiable {
+    let id: Int
+    let name: String
+    let unit: String
+    var isSaved: Bool
+}
+// 냉장고 뷰, 재료검색 뷰에서 바텀시트에 IngredientFormItem을 편하게 변환하여 넘기기 위한 extension 
+extension IngredientFormItem {
+    init(_ ingredient: IngredientForAddition) {
+        self.id = ingredient.id
+        self.name = ingredient.name
+        self.unit = ingredient.unit
+        self.isSaved = ingredient.isSaved
+    }
+
+    init(_ ingredient: FridgeIngredient) {
+        self.id = ingredient.ingredientId
+        self.name = ingredient.name
+        self.unit = ingredient.unit
+        self.isSaved = ingredient.isSaved
+    }
+}
