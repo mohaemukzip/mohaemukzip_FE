@@ -267,7 +267,7 @@ enum IngredientFormMode {
         case .add:
             "추가하기"
         case .edit:
-            "수정하기"
+            "수정 완료"
         }
     }
 }
