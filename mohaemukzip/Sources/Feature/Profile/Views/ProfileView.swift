@@ -232,7 +232,7 @@ private extension ProfileView {
 
             Button {
                 guard let url = URL(
-                    string: "https://kohsuk.notion.site/38a0e70764bd80a7963cd89e0ee924c6?source=copy_link"
+                    string: "https://kohsuk.notion.site/38a0e70764bd8089b2d4d128107c2a00?source=copy_link"
                 ) else {
                     return
                 }
