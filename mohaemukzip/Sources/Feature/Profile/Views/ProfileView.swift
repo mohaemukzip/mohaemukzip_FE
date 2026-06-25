@@ -215,11 +215,24 @@ private extension ProfileView {
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
 
-            ProfileSimpleRow(title: "서비스 이용약관")
+            Button {
+                guard let url = URL(
+                    string: "https://kohsuk.notion.site/38a0e70764bd80a7963cd89e0ee924c6?source=copy_link"
+                ) else {
+                    return
+                }
+
+                openURL(url)
+            } label: {
+                ProfileSimpleRow(title: "서비스 이용약관")
+            }
+            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .buttonStyle(PressableRowButtonStyle())
 
             Button {
                 guard let url = URL(
-                    string: "https://app.notion.com/p/37e3dc31532c80b19ca9d940eb648de6?source=copy_link"
+                    string: "https://kohsuk.notion.site/38a0e70764bd80a7963cd89e0ee924c6?source=copy_link"
                 ) else {
                     return
                 }
@@ -228,7 +241,9 @@ private extension ProfileView {
             } label: {
                 ProfileSimpleRow(title: "개인정보 처리방침")
             }
+            .contentShape(Rectangle())
             .buttonStyle(.plain)
+            .buttonStyle(PressableRowButtonStyle())
 
             ProfileSimpleRow(title: "1:1 문의하기")
         }
@@ -413,6 +428,22 @@ private struct ProfileYouTubeThumbnailView: View {
 }
 
 
+
+
+
+private struct PressableRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(
+                Rectangle()
+                    .fill(Color(.systemGray5))
+                    .opacity(configuration.isPressed ? 1.0 : 0.0)
+            )
+            .opacity(configuration.isPressed ? 0.75 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeOut(duration: 0.08), value: configuration.isPressed)
+    }
+}
 
 #Preview {
     ProfileView()

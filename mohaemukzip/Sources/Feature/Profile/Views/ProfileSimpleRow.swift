@@ -18,26 +18,20 @@ struct ProfileSimpleRow: View {
     // MARK: - Body
 
     var body: some View {
-        Button {
-            print("[ProfileView] ℹ️ \(title) 탭 - 추후 연결")
-        } label: {
-            HStack {
-                Text(title)
-                    .font(.custom("Pretendard-Regular", size: 16))
-                    .foregroundStyle(Color.black)
+        HStack {
+            Text(title)
+                .font(.custom("Pretendard-Regular", size: 16))
+                .foregroundStyle(Color.black)
 
-                Spacer()
+            Spacer()
 
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.gray)
-            }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(Color.gray)
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
     }
 }
-
-
-
-
