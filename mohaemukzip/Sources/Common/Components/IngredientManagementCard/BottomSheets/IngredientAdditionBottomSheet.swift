@@ -2,12 +2,12 @@ import SwiftUI
 
 struct IngredientFormBottomSheet: View {
     let mode: IngredientFormMode
-    var ingredient: IngredientFormItem
     var onSubmit: (IngredientFormResult) -> Void
     var onSave: (Int) -> Void
     var onDismiss: () -> Void
     var onRecommend: () async -> Date?
     
+    @State private var ingredient: IngredientFormItem
     @State private var formValue: IngredientFormInitialValue
     
     @State private var showStorageCase: Bool = false
@@ -45,11 +45,11 @@ struct IngredientFormBottomSheet: View {
         onRecommend: @escaping () async -> Date?
     ) {
         self.mode = mode
-        self.ingredient = ingredient
         self.onSubmit = onSubmit
         self.onSave = onSave
         self.onDismiss = onDismiss
         self.onRecommend = onRecommend
+        self._ingredient = State(initialValue: ingredient)
         self._formValue = State(initialValue: initialValue)
     }
     
@@ -60,7 +60,10 @@ struct IngredientFormBottomSheet: View {
                     Text(ingredient.name)
                         .foregroundStyle(.grey900)
                         .font(.PretendardSemibold20)
-                    Button( action: { onSave(ingredient.id) } ) {
+                    Button(action: {
+                        ingredient.isSaved.toggle()
+                        onSave(ingredient.id)
+                    }) {
                         Image("icon-star")
                             .foregroundStyle(ingredient.isSaved ? .main300 : .grey300)
                     }

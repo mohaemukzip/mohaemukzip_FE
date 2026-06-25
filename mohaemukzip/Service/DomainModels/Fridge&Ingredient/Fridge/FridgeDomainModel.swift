@@ -37,6 +37,6 @@ struct FridgeIngredient: Identifiable {
     let amount: Double
     let unit: String
     let expiryDate: String
-    let isSaved: Bool
+    var isSaved: Bool
     let dDay: String
 }

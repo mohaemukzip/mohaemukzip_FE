@@ -74,7 +74,7 @@ struct IngredientFormItem: Identifiable {
     let id: Int
     let name: String
     let unit: String
-    let isSaved: Bool
+    var isSaved: Bool
 }
 // 냉장고 뷰, 재료검색 뷰에서 바텀시트에 IngredientFormItem을 편하게 변환하여 넘기기 위한 extension 
 extension IngredientFormItem {
