@@ -123,11 +123,11 @@ private enum TermsPage: Identifiable {
     var url: URL {
         switch self {
         case .service:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f9806e946cc3aa2b5e721d?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/37e3dc31532c80b19ca9d940eb648de6?source=copy_link")!
         case .privacy:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f98094a4a6d796b3180bd6?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/3853dc31532c806f838cf3fa5347fe7d?source=copy_link")!
         case .marketing:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f980e38cdde8fc450049b4?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/3853dc31532c80069babe191e0f9d212?source=copy_link")!
         }
     }
 }
