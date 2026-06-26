@@ -12,4 +12,5 @@ struct LoginResultDTO: Decodable {
     let refreshToken: String
     let isNewUser: Bool
     let isInactive: Bool
+    let loginType: String
 }

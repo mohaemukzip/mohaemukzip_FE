@@ -16,6 +16,7 @@ final class AppState: ObservableObject {
     @Published var root: Root = .splash
     @Published var accessToken: String? = nil
     @Published var refreshToken: String? = nil
+    @Published var loginType: String = ""
 
     /// 앱 시작 시 토큰 확인 후 루트 결정
     func boot() {
@@ -46,7 +47,11 @@ final class AppState: ObservableObject {
                 print("[AppState] boot -> accessToken nil, try reissue")
                 do {
                     let tokens = try await AuthService.shared.reissue()
-                    loginSucceeded(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+                    loginSucceeded(
+                        accessToken: tokens.accessToken,
+                        refreshToken: tokens.refreshToken,
+                        loginType: self.loginType
+                    )
                     print("[AppState] boot -> reissue success, go main")
                 } catch {
                     print("[AppState] boot -> reissue fail, go auth | error=\(error)")
@@ -60,10 +65,16 @@ final class AppState: ObservableObject {
         }
     }
 
-    func loginSucceeded(accessToken: String, refreshToken: String) {
+    func loginSucceeded(
+        accessToken: String,
+        refreshToken: String,
+        loginType: String
+    ) {
         TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
+
         self.accessToken = accessToken
         self.refreshToken = refreshToken
+        self.loginType = loginType
 
         Config.accessTK = accessToken
         Config.refreshTK = refreshToken

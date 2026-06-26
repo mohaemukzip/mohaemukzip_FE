@@ -84,9 +84,13 @@ struct LoginView: View {
                 focusedField = nil
                 Task {
                     let ok = await viewModel.login()
-                    if ok, let access = viewModel.tokens?.accessToken {
-                        let refresh = viewModel.tokens?.refreshToken ?? ""
-                        appState.loginSucceeded(accessToken: access, refreshToken: refresh)
+
+                    if ok, let tokens = viewModel.tokens {
+                        appState.loginSucceeded(
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken,
+                            loginType: tokens.loginType
+                        )
                     }
                 }
             } label: {

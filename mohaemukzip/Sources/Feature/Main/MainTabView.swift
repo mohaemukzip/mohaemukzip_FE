@@ -170,6 +170,9 @@ extension View {
 
             case .bookmarkedRecipes:
                 BookmarkedRecipesView()
+                //계정 설정 진입 화면 추가 
+            case .accountSettings:
+                AccountSettingsView()
 
 //            case .recipeDetailNoComplete(let video):
 //                // TODO: 여기만 나중에 “요리 완료 모달 없는 RecipeDetailView”로 교체

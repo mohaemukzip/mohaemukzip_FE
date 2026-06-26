@@ -1,4 +1,3 @@
-
 import Foundation
 
 struct AuthTokensModel {
@@ -7,6 +6,7 @@ struct AuthTokensModel {
     let refreshToken: String
     let isNewUser: Bool
     let isInactive: Bool
+    let loginType: String
 }
 
 extension SignUpResultDTO {
@@ -16,7 +16,8 @@ extension SignUpResultDTO {
             accessToken: accessToken,
             refreshToken: refreshToken,
             isNewUser: isNewUser,
-            isInactive: isInactive
+            isInactive: isInactive,
+            loginType: loginType
         )
     }
 }
@@ -28,7 +29,8 @@ extension LoginResultDTO {
             accessToken: accessToken,
             refreshToken: refreshToken,
             isNewUser: isNewUser,
-            isInactive: isInactive
+            isInactive: isInactive,
+            loginType: loginType
         )
     }
 }
