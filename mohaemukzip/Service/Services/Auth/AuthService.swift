@@ -155,4 +155,55 @@ final class AuthService {
             }
         }
     }
+    
+    // MARK: 이메일 인증번호 요청
+    func requestEmailVerification(email: String) async throws {
+        let request = SendEmailVerificationRequestDTO(email: email)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.requestEmailVerification(request)) { result in
+                switch result {
+                    case .success(let response):
+                        do {
+                            let _: SendEmailVerificationResultDTO =
+                                try response.mapResult(SendEmailVerificationResultDTO.self)
+                            continuation.resume()
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                }
+            }
+            
+        }
+    }
+    
+    // MARK: 이메일 인증번호 검증
+    func verifyEmail(email: String, authCode: String) async throws -> Bool {
+        let request = VerifyEmailRequestDTO(
+            email: email,
+            authCode: authCode
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.verifyEmail(request)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.mapResult(
+                            VerifyEmailResultDTO.self
+                        )
+                        continuation.resume(returning: decoded.verified)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }

@@ -29,6 +29,7 @@ struct SignupView: View {
                 .padding(.horizontal, 17)
         }
         .navigationBarBackButtonHidden()
+        .onDisappear(perform: viewModel.stopVerificationTimer)
     }
     
     // MARK: - Components
@@ -51,7 +52,6 @@ struct SignupView: View {
             .font(.PretendardSemibold20)
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
-        // ✅ 높이 제약으로 인해 말줄임표가 생기지 않도록 세로로 확장 허용
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 4)
     }

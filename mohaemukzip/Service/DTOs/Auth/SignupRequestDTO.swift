@@ -25,3 +25,21 @@ struct SignUpTermDTO: Encodable {
         case isAgreed
     }
 }
+
+struct SendEmailVerificationRequestDTO: Encodable {
+    let email: String
+}
+
+struct SendEmailVerificationResultDTO: Decodable {
+    let message: String
+}
+
+struct VerifyEmailRequestDTO: Encodable {
+    let email: String
+    let authCode: String
+}
+
+struct VerifyEmailResultDTO: Decodable {
+    let verified: Bool
+    let message: String
+}
