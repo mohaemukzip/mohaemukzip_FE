@@ -1,7 +1,8 @@
 
 struct SignupModel: Equatable {
     var nickname: String = ""
-    var userId: String = ""
+    var email: String = ""
+    var verificationCode: String = ""
     var password: String = ""
     var passwordConfirm: String = ""
 }

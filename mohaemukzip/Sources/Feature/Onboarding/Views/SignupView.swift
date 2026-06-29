@@ -14,7 +14,7 @@ struct SignupView: View {
             VStack(alignment: .leading, spacing: 32) {
                 header
                 nicknameSection
-                idSection
+                emailSection
                 passwordSection
                 passwordConfirmSection
                 
@@ -47,7 +47,7 @@ struct SignupView: View {
     }
     
     private var header: some View {
-        Text("아이디와 비밀번호만으로\n뭐해먹집?을 이용할 수 있어요.")
+        Text("이메일과 비밀번호만으로\n뭐해먹집?을 이용할 수 있어요.")
             .font(.PretendardSemibold20)
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
@@ -88,42 +88,42 @@ struct SignupView: View {
         }
     }
     
-    private var idSection: some View {
+    private var emailSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("아이디")
+            Text("이메일")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey600)
             
             HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(.grey100)
-                        .frame(height: 44)
-                    
-                    HStack(spacing: 10) {
-                        TextField("아이디를 입력해주세요.", text: Binding(
-                            get: { viewModel.model.userId },
-                            set: { viewModel.onChangeUserId($0) }
-                        ))
-                        .textInputAutocapitalization(.never)
-                        .textFieldStyle(.plain)
-                        .autocorrectionDisabled()
-                        .padding(.leading, 14)
-                        .font(.PretendardRegular16)
-                        
-                        Spacer(minLength: 0)
-                        
-                        Text(viewModel.userIdCountText)
-                            .font(.PretendardRegular14)
-                            .foregroundStyle(.grey500)
-                            .padding(.trailing, 12)
-                    }
-                }
+                TextField("이메일을 입력해주세요.", text: Binding(
+                    get: { viewModel.model.email },
+                    set: { viewModel.onChangeEmail($0) }
+                ))
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .padding(.leading, 14)
+                .font(.PretendardRegular16)
+                .frame(height: 44)
+                .background(Color.grey100)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button {
-                    Task { await viewModel.checkDuplicateId() }
+                    guard viewModel.isValidEmail else {
+                        viewModel.emailVerificationState = .invalidFormat
+                        return
+                    }
+                    print("이메일 인증 요청 API")
+                    
+                    Task {
+                        // TODO: 이메일 인증 요청 API 함수
+                        
+                        viewModel.emailVerificationState = .codeSent
+                        viewModel.startVerificationTimer()
+                    }
                 } label: {
-                    Text(viewModel.isCheckingId ? "확인중" : "중복확인")
+                    Text("인증 요청")
                         .font(.PretendardMedium16)
                         .foregroundStyle(.main400)
                         .frame(width: 84, height: 44)
@@ -133,33 +133,154 @@ struct SignupView: View {
                         )
                         .contentShape(Rectangle())
                 }
-                .disabled(viewModel.isCheckingId)
-                .opacity(viewModel.isCheckingId ? 0.6 : 1)
             }
             
-            if let msg = (viewModel.idCheckMessage ?? viewModel.idCheckState.message) {
-                HStack(spacing: 6) {
-                    Image(systemName: viewModel.idCheckState.isSuccess ? "checkmark.circle" : "exclamationmark.circle")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
-                    
-                    Text(msg)
-                        .font(.system(size: 12))
-                        .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
-                }
-                .padding(.top, 2)
-            } else {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.grey500)
-                    
-                    Text(viewModel.helperTextForIdFormat())
-                        .font(.system(size: 12))
-                        .foregroundStyle(.grey500)
-                }
-                .padding(.top, 2)
+            emailStatusMessage
+            
+            if viewModel.shouldShowVerificationField {
+                verificationCodeSection
             }
+        }
+    }
+    
+    // email 상태 메세지
+    @ViewBuilder
+    private var emailStatusMessage: some View {
+        switch viewModel.emailVerificationState {
+        case .invalidFormat:
+            statusMessage(
+                "유효한 이메일 주소를 입력하세요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+            
+        case .codeSent:
+            statusMessage(
+                "인증번호가 발송되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+            
+        case .verified:
+            statusMessage(
+                "인증이 완료되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+            
+        default:
+            EmptyView()
+        }
+    }
+    
+    private func statusMessage(_ msg: String, color: Color, icon: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+            Text(msg)
+        }
+        .font(.PretendardRegular13)
+        .foregroundStyle(color)
+    }
+    
+    // 인증번호
+    private var verificationCodeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("인증번호")
+                .font(.PretendardMedium14)
+                .foregroundStyle(.grey600)
+            
+            HStack(spacing: 6) {
+                HStack {
+                    TextField(
+                        "인증번호 6자리 입력",
+                        text: Binding(
+                            get: { viewModel.model.verificationCode },
+                            set: { viewModel.onChangeVerificationCode($0) }
+                        )
+                    )
+                    .keyboardType(.numberPad)
+
+                    Spacer()
+                    
+                    Text(viewModel.verificationTimeText)
+                        .font(.PretendardRegular13)
+                        .foregroundStyle(
+                            viewModel.remainingSeconds > 0
+                                ? Color.grey500
+                                : Color.red
+                        )
+                    
+                    Button {
+                        Task {
+                            // 재요청 API 성공 시 실행
+                            viewModel.model.verificationCode = ""
+                            viewModel.emailVerificationState = .codeSent
+                            viewModel.startVerificationTimer()
+                        }
+                    } label: {
+                        Text("재요청")
+                            .font(.PretendardRegular13)
+                            .foregroundStyle(.grey700)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 44)
+                .background(Color.grey100)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                
+                Button {
+                    print("인증번호 확인 API")
+                    // TODO: 인증번호 확인 API 함수
+                    // 성공, 실패에 따라 viewModel.emailVerificationState 변경
+                } label: {
+                    Text("확인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.main400)
+                }
+                .foregroundStyle(.main400)
+                .frame(width: 55, height: 44)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.main400)
+                }
+                .disabled(viewModel.canVerifyCode)
+                .opacity(viewModel.canVerifyCode ? 1 : 0.6)
+            }
+            
+            if viewModel.shouldShowVerificationField {
+                verificationStatusMessage
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var verificationStatusMessage: some View {
+        switch viewModel.emailVerificationState {
+        case .verified:
+            statusMessage(
+                "인증이 완료되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+
+        case .invalidCode:
+            statusMessage(
+                "인증번호가 일치하지 않아요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+
+        case .expired:
+            statusMessage(
+                "인증 시간이 만료되었어요. 다시 요청해주세요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+
+        default:
+            EmptyView()
         }
     }
     

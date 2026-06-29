@@ -113,6 +113,7 @@ struct AgreeView: View {
     }
 }
 
+// MARK: 약관 정책 notion url
 private enum TermsPage: Identifiable {
     case service // 서비스 이용 약관
     case privacy // 개인정보처리방침
