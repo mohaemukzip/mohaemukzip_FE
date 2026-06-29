@@ -114,14 +114,8 @@ struct SignupView: View {
                         viewModel.emailVerificationState = .invalidFormat
                         return
                     }
-                    print("이메일 인증 요청 API")
                     
-                    Task {
-                        // TODO: 이메일 인증 요청 API 함수
-                        
-                        viewModel.emailVerificationState = .codeSent
-                        viewModel.startVerificationTimer()
-                    }
+                    Task { await viewModel.requestEmailVerification() }
                 } label: {
                     Text("인증 요청")
                         .font(.PretendardMedium16)
@@ -132,7 +126,7 @@ struct SignupView: View {
                                 .stroke(.main400, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
-                }
+                }.disabled(viewModel.isRequestingEmailCode)
             }
             
             emailStatusMessage
@@ -168,6 +162,13 @@ struct SignupView: View {
                 icon: "checkmark.circle"
             )
             
+        case .requestFailed:
+            statusMessage(
+                "인증번호 요청이 실패했어요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+            
         default:
             EmptyView()
         }
@@ -199,24 +200,19 @@ struct SignupView: View {
                         )
                     )
                     .keyboardType(.numberPad)
-
+                    
                     Spacer()
                     
                     Text(viewModel.verificationTimeText)
                         .font(.PretendardRegular13)
                         .foregroundStyle(
                             viewModel.remainingSeconds > 0
-                                ? Color.grey500
-                                : Color.red
+                            ? Color.grey500
+                            : Color.red
                         )
                     
                     Button {
-                        Task {
-                            // 재요청 API 성공 시 실행
-                            viewModel.model.verificationCode = ""
-                            viewModel.emailVerificationState = .codeSent
-                            viewModel.startVerificationTimer()
-                        }
+                        Task { await viewModel.requestEmailVerification() }
                     } label: {
                         Text("재요청")
                             .font(.PretendardRegular13)
@@ -224,6 +220,7 @@ struct SignupView: View {
                             .underline()
                     }
                     .buttonStyle(.plain)
+                    .disabled(viewModel.isRequestingEmailCode)
                 }
                 .padding(.horizontal, 14)
                 .frame(height: 44)
@@ -231,9 +228,7 @@ struct SignupView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button {
-                    print("인증번호 확인 API")
-                    // TODO: 인증번호 확인 API 함수
-                    // 성공, 실패에 따라 viewModel.emailVerificationState 변경
+                    Task { await viewModel.verifyEmailCode() }
                 } label: {
                     Text("확인")
                         .font(.PretendardMedium16)
@@ -245,7 +240,7 @@ struct SignupView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .stroke(Color.main400)
                 }
-                .disabled(viewModel.canVerifyCode)
+                .disabled(!viewModel.canVerifyCode || viewModel.isVerifyingEmailCode || viewModel.isRequestingEmailCode)
                 .opacity(viewModel.canVerifyCode ? 1 : 0.6)
             }
             
@@ -278,7 +273,7 @@ struct SignupView: View {
                 color: .red,
                 icon: "exclamationmark.circle"
             )
-
+            
         default:
             EmptyView()
         }

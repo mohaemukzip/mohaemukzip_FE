@@ -83,7 +83,9 @@ private final class AuthInterceptor: RequestInterceptor {
             if urlString.contains("/auth/login") ||
                 urlString.contains("/auth/signup") ||
                 urlString.contains("/auth/check-loginid") ||
-                urlString.contains("/auth/reissue") {
+                urlString.contains("/auth/reissue") ||
+                urlString.contains("/auth/email/send") ||
+                urlString.contains("/auth/email/verify") {
                 completion(.success(request))
                 return
             }

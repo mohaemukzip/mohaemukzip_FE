@@ -12,6 +12,7 @@ final class SignupViewModel {
         case invalidCode
         case verified
         case expired
+        case requestFailed
     }
     
     var emailVerificationState: EmailVerificationState = .idle
@@ -19,6 +20,9 @@ final class SignupViewModel {
     var remainingSeconds = 180
     
     private var verificationTimerTask: Task<Void, Never>?
+    
+    var isRequestingEmailCode = false
+    var isVerifyingEmailCode = false
     
     var verificationTimeText: String {
         let minutes = remainingSeconds / 60
@@ -264,31 +268,48 @@ final class SignupViewModel {
     // 이메일 인증번호 요청
     @MainActor
     func requestEmailVerification() async {
+        guard !isRequestingEmailCode, !isVerifyingEmailCode else { return }
         guard isValidEmail else {
             emailVerificationState = .invalidFormat
             return
         }
+        
+        let requestedEmail = model.email
+        isRequestingEmailCode = true
+        defer { isRequestingEmailCode = false }
 
         do {
-            try await authService.requestEmailVerification(email: model.email)
+            try await authService.requestEmailVerification(email: requestedEmail)
+             
+            // 요청 중 이메일 변경 시 결과 무시
+            guard requestedEmail == model.email else { return }
             model.verificationCode = ""
             emailVerificationState = .codeSent
             startVerificationTimer()
         } catch {
-            errorMessage = "인증번호를 발송하지 못했어요."
+            guard requestedEmail == model.email else { return }
+            emailVerificationState = .requestFailed
         }
     }
     
     // 이메일 인증번호 확인
     @MainActor
     func verifyEmailCode() async {
+        guard !isVerifyingEmailCode else { return }
         guard canVerifyCode else { return }
 
+        let requestedEmail = model.email
+        isVerifyingEmailCode = true
+        defer { isVerifyingEmailCode = false }
+        
         do {
             let verified = try await authService.verifyEmail(
-                email: model.email,
+                email: requestedEmail,
                 authCode: model.verificationCode
             )
+            
+            // 검증 중 이메일 변경 시 결과 무시
+            guard requestedEmail == model.email else { return }
 
             emailVerificationState = verified ? .verified : .invalidCode
 
@@ -296,6 +317,7 @@ final class SignupViewModel {
                 stopVerificationTimer()
             }
         } catch {
+            guard requestedEmail == model.email else { return }
             emailVerificationState = .invalidCode
         }
     }
