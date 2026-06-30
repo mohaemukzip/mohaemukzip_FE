@@ -178,7 +178,6 @@ enum AuthRoute: Hashable, Equatable {
     case login
     case signup([SignUpTermDTO])
     case signupFinish
-    case start
     case agree
 }
 
@@ -209,8 +208,6 @@ struct AuthRootView: View {
                         SignupView(terms: terms).environmentObject(router)
                     case .signupFinish:
                         SignupFinishView().environmentObject(router)
-                    case .start:
-                        StartView().environmentObject(router)
                     case .agree:
                         AgreeView().environmentObject(router)
                     }

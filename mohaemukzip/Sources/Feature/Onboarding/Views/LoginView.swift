@@ -101,29 +101,84 @@ struct LoginView: View {
                     )
             }
             .padding(.horizontal, 17)
-            .padding(.top, 18)
+            .padding(.top, 3)
             .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
             
-            HStack(spacing: 34) {
+            HStack {
                 Button { }
                 label: {
                     Text("아이디 찾기")
-                        .font(.PretendardMedium16)
-                        .foregroundStyle(Color.grey300)
                 }
                 
-                Text("|")
-                    .font(.PretendardMedium16)
-                    .foregroundStyle(Color.grey300)
+                Text("|").padding(.horizontal)
+                    .foregroundStyle(.grey300)
                 
                 Button { }
                 label: {
                     Text("비밀번호 찾기")
-                        .font(.PretendardMedium16)
-                        .foregroundStyle(Color.grey300)
+                }
+                
+                Text("|").padding(.horizontal)
+                    .foregroundStyle(.grey300)
+                
+                Button { router.push(.agree) }
+                label: {
+                    Text("회원가입")
+                        
                 }
             }
-            .padding(.top, 40)
+            .font(.PretendardMedium14)
+            .foregroundStyle(.grey500)
+            .padding(.top, 15)
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            HStack {
+                VStack { Divider().foregroundStyle(.grey300) }.padding(.horizontal)
+                Text("또는").font(.PretendardRegular16).foregroundStyle(.grey500)
+                VStack { Divider().foregroundStyle(.grey300) }.padding(.horizontal)
+            }.padding(.bottom)
+            
+            Button {
+                // TODO: 카카오 소셜로그인
+            } label: {
+                HStack {
+                    Image("social-kakao")
+                    Spacer()
+                    Text("카카오로 로그인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.grey800)
+                    Spacer()
+                }.padding(.horizontal, 40)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.grey300, lineWidth: 1)
+                        .foregroundStyle(.clear)
+                        .frame(height: 52)
+                )
+            }.padding()
+                .padding(.bottom, 10)
+                .padding(.top, 10)
+            
+            Button {
+                // TODO: 애플 소셜로그인
+            } label: {
+                HStack {
+                    Image("social-apple").frame(width: 28, height: 28)
+                    Spacer()
+                    Text("Apple로 로그인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.grey800)
+                    Spacer()
+                }.padding(.horizontal, 40)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.grey300, lineWidth: 1)
+                        .foregroundStyle(.clear)
+                        .frame(height: 52)
+                )
+            }.padding()
             
             Spacer()
         }
@@ -135,5 +190,13 @@ struct LoginView: View {
         .onChange(of: viewModel.password) { _, _ in
             viewModel.clearErrorIfNeeded()
         }
+    }
+}
+
+#Preview("로그인") {
+    NavigationStack {
+        LoginView()
+            .environmentObject(AppState())
+            .environmentObject(AuthRouter())
     }
 }

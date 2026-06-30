@@ -72,7 +72,7 @@ struct OnboardingView: View {
             // 버튼 영역도 항상 같은 높이를 차지하게 (있을 때/없을 때 동일)
             if selection == pages.count - 1 {
                 Button {
-                    router.push(.start)
+                    router.push(.login)
                 } label: {
                     Text("다음으로")
                         .font(.PretendardSemibold18)
@@ -91,7 +91,7 @@ struct OnboardingView: View {
                     HStack {
                         Spacer()
                         Button {
-                            router.push(.start)
+                            router.push(.login)
                         } label: {
                             Text("건너뛰기")
                                 .font(.PretendardRegular16)
