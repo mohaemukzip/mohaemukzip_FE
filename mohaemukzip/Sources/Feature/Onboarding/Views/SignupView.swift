@@ -7,6 +7,7 @@ struct SignupView: View {
     @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = SignupViewModel()
+    var terms: [SignUpTermDTO]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -374,7 +375,7 @@ struct SignupView: View {
     private var startButton: some View {
         Button {
             Task {
-                let ok = await viewModel.signup()
+                let ok = await viewModel.signup(terms: self.terms)
                 if ok, let tokens = viewModel.tokens {
                     // 토큰 저장만 하고 signupFinishView로 이동 (아직 홈으로 이동 X)
                     appState.saveSession(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
@@ -396,7 +397,7 @@ struct SignupView: View {
 }
 
 #Preview("회원가입") {
-    SignupView()
+    SignupView(terms: [SignUpTermDTO(id: 1, isAgreed: false)])
         .environmentObject(AuthRouter())
         .environmentObject(AppState())
 }

@@ -16,9 +16,9 @@ struct SignUpRequestDTO: Encodable {
     }
 }
 
-struct SignUpTermDTO: Encodable {
+struct SignUpTermDTO: Encodable, Equatable, Hashable {
     let id: Int
-    let isAgreed: Bool
+    var isAgreed: Bool
 
     enum CodingKeys: String, CodingKey {
         case id = "termId"

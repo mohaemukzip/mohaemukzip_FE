@@ -4,6 +4,12 @@ import SwiftUI
 @Observable
 final class SignupViewModel {
     
+    // 서비스 이용약관 동의여부
+    var terms: [SignUpTermDTO] = [SignUpTermDTO(id: 1, isAgreed: false),
+                                  SignUpTermDTO(id: 2, isAgreed: false),
+                                  SignUpTermDTO(id: 3, isAgreed: false),
+                                  SignUpTermDTO(id: 4, isAgreed: false)]
+    
     // 이메일 유효성 검증상태
     enum EmailVerificationState: Equatable {
         case idle
@@ -235,21 +241,15 @@ final class SignupViewModel {
         return .valid
     }
 
+    // MARK: 회원가입
     @MainActor
-    func signup() async -> Bool {
+    func signup(terms: [SignUpTermDTO]) async -> Bool {
         guard isReadyToStart else { return false }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let terms: [SignUpTermDTO] = [
-                .init(id: 1, isAgreed: true),
-                .init(id: 2, isAgreed: true),
-                .init(id: 3, isAgreed: true),
-                .init(id: 4, isAgreed: false)
-            ]
-
             let model = try await authService.signup(
                 nickname: model.nickname,
                 loginId: model.email,
@@ -265,7 +265,7 @@ final class SignupViewModel {
         }
     }
     
-    // 이메일 인증번호 요청
+    // MARK: 이메일 인증번호 요청
     @MainActor
     func requestEmailVerification() async {
         guard !isRequestingEmailCode, !isVerifyingEmailCode else { return }
@@ -292,7 +292,7 @@ final class SignupViewModel {
         }
     }
     
-    // 이메일 인증번호 확인
+    // MARK: 이메일 인증번호 확인
     @MainActor
     func verifyEmailCode() async {
         guard !isVerifyingEmailCode else { return }
