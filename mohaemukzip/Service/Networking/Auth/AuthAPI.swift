@@ -10,6 +10,8 @@ enum AuthAPI {
     case reissue
     case logout
     case withdrawal
+    case requestEmailVerification(SendEmailVerificationRequestDTO)
+    case verifyEmail(VerifyEmailRequestDTO)
 }
 
 extension AuthAPI: TargetType {
@@ -32,20 +34,22 @@ extension AuthAPI: TargetType {
             return "/auth/logout"
         case .withdrawal:
             return "/auth/withdrawal"
+        case .requestEmailVerification:
+            return "/auth/email/send"
+        case .verifyEmail:
+            return "/auth/email/verify"
         }
     }
     
     var method: Moya.Method {
         switch self {
-        case .signup:
-            return .post
-        case .login:
-            return .post
-        case .checkLoginId:
-            return .post
-        case .reissue:
-            return .post
-        case .logout:
+        case .signup,
+                .requestEmailVerification,
+                .verifyEmail,
+                .login,
+                .logout,
+                .checkLoginId,
+                .reissue:
             return .post
         case .withdrawal:
             return .delete
@@ -62,6 +66,10 @@ extension AuthAPI: TargetType {
             return .requestJSONEncodable(request)
         case .reissue, .logout, .withdrawal:
             return .requestPlain
+        case .requestEmailVerification(let request):
+            return .requestJSONEncodable(request)
+        case .verifyEmail(let request):
+            return .requestJSONEncodable(request)
         }
     }
     
@@ -79,7 +87,7 @@ extension AuthAPI: TargetType {
             ]
             
             // access token 필요 없는 API들 (필요하더라도 interceptor에서)
-        case .signup, .login, .logout, .withdrawal, .checkLoginId:
+        case .signup, .login, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
             return [
                 "Content-Type": "application/json",
             ]

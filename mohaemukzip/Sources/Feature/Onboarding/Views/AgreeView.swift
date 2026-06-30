@@ -8,6 +8,10 @@ struct AgreeView: View {
     
     // 선택된 TermsPage
     @State private var selectedTermsPage: TermsPage?
+    @State private var terms: [SignUpTermDTO] = [SignUpTermDTO(id: 1, isAgreed: false),
+                                                 SignUpTermDTO(id: 2, isAgreed: false),
+                                                 SignUpTermDTO(id: 3, isAgreed: false),
+                                                 SignUpTermDTO(id: 4, isAgreed: false)]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -24,7 +28,11 @@ struct AgreeView: View {
                     AgreeCheckRow(
                         title: "모두 동의",
                         isChecked: $viewModel.isAllAgree,
-                        onToggle: { viewModel.toggleAllAgree() },
+                        onToggle: { viewModel.toggleAllAgree();
+                            terms[0].isAgreed = true;
+                            terms[1].isAgreed = true;
+                            terms[2].isAgreed = true;
+                            terms[3].isAgreed = true; },
                         onTitleTap: nil
                     )
                     .padding(.bottom, 6)
@@ -36,28 +44,28 @@ struct AgreeView: View {
                         AgreeCheckRow(
                             title: "만 14세 이상입니다. (필수)",
                             isChecked: $viewModel.isOver14,
-                            onToggle: { viewModel.toggleOver14() },
+                            onToggle: { viewModel.toggleOver14(); terms[0].isAgreed.toggle() },
                             onTitleTap: nil
                         )
                         
                         AgreeCheckRow(
                             title: "서비스 이용약관에 동의 (필수)",
                             isChecked: $viewModel.isServiceAgree,
-                            onToggle: { viewModel.toggleServiceAgree() },
+                            onToggle: { viewModel.toggleServiceAgree(); terms[1].isAgreed.toggle() },
                             onTitleTap: { selectedTermsPage = .service }
                         )
                         
                         AgreeCheckRow(
                             title: "개인정보 수집 및 이용에 동의 (필수)",
                             isChecked: $viewModel.isPrivacyAgree,
-                            onToggle: { viewModel.togglePrivacyAgree() },
+                            onToggle: { viewModel.togglePrivacyAgree(); terms[2].isAgreed.toggle() },
                             onTitleTap: { selectedTermsPage = .privacy }
                         )
                         
                         AgreeCheckRow(
                             title: "광고 및 마케팅 수신에 동의 (선택)",
                             isChecked: $viewModel.isMarketingAgree,
-                            onToggle: { viewModel.toggleMarketingAgree() },
+                            onToggle: { viewModel.toggleMarketingAgree(); terms[3].isAgreed.toggle() },
                             onTitleTap: { selectedTermsPage = .marketing }
                         )
                     }
@@ -95,7 +103,7 @@ struct AgreeView: View {
     private var bottomButton: some View {
         VStack(spacing: 0) {
             Button {
-                router.push(.signup)
+                router.push(.signup(terms))
             } label: {
                 Text("다음")
                     .font(.PretendardSemibold18)
@@ -113,6 +121,7 @@ struct AgreeView: View {
     }
 }
 
+// MARK: 약관 정책 notion url
 private enum TermsPage: Identifiable {
     case service // 서비스 이용 약관
     case privacy // 개인정보처리방침
@@ -123,11 +132,11 @@ private enum TermsPage: Identifiable {
     var url: URL {
         switch self {
         case .service:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f9806e946cc3aa2b5e721d?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/37e3dc31532c80b19ca9d940eb648de6?source=copy_link")!
         case .privacy:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f98094a4a6d796b3180bd6?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/3853dc31532c806f838cf3fa5347fe7d?source=copy_link")!
         case .marketing:
-            return URL(string: "https://skillful-freighter-e74.notion.site/38b7472452f980e38cdde8fc450049b4?source=copy_link")!
+            return URL(string: "https://troubled-parmesan-24d.notion.site/3853dc31532c80069babe191e0f9d212?source=copy_link")!
         }
     }
 }

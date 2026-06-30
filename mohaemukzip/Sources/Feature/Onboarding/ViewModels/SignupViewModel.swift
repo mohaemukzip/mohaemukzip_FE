@@ -4,6 +4,68 @@ import SwiftUI
 @Observable
 final class SignupViewModel {
     
+    // 서비스 이용약관 동의여부
+    var terms: [SignUpTermDTO] = [SignUpTermDTO(id: 1, isAgreed: false),
+                                  SignUpTermDTO(id: 2, isAgreed: false),
+                                  SignUpTermDTO(id: 3, isAgreed: false),
+                                  SignUpTermDTO(id: 4, isAgreed: false)]
+    
+    // 이메일 유효성 검증상태
+    enum EmailVerificationState: Equatable {
+        case idle
+        case invalidFormat
+        case codeSent
+        case invalidCode
+        case verified
+        case expired
+        case requestFailed
+    }
+    
+    var emailVerificationState: EmailVerificationState = .idle
+    
+    var remainingSeconds = 180
+    
+    private var verificationTimerTask: Task<Void, Never>?
+    
+    var isRequestingEmailCode = false
+    var isVerifyingEmailCode = false
+    
+    var verificationTimeText: String {
+        let minutes = remainingSeconds / 60
+        let seconds = remainingSeconds % 60
+        return String(format: "%02d:%02d", minutes, seconds)
+    }
+    
+    var canVerifyCode: Bool {
+        model.verificationCode.count == 6
+            && remainingSeconds > 0
+            && emailVerificationState != .verified
+    }
+    
+    func startVerificationTimer() {
+        verificationTimerTask?.cancel()
+        remainingSeconds = 180
+        
+        verificationTimerTask = Task { @MainActor [weak self] in
+            while let self, remainingSeconds > 0 {
+                try? await Task.sleep(for: .seconds(1))
+
+                guard !Task.isCancelled else { return }
+
+                remainingSeconds -= 1
+            }
+
+            if !Task.isCancelled {
+                self?.emailVerificationState = .expired
+            }
+        }
+    }
+    
+    func stopVerificationTimer() {
+        verificationTimerTask?.cancel()
+        verificationTimerTask = nil
+    }
+    
     enum PasswordValidationState: Equatable {
         case empty
         case tooShort
@@ -43,41 +105,9 @@ final class SignupViewModel {
         }
     }
 
-    enum IdCheckState: Equatable {
-        case none
-        case invalidFormat
-        case duplicated
-        case available
-
-        var message: String? {
-            switch self {
-            case .none: return nil
-            case .invalidFormat: return "아이디 형식이 올바르지 않아요."
-            case .duplicated: return "이미 사용 중인 아이디예요. 다른 아이디를 입력해 주세요."
-            case .available: return "사용 가능한 아이디예요."
-            }
-        }
-
-        var isError: Bool {
-            switch self {
-            case .invalidFormat, .duplicated:
-                return true
-            default:
-                return false
-            }
-        }
-
-        var isSuccess: Bool {
-            self == .available
-        }
-    }
-
     var model: SignupModel = .init()
 
     // UI State
-    var idCheckState: IdCheckState = .none
-    var idCheckMessage: String? = nil
-    var isCheckingId: Bool = false
     var isPasswordMismatch: Bool = false
 
     // API
@@ -94,27 +124,39 @@ final class SignupViewModel {
             model.nickname = String(newValue.prefix(15))
         }
     }
-
-    func onChangeUserId(_ newValue: String) {
-        // 15자 제한
-        let limited: String
-        if newValue.count <= 15 {
-            limited = newValue
-        } else {
-            limited = String(newValue.prefix(15))
-        }
-
-        // 같은 값이 다시 들어오면(예: 다른 필드 입력/리렌더링 과정에서 onChange가 호출됨)
-        // 중복확인 상태를 초기화하지 않는다.
-        guard limited != model.userId else { return }
-
-        model.userId = limited
-
-        // 아이디가 실제로 변경되었을 때만 중복확인 다시 필요
-        idCheckState = .none
-        idCheckMessage = nil
+    
+    // 이메일에 새로운 값이 들어올 때
+    func onChangeEmail(_ newValue: String) {
+        guard newValue != model.email else { return }
+        
+        stopVerificationTimer()
+        
+        model.email = newValue
+        model.verificationCode = ""
+        remainingSeconds = 180 
+        emailVerificationState = .idle
     }
-
+    
+    // 이메일 유효성 검증 코드가 바뀔 때
+    func onChangeVerificationCode(_ newValue: String) {
+        model.verificationCode = String(newValue.prefix(6))
+    }
+    
+    // 이메일 형식이 올바른지
+    var isValidEmail: Bool {
+        let pattern = #"^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$"#
+        return model.email.range(of: pattern, options: .regularExpression) != nil
+    }
+    
+    var shouldShowVerificationField: Bool {
+        switch emailVerificationState {
+        case .codeSent, .invalidCode, .verified, .expired:
+            return true
+        default:
+            return false
+        }
+    }
+    
     func onChangePassword(_ newValue: String) {
         model.password = newValue
         validatePasswordMatch()
@@ -124,52 +166,21 @@ final class SignupViewModel {
         model.passwordConfirm = newValue
         validatePasswordMatch()
     }
-
-    @MainActor
-    func checkDuplicateId() async {
-        guard isValidIdFormat(model.userId) else {
-            idCheckState = .invalidFormat
-            idCheckMessage = nil
-            return
-        }
-
-        isCheckingId = true
-        defer { isCheckingId = false }
-
-        do {
-            let result = try await authService.checkLoginId(loginId: model.userId)
-            idCheckMessage = result.message
-            idCheckState = result.available ? .available : .duplicated
-            errorMessage = nil
-        } catch {
-            idCheckState = .none
-            idCheckMessage = "아이디 중복확인에 실패했어요. 다시 시도해 주세요."
-            errorMessage = nil
-        }
-    }
-
+    
     var nicknameCountText: String {
         "\(model.nickname.count)/15"
     }
-
-    var userIdCountText: String {
-        "\(model.userId.count)/15"
-    }
-
+    
     var isValidNickname: Bool {
         !model.nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
 
     var isReadyToStart: Bool {
         isValidNickname
-        && idCheckState == .available
+        && emailVerificationState == .verified
         && isValidPassword
         && !isPasswordMismatch
         && !model.passwordConfirm.isEmpty
-    }
-
-    func helperTextForIdFormat() -> String {
-        "아이디는 영문과 숫자를 사용해 4자 이상 입력해주세요."
     }
 
     private func validatePasswordMatch() {
@@ -178,12 +189,6 @@ final class SignupViewModel {
             return
         }
         isPasswordMismatch = (!model.passwordConfirm.isEmpty) && (model.password != model.passwordConfirm)
-    }
-
-    private func isValidIdFormat(_ text: String) -> Bool {
-        // 영문/숫자, 4자 이상
-        let pattern = "^[A-Za-z0-9]{4,}$"
-        return text.range(of: pattern, options: .regularExpression) != nil
     }
 
     var passwordValidationState: PasswordValidationState {
@@ -236,24 +241,18 @@ final class SignupViewModel {
         return .valid
     }
 
+    // MARK: 회원가입
     @MainActor
-    func signup() async -> Bool {
+    func signup(terms: [SignUpTermDTO]) async -> Bool {
         guard isReadyToStart else { return false }
 
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let terms: [SignUpTermDTO] = [
-                .init(id: 1, isAgreed: true),
-                .init(id: 2, isAgreed: true),
-                .init(id: 3, isAgreed: true),
-                .init(id: 4, isAgreed: false)
-            ]
-
             let model = try await authService.signup(
                 nickname: model.nickname,
-                loginId: model.userId,
+                loginId: model.email,
                 password: model.password,
                 terms: terms
             )
@@ -263,6 +262,63 @@ final class SignupViewModel {
         } catch {
             errorMessage = "회원가입에 실패했어요."
             return false
+        }
+    }
+    
+    // MARK: 이메일 인증번호 요청
+    @MainActor
+    func requestEmailVerification() async {
+        guard !isRequestingEmailCode, !isVerifyingEmailCode else { return }
+        guard isValidEmail else {
+            emailVerificationState = .invalidFormat
+            return
+        }
+        
+        let requestedEmail = model.email
+        isRequestingEmailCode = true
+        defer { isRequestingEmailCode = false }
+
+        do {
+            try await authService.requestEmailVerification(email: requestedEmail)
+             
+            // 요청 중 이메일 변경 시 결과 무시
+            guard requestedEmail == model.email else { return }
+            model.verificationCode = ""
+            emailVerificationState = .codeSent
+            startVerificationTimer()
+        } catch {
+            guard requestedEmail == model.email else { return }
+            emailVerificationState = .requestFailed
+        }
+    }
+    
+    // MARK: 이메일 인증번호 확인
+    @MainActor
+    func verifyEmailCode() async {
+        guard !isVerifyingEmailCode else { return }
+        guard canVerifyCode else { return }
+
+        let requestedEmail = model.email
+        isVerifyingEmailCode = true
+        defer { isVerifyingEmailCode = false }
+        
+        do {
+            let verified = try await authService.verifyEmail(
+                email: requestedEmail,
+                authCode: model.verificationCode
+            )
+            
+            // 검증 중 이메일 변경 시 결과 무시
+            guard requestedEmail == model.email else { return }
+
+            emailVerificationState = verified ? .verified : .invalidCode
+
+            if verified {
+                stopVerificationTimer()
+            }
+        } catch {
+            guard requestedEmail == model.email else { return }
+            emailVerificationState = .invalidCode
         }
     }
 }

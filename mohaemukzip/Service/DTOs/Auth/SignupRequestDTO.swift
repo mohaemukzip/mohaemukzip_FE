@@ -16,12 +16,30 @@ struct SignUpRequestDTO: Encodable {
     }
 }
 
-struct SignUpTermDTO: Encodable {
+struct SignUpTermDTO: Encodable, Equatable, Hashable {
     let id: Int
-    let isAgreed: Bool
+    var isAgreed: Bool
 
     enum CodingKeys: String, CodingKey {
         case id = "termId"
         case isAgreed
     }
+}
+
+struct SendEmailVerificationRequestDTO: Encodable {
+    let email: String
+}
+
+struct SendEmailVerificationResultDTO: Decodable {
+    let message: String
+}
+
+struct VerifyEmailRequestDTO: Encodable {
+    let email: String
+    let authCode: String
+}
+
+struct VerifyEmailResultDTO: Decodable {
+    let verified: Bool
+    let message: String
 }

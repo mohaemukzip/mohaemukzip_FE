@@ -173,12 +173,11 @@ struct RootView: View {
 
 // MARK: - Auth Router
 
-enum AuthRoute: Hashable {
+enum AuthRoute: Hashable, Equatable {
     case onboarding
     case login
-    case signup
+    case signup([SignUpTermDTO])
     case signupFinish
-    case start
     case agree
 }
 
@@ -205,12 +204,10 @@ struct AuthRootView: View {
                         OnboardingView().environmentObject(router)
                     case .login:
                         LoginView().environmentObject(router)
-                    case .signup:
-                        SignupView().environmentObject(router)
+                    case .signup(let terms):
+                        SignupView(terms: terms).environmentObject(router)
                     case .signupFinish:
                         SignupFinishView().environmentObject(router)
-                    case .start:
-                        StartView().environmentObject(router)
                     case .agree:
                         AgreeView().environmentObject(router)
                     }
