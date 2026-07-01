@@ -8,10 +8,6 @@ struct AgreeView: View {
     
     // 선택된 TermsPage
     @State private var selectedTermsPage: TermsPage?
-    @State private var terms: [SignUpTermDTO] = [SignUpTermDTO(id: 1, isAgreed: false),
-                                                 SignUpTermDTO(id: 2, isAgreed: false),
-                                                 SignUpTermDTO(id: 3, isAgreed: false),
-                                                 SignUpTermDTO(id: 4, isAgreed: false)]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -28,11 +24,7 @@ struct AgreeView: View {
                     AgreeCheckRow(
                         title: "모두 동의",
                         isChecked: $viewModel.isAllAgree,
-                        onToggle: { viewModel.toggleAllAgree();
-                            terms[0].isAgreed = true;
-                            terms[1].isAgreed = true;
-                            terms[2].isAgreed = true;
-                            terms[3].isAgreed = true; },
+                        onToggle: { viewModel.toggleAllAgree() },
                         onTitleTap: nil
                     )
                     .padding(.bottom, 6)
@@ -44,28 +36,28 @@ struct AgreeView: View {
                         AgreeCheckRow(
                             title: "만 14세 이상입니다. (필수)",
                             isChecked: $viewModel.isOver14,
-                            onToggle: { viewModel.toggleOver14(); terms[0].isAgreed.toggle() },
+                            onToggle: { viewModel.toggleOver14() },
                             onTitleTap: nil
                         )
                         
                         AgreeCheckRow(
                             title: "서비스 이용약관에 동의 (필수)",
                             isChecked: $viewModel.isServiceAgree,
-                            onToggle: { viewModel.toggleServiceAgree(); terms[1].isAgreed.toggle() },
+                            onToggle: { viewModel.toggleServiceAgree() },
                             onTitleTap: { selectedTermsPage = .service }
                         )
                         
                         AgreeCheckRow(
                             title: "개인정보 수집 및 이용에 동의 (필수)",
                             isChecked: $viewModel.isPrivacyAgree,
-                            onToggle: { viewModel.togglePrivacyAgree(); terms[2].isAgreed.toggle() },
+                            onToggle: { viewModel.togglePrivacyAgree() },
                             onTitleTap: { selectedTermsPage = .privacy }
                         )
                         
                         AgreeCheckRow(
                             title: "광고 및 마케팅 수신에 동의 (선택)",
                             isChecked: $viewModel.isMarketingAgree,
-                            onToggle: { viewModel.toggleMarketingAgree(); terms[3].isAgreed.toggle() },
+                            onToggle: { viewModel.toggleMarketingAgree() },
                             onTitleTap: { selectedTermsPage = .marketing }
                         )
                     }
@@ -103,6 +95,11 @@ struct AgreeView: View {
     private var bottomButton: some View {
         VStack(spacing: 0) {
             Button {
+                let terms = [SignUpTermDTO(id: 1, isAgreed: viewModel.isOver14),
+                             SignUpTermDTO(id: 2, isAgreed: viewModel.isServiceAgree),
+                             SignUpTermDTO(id: 3, isAgreed: viewModel.isPrivacyAgree),
+                             SignUpTermDTO(id: 4, isAgreed: viewModel.isMarketingAgree)]
+                
                 router.push(.signup(terms))
             } label: {
                 Text("다음")
