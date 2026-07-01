@@ -123,7 +123,9 @@ private final class AuthInterceptor: RequestInterceptor {
 
         // reissue 요청 자체가 401이면 루프 방지
         if let urlString = request.request?.url?.absoluteString,
-           urlString.contains("/auth/reissue") {
+           urlString.contains("/auth/reissue") ||
+            urlString.contains("/auth/email/send") ||
+            urlString.contains("/auth/email/verify") {
             // DEBUG LOG REMOVED
             completion(.doNotRetry)
             return
