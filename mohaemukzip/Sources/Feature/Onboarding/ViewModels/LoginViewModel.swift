@@ -4,6 +4,12 @@ import Observation
 
 @Observable
 final class LoginViewModel {
+    // Kakao
+    var isKakaoLoading: Bool = false
+    var kakaoErrorMessage: String?
+    private let kakaoService = KakaoAuthService()
+    
+    
     // Inputs
     var loginId: String = ""
     var password: String = ""
@@ -41,6 +47,25 @@ final class LoginViewModel {
             showError = true
             errorMessage = "아이디 또는 비밀번호가 잘못 되었습니다. 다시 입력해주세요."
             return false
+        }
+    }
+    
+    @MainActor
+    func loginWithKakao() async {
+        guard !isKakaoLoading else { return }
+        
+        isKakaoLoading = true
+        defer { isKakaoLoading = false }
+        
+        do {
+            print("카카오 SDK 인증 성공")
+            
+            let kakaoAccessToken = try await kakaoService.login()
+            kakaoErrorMessage = nil
+        } catch {
+            print("카카오 로그인 실패")
+            
+            kakaoErrorMessage = "카카오 로그인에 실패했습니다."
         }
     }
 

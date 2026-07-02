@@ -142,6 +142,9 @@ struct LoginView: View {
             
             Button {
                 // TODO: 카카오 소셜로그인
+                
+                focusedField = nil
+                Task { await viewModel.loginWithKakao() }
             } label: {
                 HStack {
                     Image("social-kakao")
@@ -160,6 +163,7 @@ struct LoginView: View {
             }.padding()
                 .padding(.bottom, 10)
                 .padding(.top, 10)
+                .disabled(viewModel.isKakaoLoading)
             
             Button {
                 // TODO: 애플 소셜로그인
