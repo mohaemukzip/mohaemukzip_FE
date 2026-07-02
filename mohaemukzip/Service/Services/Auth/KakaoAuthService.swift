@@ -49,7 +49,7 @@ final class KakaoAuthService {
         try await withCheckedThrowingContinuation {
             (continuation: CheckedContinuation<String, Error>) in
             
-            UserApi.shared.loginWithKakaoTalk { token, error in
+            UserApi.shared.loginWithKakaoAccount { token, error in
                 if let error {
                     continuation.resume(throwing: error)
                     return
