@@ -33,32 +33,34 @@ class AccountSettingsViewModel: ObservableObject {
     }
     
     func fetchMockData() {
-        // TODO: 실제 API 연동 시 이 부분을 지우고 통신 코드로 대체하세요.
-        self.accountInfo = AccountInfo(email: "abcdefg@naver.com", loginType: .kakao)
+        self.accountInfo = AccountInfo(
+            email: Config.loginId,
+            loginType: .kakao // TODO: 추후 AuthService에서 받아온 loginType으로 변경
+        )
     }
     
     /// 이메일 영역에 표시할 텍스트
+    /// 이메일 영역에 표시할 텍스트
     var displayEmailText: String {
-        guard let info = accountInfo else { return "정보를 불러오는 중..." }
-        
-        if info.loginType == .apple {
-            return "해당 계정은 애플 소셜 로그인 계정입니다."
-        }
-        return info.email ?? "이메일 정보 없음"
+        accountInfo?.email ?? "정보를 불러오는 중..."
     }
-    
     /// 비밀번호 변경 버튼 활성화 여부 (GENERAL일 때만 true)
     var isPasswordChangeEnabled: Bool {
         return accountInfo?.loginType == .general
     }
     
     /// 소셜 로그인일 경우 하단에 띄워줄 안내 문구
+    /// 로그인 타입에 따른 안내 문구
     var socialLoginHelperText: String? {
         guard let type = accountInfo?.loginType else { return nil }
+
         switch type {
-        case .kakao: return "카카오로 가입한 계정이에요."
-        case .apple: return "애플로 가입한 계정이에요."
-        case .general: return nil
+        case .general:
+            return "소셜 로그인이 아닌 일반 계정이에요."
+        case .kakao:
+            return "카카오로 가입한 계정이에요."
+        case .apple:
+            return "애플로 가입한 계정이에요."
         }
     }
 }

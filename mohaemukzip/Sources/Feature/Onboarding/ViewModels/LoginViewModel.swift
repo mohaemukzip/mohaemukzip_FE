@@ -39,6 +39,7 @@ final class LoginViewModel {
             // 토큰 저장
             Config.accessTK = model.accessToken
             Config.refreshTK = model.refreshToken
+            Config.loginId = loginId
 
             showError = false
             errorMessage = nil
