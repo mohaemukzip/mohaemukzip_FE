@@ -144,7 +144,22 @@ struct LoginView: View {
                 // TODO: 카카오 소셜로그인
                 
                 focusedField = nil
-                Task { await viewModel.loginWithKakao() }
+                Task {
+                    let ok = await viewModel.loginWithKakao()
+                    
+                    // 로그인 성공 시,
+                    if ok, let tokens = viewModel.tokens {
+                        // 약관 동의 완료하지 않은 유저라면,
+                        if !tokens.termsAgreed {
+                            appState.setSession(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken)
+                            router.push(.kakaoAgree)
+                        } else {
+                            appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                    refreshToken: tokens.refreshToken)
+                        }
+                    }
+                }
             } label: {
                 HStack {
                     Image("social-kakao")

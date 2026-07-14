@@ -6,6 +6,8 @@ import Alamofire
 enum AuthAPI {
     case signup(SignUpRequestDTO)
     case login(LoginRequestDTO)
+    case kakaoLogin(KakaoLoginRequestDTO)
+    case agreeTerms([SignUpTermDTO], String)
     case checkLoginId(CheckLoginIdRequestDTO)
     case reissue
     case logout
@@ -26,6 +28,10 @@ extension AuthAPI: TargetType {
             return "/auth/signup"
         case .login:
             return "/auth/login"
+        case .kakaoLogin:
+            return "/auth/login/kakao"
+        case .agreeTerms:
+            return "/auth/terms/agree"
         case .checkLoginId:
             return "/auth/check-loginid"
         case .reissue:
@@ -47,6 +53,8 @@ extension AuthAPI: TargetType {
                 .requestEmailVerification,
                 .verifyEmail,
                 .login,
+                .kakaoLogin,
+                .agreeTerms,
                 .logout,
                 .checkLoginId,
                 .reissue:
@@ -61,6 +69,10 @@ extension AuthAPI: TargetType {
         case .signup(let request):
             return .requestJSONEncodable(request)
         case .login(let request):
+            return .requestJSONEncodable(request)
+        case .kakaoLogin(let request):
+            return .requestJSONEncodable(request)
+        case .agreeTerms(let request, _):
             return .requestJSONEncodable(request)
         case .checkLoginId(let request):
             return .requestJSONEncodable(request)
@@ -87,9 +99,15 @@ extension AuthAPI: TargetType {
             ]
             
             // access token 필요 없는 API들 (필요하더라도 interceptor에서)
-        case .signup, .login, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
+        case .signup, .login, .kakaoLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
             return [
                 "Content-Type": "application/json",
+            ]
+        
+        case .agreeTerms(_, let token):
+            return [
+                "Content-Type": "application/json",
+                "Authorization": "Bearer \(token)"
             ]
             
         }

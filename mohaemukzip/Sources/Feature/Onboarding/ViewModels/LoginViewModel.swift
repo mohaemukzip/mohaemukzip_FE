@@ -51,21 +51,29 @@ final class LoginViewModel {
     }
     
     @MainActor
-    func loginWithKakao() async {
-        guard !isKakaoLoading else { return }
+    func loginWithKakao() async -> Bool {
+        guard !isKakaoLoading else { return false }
         
         isKakaoLoading = true
         defer { isKakaoLoading = false }
         
         do {
             print("카카오 SDK 인증 성공")
+            print("카카오 로그인 API 호출 성공")
             
             let kakaoAccessToken = try await kakaoService.login()
+            let model = try await authService.kakaoLogin(kakaoAccessToken: kakaoAccessToken)
+            tokens = model
+            
             kakaoErrorMessage = nil
+            
+            return true
         } catch {
             print("카카오 로그인 실패")
             
             kakaoErrorMessage = "카카오 로그인에 실패했습니다."
+            
+            return false
         }
     }
 

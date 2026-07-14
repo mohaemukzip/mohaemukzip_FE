@@ -344,7 +344,7 @@
 				CODE_SIGN_ENTITLEMENTS = mohaemukzip/mohaemukzip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KX93JF4Y2Z;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = mohaemukzip/Info.plist;
