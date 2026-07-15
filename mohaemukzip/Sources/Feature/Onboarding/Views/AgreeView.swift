@@ -113,7 +113,7 @@ struct AgreeView: View {
                     
                     if mode == .signup {
                         router.push(.signup(terms))
-                    } else if mode == .kakao {
+                    } else if mode == .social {
                         
                         if let access = appState.accessToken, let refresh = appState.refreshToken {
                             let result = await viewModel.submitAgreement(terms: terms, token: access)
@@ -200,8 +200,8 @@ private struct AgreeCheckRow: View {
 }
 
 // 일반 회원가입 플로우 - signup
-// 카카오 로그인 이후 약관 동의 뷰 노출 - kakao
+// 소셜 로그인 이후 약관 동의 뷰 노출 - social
 enum AgreeMode: Hashable {
     case signup
-    case kakao
+    case social
 }

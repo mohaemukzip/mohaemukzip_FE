@@ -98,6 +98,27 @@ final class AuthService {
         }
     }
     
+    // MARK: Apple Login
+    func appleLogin(identityToken: String) async throws -> AuthTokensModel {
+        let requestDTO = AppleLoginRequestDTO(identityToken: identityToken)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.appleLogin(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(LoginResponseDTO.self)
+                        continuation.resume(returning: decoded.result.toModel())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
     // MARK: 약관 여부 전달
     func submitTermsAgreement(terms: [SignUpTermDTO], token: String) async throws -> Bool {
         let requestDTO = terms

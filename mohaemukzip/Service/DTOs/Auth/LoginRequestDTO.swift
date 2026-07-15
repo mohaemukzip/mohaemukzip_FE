@@ -9,3 +9,7 @@ struct LoginRequestDTO: Encodable {
 struct KakaoLoginRequestDTO: Encodable {
     let kakaoAccessToken: String
 }
+
+struct AppleLoginRequestDTO: Encodable {
+    let identityToken: String
+}

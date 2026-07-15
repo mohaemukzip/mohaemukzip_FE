@@ -191,7 +191,7 @@ enum AuthRoute: Hashable, Equatable {
     case signup([SignUpTermDTO])
     case signupFinish
     case agree
-    case kakaoAgree
+    case socialAgree
 }
 
 final class AuthRouter: ObservableObject {
@@ -223,8 +223,8 @@ struct AuthRootView: View {
                         SignupFinishView().environmentObject(router)
                     case .agree:
                         AgreeView(mode: .signup).environmentObject(router)
-                    case .kakaoAgree:
-                        AgreeView(mode: .kakao).environmentObject(router)
+                    case .socialAgree:
+                        AgreeView(mode: .social).environmentObject(router)
                     }
                 }
         }

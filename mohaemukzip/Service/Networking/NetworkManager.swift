@@ -29,7 +29,6 @@ final class NetworkManager {
     private let authInterceptor = AuthInterceptor()
 
     private let plugins: [PluginType] = [
-        NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
         NetworkDebugPlugin()
     ]
 

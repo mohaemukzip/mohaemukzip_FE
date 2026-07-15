@@ -7,6 +7,7 @@ enum AuthAPI {
     case signup(SignUpRequestDTO)
     case login(LoginRequestDTO)
     case kakaoLogin(KakaoLoginRequestDTO)
+    case appleLogin(AppleLoginRequestDTO)
     case agreeTerms([SignUpTermDTO], String)
     case checkLoginId(CheckLoginIdRequestDTO)
     case reissue
@@ -30,6 +31,8 @@ extension AuthAPI: TargetType {
             return "/auth/login"
         case .kakaoLogin:
             return "/auth/login/kakao"
+        case .appleLogin:
+            return "/auth/login/apple"
         case .agreeTerms:
             return "/auth/terms/agree"
         case .checkLoginId:
@@ -54,6 +57,7 @@ extension AuthAPI: TargetType {
                 .verifyEmail,
                 .login,
                 .kakaoLogin,
+                .appleLogin,
                 .agreeTerms,
                 .logout,
                 .checkLoginId,
@@ -71,6 +75,8 @@ extension AuthAPI: TargetType {
         case .login(let request):
             return .requestJSONEncodable(request)
         case .kakaoLogin(let request):
+            return .requestJSONEncodable(request)
+        case .appleLogin(let request):
             return .requestJSONEncodable(request)
         case .agreeTerms(let request, _):
             return .requestJSONEncodable(request)
@@ -99,7 +105,7 @@ extension AuthAPI: TargetType {
             ]
             
             // access token 필요 없는 API들 (필요하더라도 interceptor에서)
-        case .signup, .login, .kakaoLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
+        case .signup, .login, .kakaoLogin, .appleLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
             return [
                 "Content-Type": "application/json",
             ]

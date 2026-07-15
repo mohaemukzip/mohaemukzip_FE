@@ -1,5 +1,6 @@
 
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject private var appState: AppState
@@ -140,8 +141,8 @@ struct LoginView: View {
                 VStack { Divider().foregroundStyle(.grey300) }.padding(.horizontal)
             }.padding(.bottom)
             
+            // MARK: 카카오 소셜 로그인
             Button {
-                // TODO: 카카오 소셜로그인
                 
                 focusedField = nil
                 Task {
@@ -153,7 +154,7 @@ struct LoginView: View {
                         if !tokens.termsAgreed {
                             appState.setSession(accessToken: tokens.accessToken,
                                                 refreshToken: tokens.refreshToken)
-                            router.push(.kakaoAgree)
+                            router.push(.socialAgree)
                         } else {
                             appState.loginSucceeded(accessToken: tokens.accessToken,
                                                     refreshToken: tokens.refreshToken)
@@ -180,11 +181,45 @@ struct LoginView: View {
                 .padding(.top, 10)
                 .disabled(viewModel.isKakaoLoading)
             
+            // MARK: 애플 소셜 로그인
+            
+            // 애플 기본 제공 버튼 - 반려 시 기본 제공 버튼 고려
+            /*SignInWithAppleButton(
+                .signIn,
+                onRequest: { _ in },
+                onCompletion: { _ in }
+            )
+            .signInWithAppleButtonStyle(.black)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal)*/
+            
             Button {
-                // TODO: 애플 소셜로그인
+                focusedField = nil
+                Task {
+                    let ok = await viewModel.loginWithApple()
+                    
+                    // 로그인 성공 시,
+                    if ok, let tokens = viewModel.tokens {
+                        // 약관 동의 완료하지 않은 유저라면,
+                        if !tokens.termsAgreed {
+                            appState.setSession(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken)
+                            router.push(.socialAgree)
+                        } else {
+                            appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                    refreshToken: tokens.refreshToken)
+                        }
+                    }
+                }
             } label: {
                 HStack {
-                    Image("social-apple").frame(width: 28, height: 28)
+                    Image(systemName: "apple.logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(.black)
                     Spacer()
                     Text("Apple로 로그인")
                         .font(.PretendardMedium16)
