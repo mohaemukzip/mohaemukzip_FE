@@ -80,6 +80,7 @@ class AccountSettingsViewModel: ObservableObject {
 // MARK: - View
 struct AccountSettingsView: View {
     @Environment(\.dismiss) private var dismiss // 뒤로가기 액션을 위해
+    @Environment(NavigationRouter.self) private var router
     @StateObject private var viewModel = AccountSettingsViewModel()
     
     var body: some View {
@@ -169,8 +170,9 @@ struct AccountSettingsView: View {
                 .foregroundColor(.black)
             
             Button(action: {
-                // TODO: 비밀번호 변경 화면으로 이동
-                print("비밀번호 변경 화면으로 이동")
+                guard let email = viewModel.accountInfo?.email else { return }
+
+                router.push(.passwordChange)
             }) {
                 Text("비밀번호 변경")
                     .font(.custom("Pretendard-SemiBold", size: 16))

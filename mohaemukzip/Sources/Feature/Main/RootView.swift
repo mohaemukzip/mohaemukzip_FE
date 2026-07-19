@@ -243,6 +243,7 @@ struct AuthRootView: View {
                         StartView().environmentObject(router)
                     case .agree:
                         AgreeView().environmentObject(router)
+                        
                     }
                 }
         }

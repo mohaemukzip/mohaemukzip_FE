@@ -155,4 +155,92 @@ final class AuthService {
             }
         }
     }
+    
+    // MARK: - Email Verification
+
+    /// 인증번호 발송
+    func sendEmailVerification(email: String) async throws {
+        let requestDTO = AuthRequestDTO.SendEmailVerificationRequest(
+            email: email
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.sendEmailVerification(requestDTO)) { result in
+                switch result {
+
+                case .success(let response):
+                    do {
+                        _ = try response.map(SendEmailVerificationResponseDTO.self)
+                        continuation.resume(returning: ())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// 인증번호 검증
+    func verifyEmail(
+        email: String,
+        authCode: String
+    ) async throws -> Bool {
+
+        let requestDTO = AuthRequestDTO.VerifyEmailRequest(
+            email: email,
+            authCode: authCode
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.verifyEmail(requestDTO)) { result in
+                switch result {
+
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(VerifyEmailResponseDTO.self)
+                        continuation.resume(returning: decoded.result.verified)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// 비밀번호 재설정
+    func resetPassword(
+        email: String,
+        newPassword: String
+    ) async throws {
+
+        let requestDTO = AuthRequestDTO.ResetPasswordRequest(
+            email: email,
+            newPassword: newPassword
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.resetPassword(requestDTO)) { result in
+                switch result {
+
+                case .success(let response):
+                    do {
+                        _ = try response.map(ResetPasswordResponseDTO.self)
+                        continuation.resume(returning: ())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
 }
