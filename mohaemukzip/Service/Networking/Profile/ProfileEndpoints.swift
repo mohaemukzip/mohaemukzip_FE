@@ -19,6 +19,9 @@ enum ProfileEndpoints {
 
     /// 프로필(닉네임/프로필 이미지) 수정
     case patchProfile(dto: ProfileRequestDTO.UpdateProfileRequest)
+    
+    /// 계정 설정 조회
+    case getAccountSetting
 }
 
 extension ProfileEndpoints: TargetType {
@@ -42,12 +45,17 @@ extension ProfileEndpoints: TargetType {
             return "/s3/profile/upload-url"
         case .patchProfile:
             return "/members/me/profile"
+        case .getAccountSetting:
+            return "/members/me/account-setting"
         }
     }
 
     var method: Moya.Method {
         switch self {
-        case .getMyPage, .getRecentlyViewedRecipes, .getBookmarkedRecipes:
+        case .getMyPage,
+             .getRecentlyViewedRecipes,
+             .getBookmarkedRecipes,
+             .getAccountSetting:
             return .get
         case .postProfileUploadURL:
             return .post
@@ -58,7 +66,9 @@ extension ProfileEndpoints: TargetType {
 
     var task: Task {
         switch self {
-        case .getMyPage, .getRecentlyViewedRecipes:
+        case .getMyPage,
+             .getRecentlyViewedRecipes,
+             .getAccountSetting:
             return .requestPlain
 
         case let .getBookmarkedRecipes(page):

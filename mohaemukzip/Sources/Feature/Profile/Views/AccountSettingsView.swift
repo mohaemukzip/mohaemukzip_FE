@@ -29,16 +29,27 @@ class AccountSettingsViewModel: ObservableObject {
     
     // API 통신 전이므로 임시 데이터로 초기화
     init() {
-        fetchMockData()
+        fetchAccountSetting()
     }
     
-    func fetchMockData() {
-        self.accountInfo = AccountInfo(
-            email: Config.loginId,
-            loginType: .kakao // TODO: 추후 AuthService에서 받아온 loginType으로 변경
-        )
+    func fetchAccountSetting() {
+        ProfileService.shared.getAccountSetting { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let response):
+                    let loginType = LoginType(rawValue: response.loginType) ?? .general
+
+                    self?.accountInfo = AccountInfo(
+                        email: response.email,
+                        loginType: loginType
+                    )
+
+                case .failure(let error):
+                    print("계정 설정 조회 실패:", error)
+                }
+            }
+        }
     }
-    
     /// 이메일 영역에 표시할 텍스트
     /// 이메일 영역에 표시할 텍스트
     var displayEmailText: String {

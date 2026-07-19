@@ -44,6 +44,18 @@ final class ProfileService {
     func getMyPage(completion: @escaping (Result<ProfileResponseDTO.MyPage, Error>) -> Void) {
         request(target: .getMyPage, decodingType: ProfileResponseDTO.MyPage.self, completion: completion)
     }
+    
+    /// 계정 설정 조회
+    /// GET /members/me/account-setting
+    func getAccountSetting(
+        completion: @escaping (Result<ProfileResponseDTO.AccountSetting, Error>) -> Void
+    ) {
+        request(
+            target: .getAccountSetting,
+            decodingType: ProfileResponseDTO.AccountSetting.self,
+            completion: completion
+        )
+    }
 
     /// 최근 본 레시피 목록 조회
     /// GET /members/me/recently-viewed
