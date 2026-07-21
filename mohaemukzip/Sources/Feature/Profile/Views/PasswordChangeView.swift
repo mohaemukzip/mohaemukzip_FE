@@ -75,9 +75,13 @@ final class PasswordChangeViewModel {
 
     // MARK: - Actions
 
-    /// TODO: 이메일 인증 발송 API
     func sendVerificationCode() {
 
+        // 먼저 화면 전환
+        errorMessage = nil
+        step = .verification
+
+        // API는 백그라운드에서 호출
         Task {
 
             do {
@@ -89,7 +93,6 @@ final class PasswordChangeViewModel {
                 )
 
                 isLoading = false
-                step = .verification
 
             } catch {
 
@@ -98,7 +101,6 @@ final class PasswordChangeViewModel {
             }
         }
     }
-
     /// TODO: 이메일 인증 확인 API
     func verifyCode() {
 
@@ -124,12 +126,14 @@ final class PasswordChangeViewModel {
 
                 } else {
 
+                    verificationCode = ""
                     errorMessage = "인증번호가 틀립니다."
                 }
 
             } catch {
 
                 isLoading = false
+                verificationCode = ""
                 errorMessage = "인증번호가 틀립니다."
             }
         }
@@ -171,7 +175,10 @@ struct PasswordChangeView: View {
     
 
     var body: some View {
-       
+        VStack(spacing: 0) {
+
+            header
+
             VStack(alignment: .leading, spacing: 0) {
 
                 switch viewModel.step {
@@ -188,24 +195,50 @@ struct PasswordChangeView: View {
 
                 Spacer()
             }
+            .padding(.top, 24)
             .padding(.horizontal, 20)
-            .navigationTitle("비밀번호 변경")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationBarBackButtonHidden(viewModel.step != .email)
-            .toolbar {
-                if viewModel.step != .email {
-                    ToolbarItem(placement: .topBarLeading) {
-                        Button {
-                            back()
-                        } label: {
-                            Image(systemName: "chevron.left")
-                        }
-                        .tint(.black)
-                    }
-                }
-            }
-        
         }
+        .navigationBarBackButtonHidden(true)
+    }
+    
+    private var header: some View {
+        HStack(spacing: 8) {
+
+            Button {
+                back()
+            } label: {
+
+                Image("backbutton")
+                    .frame(width: 44, height: 44)
+            }
+
+            Text(title)
+                .font(.custom("Pretendard-SemiBold", size: 20))
+                .foregroundStyle(.black)
+
+            Spacer()
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 8)
+        .padding(.bottom, 6)
+        .background(.white)
+    }
+    
+    private var title: String {
+
+        switch viewModel.step {
+
+        case .email:
+            return "비밀번호 변경"
+
+        case .verification:
+            return "인증번호 입력"
+
+        case .password:
+            return "새 비밀번호 입력"
+        }
+    }
+    
     private func back() {
         switch viewModel.step {
         case .email:
@@ -227,9 +260,13 @@ private extension PasswordChangeView {
 
             VStack(alignment: .leading, spacing: 8) {
 
-                Text("이메일")
-                    .font(.custom("Pretendard-SemiBold", size: 15))
-                    .foregroundColor(.black)
+                Text("가입에 사용한 이메일 주소를 입력하세요.")
+                .font(
+                Font.custom("Pretendard", size: 16)
+                .weight(.semibold)
+                )
+                .multilineTextAlignment(.center)
+                .foregroundColor(.black)
 
                 TextField("이메일을 입력해주세요.", text: $viewModel.inputEmail)
                     .textInputAutocapitalization(.never)
@@ -299,6 +336,9 @@ private extension PasswordChangeView {
 
                             if viewModel.verificationCode.count == 6 {
                                 isCodeFieldFocused = false
+                            }
+                            if viewModel.verificationCode.isEmpty {
+                                isCodeFieldFocused = true
                             }
                         }
 
