@@ -212,6 +212,33 @@ final class AuthService {
             }
         }
     }
+    
+    func requestEmailVerification(email: String) async throws {
+
+        let requestDTO = SendEmailVerificationRequestDTO(
+            email: email
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.requestEmailVerification(requestDTO)) { result in
+
+                switch result {
+                case .success(let response):
+                    do {
+                        _ = try response.mapResult(
+                            SendEmailVerificationResultDTO.self
+                        )
+                        continuation.resume()
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 
     /// 비밀번호 재설정
     func resetPassword(
