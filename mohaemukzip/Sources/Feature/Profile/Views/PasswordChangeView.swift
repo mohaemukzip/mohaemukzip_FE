@@ -50,7 +50,10 @@ final class PasswordChangeViewModel {
 
     /// 비밀번호 정책(임시)
     var isPasswordValid: Bool {
-        newPassword.count >= 8
+        let hasLetter = newPassword.range(of: "[A-Za-z]", options: .regularExpression) != nil
+        let hasNumber = newPassword.range(of: "[0-9]", options: .regularExpression) != nil
+
+        return newPassword.count >= 10 && hasLetter && hasNumber
     }
 
     /// 비밀번호 일치
@@ -81,7 +84,7 @@ final class PasswordChangeViewModel {
 
                 isLoading = true
 
-                try await AuthService.shared.sendEmailVerification(
+                try await AuthService.shared.sendResetPasswordEmail(
                     email: inputEmail
                 )
 
@@ -164,6 +167,8 @@ struct PasswordChangeView: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var viewModel = PasswordChangeViewModel()
+    @FocusState private var isCodeFieldFocused: Bool
+    
 
     var body: some View {
        
@@ -186,7 +191,33 @@ struct PasswordChangeView: View {
             .padding(.horizontal, 20)
             .navigationTitle("비밀번호 변경")
             .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(viewModel.step != .email)
+            .toolbar {
+                if viewModel.step != .email {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            back()
+                        } label: {
+                            Image(systemName: "chevron.left")
+                        }
+                        .tint(.black)
+                    }
+                }
+            }
+        
         }
+    private func back() {
+        switch viewModel.step {
+        case .email:
+            dismiss()
+
+        case .verification:
+            viewModel.step = .email
+
+        case .password:
+            viewModel.step = .verification
+        }
+    }
     }
 
 private extension PasswordChangeView {
@@ -243,32 +274,69 @@ private extension PasswordChangeView {
     var verificationView: some View {
         VStack(alignment: .leading, spacing: 24) {
 
-            VStack(alignment: .leading, spacing: 8) {
+            VStack(alignment: .leading, spacing: 12) {
 
                 Text("인증번호")
                     .font(.custom("Pretendard-SemiBold", size: 15))
-                    .foregroundColor(.black)
-                TextField("인증번호 6자리를 입력해주세요.", text: $viewModel.verificationCode)
-                    .keyboardType(.numberPad)
-                    .onChange(of: viewModel.verificationCode) { _, newValue in
-                        let filtered = newValue.filter { $0.isNumber }
 
-                        if filtered.count > 6 {
-                            viewModel.verificationCode = String(filtered.prefix(6))
-                        } else {
-                            viewModel.verificationCode = filtered
+                ZStack {
+
+                    TextField("", text: $viewModel.verificationCode)
+                        .keyboardType(.numberPad)
+                        .textContentType(.oneTimeCode)
+                        .focused($isCodeFieldFocused)
+                        .opacity(0.01)
+                        .frame(width: 1, height: 1)
+                        .onChange(of: viewModel.verificationCode) { _, newValue in
+
+                            let filtered = newValue.filter(\.isNumber)
+
+                            if filtered.count > 6 {
+                                viewModel.verificationCode = String(filtered.prefix(6))
+                            } else {
+                                viewModel.verificationCode = filtered
+                            }
+
+                            if viewModel.verificationCode.count == 6 {
+                                isCodeFieldFocused = false
+                            }
+                        }
+
+                    HStack(spacing: 12) {
+
+                        ForEach(0..<6, id: \.self) { index in
+
+                            RoundedRectangle(cornerRadius: 10)
+                                .stroke(
+                                    index == viewModel.verificationCode.count
+                                    ? Color.black
+                                    : Color.gray.opacity(0.3),
+                                    lineWidth: 1.5
+                                )
+                                .frame(width: 48, height: 58)
+                                .overlay {
+
+                                    if index < viewModel.verificationCode.count {
+
+                                        let chars = Array(viewModel.verificationCode)
+
+                                        Text(String(chars[index]))
+                                            .font(.system(size: 24, weight: .semibold))
+                                    }
+                                }
                         }
                     }
-                    .padding(.horizontal, 16)
-                    .frame(height: 52)
-                    .background(Color.gray.opacity(0.08))
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                }
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    isCodeFieldFocused = true
+                }
 
                 Text("이메일로 전송된 인증번호를 입력해주세요.")
                     .font(.custom("Pretendard-Regular", size: 13))
                     .foregroundColor(.gray)
-                if let message = viewModel.errorMessage {
 
+                if let message = viewModel.errorMessage {
                     Text(message)
                         .font(.custom("Pretendard-Regular", size: 13))
                         .foregroundStyle(.red)
@@ -283,7 +351,6 @@ private extension PasswordChangeView {
 
                 Text("인증하기")
                     .font(.custom("Pretendard-SemiBold", size: 16))
-               
                     .foregroundStyle(.white)
                     .frame(maxWidth: .infinity)
                     .frame(height: 54)
@@ -297,9 +364,14 @@ private extension PasswordChangeView {
             .disabled(!viewModel.canVerify)
         }
         .padding(.top, 32)
+        .onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                isCodeFieldFocused = true
+            }
+        }
     }
-
 }
+
 
 private extension PasswordChangeView {
 
@@ -318,8 +390,7 @@ private extension PasswordChangeView {
                     .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                Text("8자 이상 입력해주세요.")
-                    .font(.custom("Pretendard-Regular", size: 13))
+                Text("영문과 숫자를 포함해 10자 이상 입력해주세요.")                    .font(.custom("Pretendard-Regular", size: 13))
                     .foregroundColor(.gray)
             }
 
@@ -352,26 +423,26 @@ private extension PasswordChangeView {
                 }
             }
 
-            Button {
+            if viewModel.canComplete {
 
-                viewModel.complete {
-                    dismiss()
+                Button {
+
+                    viewModel.complete {
+                        dismiss()
+                    }
+
+                } label: {
+
+                    Text("비밀번호 변경")
+                        .font(.custom("Pretendard-SemiBold", size: 16))
+                        .foregroundStyle(.white)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 54)
+                        .background(Color.black)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
-            } label: {
-
-                Text("완료")
-                    .font(.custom("Pretendard-SemiBold", size: 16))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
-                    .background(
-                        viewModel.canComplete
-                        ? Color.black
-                        : Color.gray.opacity(0.35)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
             }
-            .disabled(!viewModel.canComplete)
+          
         }
         .padding(.top, 32)
     }

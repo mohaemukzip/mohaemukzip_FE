@@ -1,12 +1,15 @@
 import Foundation
 
 // MARK: - 이메일 인증 발송
-
 struct SendEmailVerificationResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
     let message: String
-    let result: EmptyResultDTO?
+    let result: SendEmailVerificationResultDTO?
+}
+
+struct SendEmailVerificationResultDTO: Decodable {
+    let message: String
 }
 
 // MARK: - 이메일 인증 확인

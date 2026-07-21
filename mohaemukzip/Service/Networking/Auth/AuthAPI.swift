@@ -8,7 +8,7 @@ enum AuthAPI {
     case checkLoginId(CheckLoginIdRequestDTO)
 
     // MARK: - Email
-    case sendEmailVerification(AuthRequestDTO.SendEmailVerificationRequest)
+    case sendResetPasswordEmail(AuthRequestDTO.SendEmailVerificationRequest)
     case verifyEmail(AuthRequestDTO.VerifyEmailRequest)
     case resetPassword(AuthRequestDTO.ResetPasswordRequest)
 
@@ -34,8 +34,8 @@ extension AuthAPI: TargetType {
         case .checkLoginId:
             return "/auth/check-loginid"
 
-        case .sendEmailVerification:
-            return "/auth/email/send"
+        case .sendResetPasswordEmail:
+            return "/auth/email/send/reset-password"
 
         case .verifyEmail:
             return "/auth/email/verify"
@@ -59,7 +59,7 @@ extension AuthAPI: TargetType {
         case .signup,
              .login,
              .checkLoginId,
-             .sendEmailVerification,
+             .sendResetPasswordEmail,
              .verifyEmail,
              .reissue,
              .logout:
@@ -84,7 +84,7 @@ extension AuthAPI: TargetType {
         case .checkLoginId(let request):
             return .requestJSONEncodable(request)
 
-        case .sendEmailVerification(let request):
+        case .sendResetPasswordEmail(let request):
             return .requestJSONEncodable(request)
 
         case .verifyEmail(let request):

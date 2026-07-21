@@ -159,13 +159,13 @@ final class AuthService {
     // MARK: - Email Verification
 
     /// 인증번호 발송
-    func sendEmailVerification(email: String) async throws {
+    func sendResetPasswordEmail(email: String) async throws {
         let requestDTO = AuthRequestDTO.SendEmailVerificationRequest(
             email: email
         )
 
         return try await withCheckedThrowingContinuation { continuation in
-            provider.request(.sendEmailVerification(requestDTO)) { result in
+            provider.request(.sendResetPasswordEmail(requestDTO)) { result in
                 switch result {
 
                 case .success(let response):
