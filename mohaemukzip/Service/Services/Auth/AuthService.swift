@@ -77,8 +77,65 @@ final class AuthService {
         }
     }
     
-    // MARK: - Check LoginId (Duplicate Check)
+    // MARK: Kakao Login
+    func kakaoLogin(kakaoAccessToken: String) async throws -> AuthTokensModel {
+        let requestDTO = KakaoLoginRequestDTO(kakaoAccessToken: kakaoAccessToken)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.kakaoLogin(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(LoginResponseDTO.self)
+                        continuation.resume(returning: decoded.result.toModel())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
     
+    // MARK: Apple Login
+    func appleLogin(identityToken: String) async throws -> AuthTokensModel {
+        let requestDTO = AppleLoginRequestDTO(identityToken: identityToken)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.appleLogin(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(LoginResponseDTO.self)
+                        continuation.resume(returning: decoded.result.toModel())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    // MARK: 약관 여부 전달
+    func submitTermsAgreement(terms: [SignUpTermDTO], token: String) async throws -> Bool {
+        let requestDTO = terms
+        
+        return await withCheckedContinuation { continuation in
+            provider.request(.agreeTerms(requestDTO, token)) { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: true)
+                case .failure:
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Check LoginId (Duplicate Check)
     func checkLoginId(loginId: String) async throws -> CheckLoginIdModel {
         let requestDTO = CheckLoginIdRequestDTO(loginId: loginId)
         

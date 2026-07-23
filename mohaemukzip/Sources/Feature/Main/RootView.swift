@@ -77,6 +77,18 @@ final class AppState: ObservableObject {
         saveSession(accessToken: accessToken, refreshToken: refreshToken)
         enterMain()
     }
+    
+    // 토큰을 임시 메모리에 저장
+    func setSession(accessToken: String, refreshToken: String) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+    }
+    
+    // 임시 저장된 토큰을 클리어
+    func clearTempSession() {
+        self.accessToken = nil
+        self.refreshToken = nil 
+    }
 
 
     // MARK: - Session Control
@@ -179,6 +191,7 @@ enum AuthRoute: Hashable, Equatable {
     case signup([SignUpTermDTO])
     case signupFinish
     case agree
+    case socialAgree
 }
 
 final class AuthRouter: ObservableObject {
@@ -209,7 +222,9 @@ struct AuthRootView: View {
                     case .signupFinish:
                         SignupFinishView().environmentObject(router)
                     case .agree:
-                        AgreeView().environmentObject(router)
+                        AgreeView(mode: .signup).environmentObject(router)
+                    case .socialAgree:
+                        AgreeView(mode: .social).environmentObject(router)
                     }
                 }
         }

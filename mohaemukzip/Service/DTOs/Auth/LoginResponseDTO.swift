@@ -1,4 +1,3 @@
-
 struct LoginResponseDTO: Decodable {
     let isSuccess: Bool
     let code: String
@@ -12,4 +11,6 @@ struct LoginResultDTO: Decodable {
     let refreshToken: String
     let isNewUser: Bool
     let isInactive: Bool
+    let loginType: String
+    let termsAgreed: Bool
 }

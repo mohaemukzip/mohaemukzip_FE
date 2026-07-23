@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		67AFD6BA2FF637FE00A31FD8 /* KakaoSDKUser in Frameworks */ = {isa = PBXBuildFile; productRef = 67AFD6B92FF637FE00A31FD8 /* KakaoSDKUser */; };
 		D7119FD62F305F550072BBC9 /* CombineMoya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD52F305F550072BBC9 /* CombineMoya */; };
 		D7119FD82F305F550072BBC9 /* Moya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD72F305F550072BBC9 /* Moya */; };
 		D7119FDA2F305F550072BBC9 /* ReactiveMoya in Frameworks */ = {isa = PBXBuildFile; productRef = D7119FD92F305F550072BBC9 /* ReactiveMoya */; };
@@ -48,6 +49,7 @@
 				D7119FEE2F3070AD0072BBC9 /* KeychainSwift in Frameworks */,
 				D7119FDC2F305F550072BBC9 /* RxMoya in Frameworks */,
 				D7119FD62F305F550072BBC9 /* CombineMoya in Frameworks */,
+				67AFD6BA2FF637FE00A31FD8 /* KakaoSDKUser in Frameworks */,
 				D7119FDA2F305F550072BBC9 /* ReactiveMoya in Frameworks */,
 				D775B56D2F21FD980085293A /* YouTubePlayerKit in Frameworks */,
 				D7119FD82F305F550072BBC9 /* Moya in Frameworks */,
@@ -99,6 +101,7 @@
 				D7119FD92F305F550072BBC9 /* ReactiveMoya */,
 				D7119FDB2F305F550072BBC9 /* RxMoya */,
 				D7119FED2F3070AD0072BBC9 /* KeychainSwift */,
+				67AFD6B92FF637FE00A31FD8 /* KakaoSDKUser */,
 			);
 			productName = mohaemukzip;
 			productReference = 67A031AF2F0FC1BF005E0E39 /* mohaemukzip.app */;
@@ -132,6 +135,7 @@
 				D775B56B2F21FD980085293A /* XCRemoteSwiftPackageReference "YouTubePlayerKit" */,
 				D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */,
 				D7119FEC2F3070AD0072BBC9 /* XCRemoteSwiftPackageReference "keychain-swift" */,
+				67AFD6B82FF637FE00A31FD8 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 67A031B02F0FC1BF005E0E39 /* Products */;
@@ -294,6 +298,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = mohaemukzip/mohaemukzip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = KX93JF4Y2Z;
@@ -336,9 +341,10 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = mohaemukzip/mohaemukzip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = KX93JF4Y2Z;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = mohaemukzip/Info.plist;
@@ -395,6 +401,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		67AFD6B82FF637FE00A31FD8 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/kakao/kakao-ios-sdk";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.28.0;
+			};
+		};
 		D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Moya/Moya";
@@ -422,6 +436,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		67AFD6B92FF637FE00A31FD8 /* KakaoSDKUser */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 67AFD6B82FF637FE00A31FD8 /* XCRemoteSwiftPackageReference "kakao-ios-sdk" */;
+			productName = KakaoSDKUser;
+		};
 		D7119FD52F305F550072BBC9 /* CombineMoya */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = D7119FD42F305F550072BBC9 /* XCRemoteSwiftPackageReference "Moya" */;
