@@ -2,6 +2,11 @@ import Foundation
 import Moya
 import Alamofire
 
+extension Notification.Name {
+    static let authSessionExpired =
+        Notification.Name("authSessionExpired")
+}
+
 // MARK: - 공용 BaseResposneDTO
 struct BaseResponse<T: Decodable>: Decodable {
     let isSuccess: Bool
@@ -24,7 +29,6 @@ final class NetworkManager {
     private let authInterceptor = AuthInterceptor()
 
     private let plugins: [PluginType] = [
-        NetworkLoggerPlugin(configuration: .init(logOptions: .verbose)),
         NetworkDebugPlugin()
     ]
 
@@ -39,7 +43,6 @@ final class NetworkManager {
 
 /// 401 응답을 감지하면 /auth/reissue 를 호출해서 토큰을 갱신한 뒤,
 /// 실패한 요청을 1회 재시도하는 Alamofire Interceptor 입니다.
-///
 
 private final class AuthInterceptor: RequestInterceptor {
 
@@ -53,12 +56,14 @@ private final class AuthInterceptor: RequestInterceptor {
         MoyaProvider<AuthAPI>()
     }()
 
+    
     func adapt(
         _ urlRequest: URLRequest,
         for session: Session,
         completion: @escaping (Result<URLRequest, Error>) -> Void
     ) {
         var request = urlRequest
+        let tokens = TokenStore.loadTokens() // 키체인에서 토큰을 불러옴
 
         // 이미 Authorization이 있으면 그대로
         if request.value(forHTTPHeaderField: "Authorization") != nil {
@@ -67,7 +72,7 @@ private final class AuthInterceptor: RequestInterceptor {
         }
 
         // accessToken 없으면 건드리지 않음
-        guard !Config.accessTK.isEmpty else {
+        guard let accessToken = tokens.access, !accessToken.isEmpty else {
             completion(.success(request))
             return
         }
@@ -77,16 +82,15 @@ private final class AuthInterceptor: RequestInterceptor {
             if urlString.contains("/auth/login") ||
                 urlString.contains("/auth/signup") ||
                 urlString.contains("/auth/check-loginid") ||
-                urlString.contains("/auth/reissue") {
+                urlString.contains("/auth/reissue") ||
+                urlString.contains("/auth/email/send") ||
+                urlString.contains("/auth/email/verify") {
                 completion(.success(request))
                 return
             }
         }
 
-        request.setValue("Bearer \(Config.accessTK)", forHTTPHeaderField: "Authorization")
-
-        // DEBUG LOG REMOVED
-
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         completion(.success(request))
     }
 
@@ -96,6 +100,8 @@ private final class AuthInterceptor: RequestInterceptor {
         dueTo error: Error,
         completion: @escaping (RetryResult) -> Void
     ) {
+        let tokens = TokenStore.loadTokens()
+        
         // status code가 없으면 재시도 판단 불가
         guard let response = request.task?.response as? HTTPURLResponse else {
             completion(.doNotRetry)
@@ -107,18 +113,25 @@ private final class AuthInterceptor: RequestInterceptor {
             completion(.doNotRetry)
             return
         }
+        
+        // 이미 재시도 요청 보냈으면 중복재시도 X
+        guard request.retryCount == 0 else {
+            completion(.doNotRetry)
+            return
+        }
 
         // reissue 요청 자체가 401이면 루프 방지
         if let urlString = request.request?.url?.absoluteString,
-           urlString.contains("/auth/reissue") {
+           urlString.contains("/auth/reissue") ||
+            urlString.contains("/auth/email/send") ||
+            urlString.contains("/auth/email/verify") {
             // DEBUG LOG REMOVED
             completion(.doNotRetry)
             return
         }
 
         // refreshToken이 없으면 재발급 불가
-        guard !Config.refreshTK.isEmpty else {
-            // DEBUG LOG REMOVED
+        guard let refreshToken = tokens.refresh, !refreshToken.isEmpty else {
             completion(.doNotRetry)
             return
         }
@@ -148,10 +161,8 @@ private final class AuthInterceptor: RequestInterceptor {
                     let newAccess = decoded.result.accessToken
                     let newRefresh = decoded.result.refreshToken
 
-                    // 토큰 저장(앱 재시작 대비) + Config 동기화
+                    // 토큰 저장
                     TokenStore.saveTokens(access: newAccess, refresh: newRefresh)
-                    Config.accessTK = newAccess
-                    Config.refreshTK = newRefresh
 
                     // DEBUG LOG REMOVED
 
@@ -163,6 +174,12 @@ private final class AuthInterceptor: RequestInterceptor {
                 }
 
             case .failure(let error):
+                // 재발급 실패한 리프레시 토큰이 만료됐다는 뜻 -> expireSession함수 호출 -> 리프레시 토큰 만료 알림을 보내 RootView에서 처리 
+                if case let .statusCode(response) = error,
+                       response.statusCode == 401 || response.statusCode == 403 {
+                        self.expireSession()
+                    }
+                
                 // DEBUG LOG REMOVED
                 self.finishRefreshing(with: .doNotRetryWithError(error))
             }
@@ -179,6 +196,16 @@ private final class AuthInterceptor: RequestInterceptor {
         // DEBUG LOG REMOVED
 
         completions.forEach { $0(result) }
+    }
+    
+    // 리프레시 토큰 만료 시
+    private func expireSession() {
+        TokenStore.clear()
+
+        NotificationCenter.default.post(
+            name: .authSessionExpired,
+            object: nil
+        )
     }
 }
 

@@ -6,6 +6,7 @@ enum FridgeAPI {
     case fetchIngredients
     case addIngredients(AddIngredientRequestDTO)
     case deleteIngredient(Int)
+    case updateIngredient(Int, UpdateIngredientRequestDTO)
 }
 
 extension FridgeAPI: TargetType {
@@ -19,6 +20,8 @@ extension FridgeAPI: TargetType {
             return "/me/ingredients"
         case .deleteIngredient(let id):
             return "/me/ingredients/\(id)"
+        case .updateIngredient(let id, _):
+            return "/me/ingredients/\(id)"
         }
     }
     
@@ -30,6 +33,8 @@ extension FridgeAPI: TargetType {
             return .post
         case .deleteIngredient:
             return .delete
+        case .updateIngredient:
+            return .put
         }
     }
     
@@ -39,13 +44,18 @@ extension FridgeAPI: TargetType {
             return .requestPlain
         case .addIngredients(let request):
             return .requestJSONEncodable(request)
+        case .updateIngredient(_, let request):
+            return .requestJSONEncodable(request)
         }
     }
     
     var headers: [String: String]? {
         return [
-            "Content-Type" : "application/json",
-            "Authorization" : "Bearer \(Config.accessTK)"
+            "Content-Type" : "application/json"
         ]
+    }
+    
+    var validationType: ValidationType {
+        .successCodes
     }
 }

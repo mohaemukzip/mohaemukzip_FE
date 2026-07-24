@@ -1,4 +1,5 @@
 import SwiftUI
+import Moya
 
 enum PasswordChangeStep {
     case email
@@ -82,7 +83,7 @@ final class PasswordChangeViewModel {
         step = .verification
 
         // API는 백그라운드에서 호출
-        Task {
+        Swift.Task {
 
             do {
 
@@ -94,9 +95,16 @@ final class PasswordChangeViewModel {
 
                 isLoading = false
 
-            } catch {
-
+            }catch let error as MoyaError {
                 isLoading = false
+                print(error)
+                print(error.response?.statusCode ?? -1)
+                print(String(data: error.response?.data ?? Data(), encoding: .utf8) ?? "")
+                errorMessage = "인증번호 발송에 실패했습니다."
+            }
+            catch {
+                isLoading = false
+                print(error)
                 errorMessage = "인증번호 발송에 실패했습니다."
             }
         }
@@ -104,7 +112,7 @@ final class PasswordChangeViewModel {
     /// TODO: 이메일 인증 확인 API
     func verifyCode() {
 
-        Task {
+        Swift.Task {
 
             do {
 
@@ -144,7 +152,7 @@ final class PasswordChangeViewModel {
         dismiss: @escaping () -> Void
     ) {
 
-        Task {
+        Swift.Task {
 
             do {
 

@@ -15,6 +15,7 @@ enum Config {
         return baseURL
     }()
     
+
     static var accessTK: String {
         get {
             UserDefaults.standard.string(forKey: "ACCESS_TOKEN") ?? ""
@@ -43,4 +44,8 @@ enum Config {
             UserDefaults.standard.set(newValue, forKey: "LOGIN_ID")
         }
     }
+
+    // TODO: Config에서 관리하던 AccessTK, RefreshTK는 삭제
+    // 필요시 git history에서 복구
+
 }

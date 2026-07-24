@@ -1,9 +1,6 @@
 import Foundation
 import Moya
 import Alamofire
-import KeychainSwift
-
-
 
 enum RecipeEndpoints {
 
@@ -119,42 +116,19 @@ extension RecipeEndpoints: TargetType {
 
     // MARK: Headers
     var headers: [String: String]? {
-        let contentTypeHeader: [String: String] = ["Content-Type": "application/json"]
-
-        // 1) Keychain에 저장된 Access Token 우선 사용
-        if let accessToken = KeychainSwift().get("serverAccessToken")?
-            .trimmingCharacters(in: .whitespacesAndNewlines),
-           !accessToken.isEmpty {
-
-            #if DEBUG
-            print("[RecipeEndpoints] ✅ Using Keychain token")
-            #endif
-
-            return contentTypeHeader.merging(["Authorization": "Bearer \(accessToken)"]) { $1 }
-        }
-
-        // 2) 개발 편의용 fallback (DEBUG에서만 Config.accessTK 사용)
-        #if DEBUG
-        let fallback = Config.accessTK.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // 치환 실패하면 보통 '$(ACCESS_TOKEN)' 형태의 문자열이 그대로 남는다.
-        if fallback.contains("$(") {
-            print("[RecipeEndpoints] ❌ ACCESS_TOKEN substitution failed: \(fallback)")
-        } else if !fallback.isEmpty {
-            print("[RecipeEndpoints] ⚠️ Keychain token not found. Using Config.accessTK for DEBUG.")
-            return contentTypeHeader.merging(["Authorization": "Bearer \(fallback)"]) { $1 }
-        } else {
-            print("[RecipeEndpoints] ❌ Config.accessTK is empty. Check Info.plist/xcconfig injection.")
-        }
-        #endif
-
-        // 3) 로그인 전/토큰 없음: Content-Type만 유지
-        return contentTypeHeader
+        return [ "Content-Type": "application/json" ]
+        
+        // TODO: accessToken 주입은 인터셉터로 역할분리
+        // 필요 시 git history에서 복구
     }
 
     // MARK: Sample Data
     var sampleData: Data {
         // Unit Test용 샘플데이터
         return Data()
+    }
+    
+    var validationType: ValidationType {
+        .successCodes
     }
 }

@@ -15,4 +15,7 @@ struct SignUpResultDTO: Decodable {
     let isNewUser: Bool
     let isInactive: Bool
     let loginType: String
+
+    let termsAgreed: Bool
+
 }

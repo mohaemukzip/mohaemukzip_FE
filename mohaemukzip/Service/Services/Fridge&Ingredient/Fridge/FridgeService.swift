@@ -24,7 +24,7 @@ class FridgeService {
         }
     }
     
-    func addIngredient(id: Int, ty: String, date: String, amount: Int) async throws {
+    func addIngredient(id: Int, ty: String, date: String, amount: Double) async throws {
         let requestDTO = AddIngredientRequestDTO(ingredientId: id,
                                                  storageType: ty,
                                                  expireDate: date,
@@ -45,6 +45,23 @@ class FridgeService {
     func deleteIngredient(id: Int) async throws {
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(.deleteIngredient(id)) { result in
+                switch result {
+                case .success(_):
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    func updateIngredient(id: Int, ty: String, date: String, amount: Double) async throws {
+        let requestDTO = UpdateIngredientRequestDTO(storageType: ty,
+                                                    expireDate: date,
+                                                    weight: amount)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.updateIngredient(id, requestDTO)) { result in
                 switch result {
                 case .success(_):
                     continuation.resume()

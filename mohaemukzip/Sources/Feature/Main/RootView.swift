@@ -1,5 +1,3 @@
-
-
 import SwiftUI
 import Combine
 
@@ -32,10 +30,6 @@ final class AppState: ObservableObject {
 
             print("boot accessToken:", accessToken ?? "nil")
 
-            // Config 와 동기화 (API 레이어가 Config를 참조하는 구조 유지)
-            Config.accessTK = accessToken ?? ""
-            Config.refreshTK = refreshToken ?? ""
-
             // accessToken이 있으면 바로 메인
             if let accessToken, !accessToken.isEmpty {
                 root = .main
@@ -64,13 +58,24 @@ final class AppState: ObservableObject {
             root = .auth
         }
     }
+    
+    // 토큰만 저장, 홈으로 이동은 X
+    func saveSession(accessToken: String, refreshToken: String) {
+        TokenStore.saveTokens(
+            access: accessToken,
+            refresh: refreshToken
+        )
+    }
 
     func loginSucceeded(
         accessToken: String,
         refreshToken: String,
         loginType: String
     ) {
-        TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
+        TokenStore.saveTokens(
+            access: accessToken,
+            refresh: refreshToken
+        )
 
         self.accessToken = accessToken
         self.refreshToken = refreshToken
@@ -80,7 +85,25 @@ final class AppState: ObservableObject {
         Config.refreshTK = refreshToken
 
         print("[AppState] loginSucceeded -> save tokens & go main")
+
+        root = .main   // 추가
+    }
+    
+    // 홈으로 이동
+    func enterMain() {
         root = .main
+    }
+
+    // 토큰을 임시 메모리에 저장
+    func setSession(accessToken: String, refreshToken: String) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+    }
+    
+    // 임시 저장된 토큰을 클리어
+    func clearTempSession() {
+        self.accessToken = nil
+        self.refreshToken = nil 
     }
 
 
@@ -94,10 +117,6 @@ final class AppState: ObservableObject {
         TokenStore.clear()
         accessToken = nil
         refreshToken = nil
-
-        Config.accessTK = ""
-        Config.refreshTK = ""
-
         root = .auth
     }
 
@@ -130,45 +149,14 @@ final class AppState: ObservableObject {
             clearSession(reason: "withdrawal api fail")
         }
     }
-}
-
-// MARK: - Token Store (임시: UserDefaults)
-
-enum TokenStore {
-    private static let accessKey = "ACCESS_TOKEN"
-    private static let refreshKey = "REFRESH_TOKEN"
-
-    struct Tokens {
-        let access: String?
-        let refresh: String?
-    }
-
-    static func loadTokens() -> Tokens {
-        return .init(
-            access: UserDefaults.standard.string(forKey: accessKey),
-            refresh: UserDefaults.standard.string(forKey: refreshKey)
-        )
-    }
-
-    static func saveTokens(access: String, refresh: String?) {
-        UserDefaults.standard.set(access, forKey: accessKey)
-        if let refresh {
-            UserDefaults.standard.set(refresh, forKey: refreshKey)
-        } else {
-            UserDefaults.standard.removeObject(forKey: refreshKey)
-        }
-    }
-
-    static func clear() {
-        UserDefaults.standard.removeObject(forKey: accessKey)
-        UserDefaults.standard.removeObject(forKey: refreshKey)
-    }
-
-    /// 개발 중: 자동로그인 상태 해제용
-    static func clearTokenForDebug() {
-        clear()
+    
+    // 세션 만료 (리프레시 토큰 만료)
+    @MainActor
+    func sessionExpired() {
+        clearSession(reason: "refresh token expired")
     }
 }
+
 
 // MARK: - RootView
 
@@ -198,18 +186,28 @@ struct RootView: View {
                 appState.boot()
             }
         }
+        // 리프레시 토큰 만료 알림을 받아 처리
+        .onReceive(
+            NotificationCenter.default.publisher(
+                for: .authSessionExpired
+            )
+        ) { _ in
+            Task { @MainActor in
+                appState.sessionExpired()
+            }
+        }
     }
 }
 
 // MARK: - Auth Router
 
-enum AuthRoute: Hashable {
+enum AuthRoute: Hashable, Equatable {
     case onboarding
     case login
-    case signup
+    case signup([SignUpTermDTO])
     case signupFinish
-    case start
     case agree
+    case socialAgree
 }
 
 final class AuthRouter: ObservableObject {
@@ -235,15 +233,14 @@ struct AuthRootView: View {
                         OnboardingView().environmentObject(router)
                     case .login:
                         LoginView().environmentObject(router)
-                    case .signup:
-                        SignupView().environmentObject(router)
+                    case .signup(let terms):
+                        SignupView(terms: terms).environmentObject(router)
                     case .signupFinish:
                         SignupFinishView().environmentObject(router)
-                    case .start:
-                        StartView().environmentObject(router)
                     case .agree:
-                        AgreeView().environmentObject(router)
-                        
+                        AgreeView(mode: .signup).environmentObject(router)
+                    case .socialAgree:
+                        AgreeView(mode: .social).environmentObject(router)
                     }
                 }
         }

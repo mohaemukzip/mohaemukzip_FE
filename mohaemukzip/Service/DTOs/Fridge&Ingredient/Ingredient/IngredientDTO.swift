@@ -16,7 +16,7 @@ struct IngredientForAdditionDTO: Decodable {
     let name: String
     let category: String
     let unit: String
-    let weight: Int
+    let weight: Double
     let isFavorite: Bool
     
     
@@ -49,7 +49,7 @@ struct FavoriteIngredient: Decodable {
     let name: String
     let category: String
     let unit: String
-    let weight: Int
+    let weight: Double
     let isFavorite: Bool
     
     func toDomain() -> SavedIngredient {

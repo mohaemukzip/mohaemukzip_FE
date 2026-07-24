@@ -7,6 +7,7 @@ struct IngredientBox: View {
     let text: String
     let ingredients: [FridgeIngredient]
     var onDelete: (Int) -> Void
+    var onEdit: (FridgeIngredient) -> Void
     
     // 4열 그리드를 만들기 위한 배열을 4개씩 묶어주는 헬퍼
     private var chunkedIngredients: [[FridgeIngredient?]] {
@@ -26,7 +27,7 @@ struct IngredientBox: View {
         
         ZStack {
             Rectangle()
-                .frame(width: 359)
+                .frame(maxWidth: .infinity)
                 .foregroundStyle(.white)
             
             VStack {
@@ -34,7 +35,7 @@ struct IngredientBox: View {
                     Text(text)
                         .font(.PretendardSemibold16)
                         .foregroundStyle(.grey700)
-                    Spacer().frame(width: 278)
+                    Spacer()
                     Button(action: { withAnimation { isExpanded.toggle() } } ) {
                         Image(isExpanded ? "icon-chevron-down" : "icon-chevron-up")
                             .foregroundStyle(.grey700)
@@ -54,7 +55,8 @@ struct IngredientBox: View {
                                     IngredientManagementCard(ingredientInfo: item,
                                                              color: item.color.displayColor,
                                                              isEditing: $isEditing,
-                                                             onDelete: { onDelete(item.id) })
+                                                             onDelete: { onDelete(item.id) },
+                                                             onEdit: { onEdit(item) })
                                 } else {
                                     Rectangle()
                                         .frame(width: 76, height: 80)
@@ -71,19 +73,4 @@ struct IngredientBox: View {
         }
         
     }
-}
-
-
-#Preview {
-    @Previewable
-    @State var x = false
-    IngredientBox(isEditing: $x, text: "냉장", ingredients: [FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300"),
-                                                           FridgeIngredient(id: 1, name: "대파", storage: .chilled, color: .GREEN, amount: "100", expiryDate: "2025-03-11", dDay: "d-300")], onDelete: { _ in })
 }

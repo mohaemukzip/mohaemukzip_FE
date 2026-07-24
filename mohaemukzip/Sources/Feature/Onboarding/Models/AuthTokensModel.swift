@@ -7,6 +7,7 @@ struct AuthTokensModel {
     let isNewUser: Bool
     let isInactive: Bool
     let loginType: String
+    let termsAgreed: Bool
 }
 
 extension SignUpResultDTO {
@@ -17,7 +18,8 @@ extension SignUpResultDTO {
             refreshToken: refreshToken,
             isNewUser: isNewUser,
             isInactive: isInactive,
-            loginType: loginType
+            loginType: loginType,
+            termsAgreed: termsAgreed
         )
     }
 }
@@ -30,7 +32,8 @@ extension LoginResultDTO {
             refreshToken: refreshToken,
             isNewUser: isNewUser,
             isInactive: isInactive,
-            loginType: loginType
+            loginType: loginType,
+            termsAgreed: termsAgreed
         )
     }
 }

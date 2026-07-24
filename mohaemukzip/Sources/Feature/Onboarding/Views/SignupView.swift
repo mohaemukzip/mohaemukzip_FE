@@ -4,8 +4,10 @@ import Observation
 
 struct SignupView: View {
     
+    @EnvironmentObject private var appState: AppState
     @EnvironmentObject private var router: AuthRouter
     @State private var viewModel = SignupViewModel()
+    var terms: [SignUpTermDTO]
     
     var body: some View {
         VStack(spacing: 0) {
@@ -13,7 +15,7 @@ struct SignupView: View {
             VStack(alignment: .leading, spacing: 32) {
                 header
                 nicknameSection
-                idSection
+                emailSection
                 passwordSection
                 passwordConfirmSection
                 
@@ -28,6 +30,7 @@ struct SignupView: View {
                 .padding(.horizontal, 17)
         }
         .navigationBarBackButtonHidden()
+        .onDisappear(perform: viewModel.stopVerificationTimer)
     }
     
     // MARK: - Components
@@ -46,11 +49,10 @@ struct SignupView: View {
     }
     
     private var header: some View {
-        Text("아이디와 비밀번호만으로\n뭐해먹집?을 이용할 수 있어요.")
+        Text("이메일과 비밀번호만으로\n뭐해먹집?을 이용할 수 있어요.")
             .font(.PretendardSemibold20)
             .foregroundStyle(.black)
             .multilineTextAlignment(.leading)
-        // ✅ 높이 제약으로 인해 말줄임표가 생기지 않도록 세로로 확장 허용
             .fixedSize(horizontal: false, vertical: true)
             .padding(.top, 4)
     }
@@ -87,42 +89,36 @@ struct SignupView: View {
         }
     }
     
-    private var idSection: some View {
+    private var emailSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("아이디")
+            Text("이메일")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey600)
             
             HStack(spacing: 10) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(.grey100)
-                        .frame(height: 44)
-                    
-                    HStack(spacing: 10) {
-                        TextField("아이디를 입력해주세요.", text: Binding(
-                            get: { viewModel.model.userId },
-                            set: { viewModel.onChangeUserId($0) }
-                        ))
-                        .textInputAutocapitalization(.never)
-                        .textFieldStyle(.plain)
-                        .autocorrectionDisabled()
-                        .padding(.leading, 14)
-                        .font(.PretendardRegular16)
-                        
-                        Spacer(minLength: 0)
-                        
-                        Text(viewModel.userIdCountText)
-                            .font(.PretendardRegular14)
-                            .foregroundStyle(.grey500)
-                            .padding(.trailing, 12)
-                    }
-                }
+                TextField("이메일을 입력해주세요.", text: Binding(
+                    get: { viewModel.model.email },
+                    set: { viewModel.onChangeEmail($0) }
+                ))
+                .keyboardType(.emailAddress)
+                .textInputAutocapitalization(.never)
+                .textFieldStyle(.plain)
+                .autocorrectionDisabled()
+                .padding(.leading, 14)
+                .font(.PretendardRegular16)
+                .frame(height: 44)
+                .background(Color.grey100)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button {
-                    Task { await viewModel.checkDuplicateId() }
+                    guard viewModel.isValidEmail else {
+                        viewModel.emailVerificationState = .invalidFormat
+                        return
+                    }
+                    
+                    Task { await viewModel.requestEmailVerification() }
                 } label: {
-                    Text(viewModel.isCheckingId ? "확인중" : "중복확인")
+                    Text("인증 요청")
                         .font(.PretendardMedium16)
                         .foregroundStyle(.main400)
                         .frame(width: 84, height: 44)
@@ -131,39 +127,163 @@ struct SignupView: View {
                                 .stroke(.main400, lineWidth: 1)
                         )
                         .contentShape(Rectangle())
-                }
-                .disabled(viewModel.isCheckingId)
-                .opacity(viewModel.isCheckingId ? 0.6 : 1)
+                }.disabled(viewModel.isRequestingEmailCode)
             }
             
-            if let msg = (viewModel.idCheckMessage ?? viewModel.idCheckState.message) {
-                HStack(spacing: 6) {
-                    Image(systemName: viewModel.idCheckState.isSuccess ? "checkmark.circle" : "exclamationmark.circle")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
-                    
-                    Text(msg)
-                        .font(.system(size: 12))
-                        .foregroundStyle(viewModel.idCheckState.isSuccess ? Color.green : Color.red)
-                }
-                .padding(.top, 2)
-            } else {
-                HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 12))
-                        .foregroundStyle(.grey500)
-                    
-                    Text(viewModel.helperTextForIdFormat())
-                        .font(.system(size: 12))
-                        .foregroundStyle(.grey500)
-                }
-                .padding(.top, 2)
+            emailStatusMessage
+            
+            if viewModel.shouldShowVerificationField {
+                verificationCodeSection
             }
         }
     }
     
+    // email 상태 메세지
+    @ViewBuilder
+    private var emailStatusMessage: some View {
+        switch viewModel.emailVerificationState {
+        case .invalidFormat:
+            statusMessage(
+                "유효한 이메일 주소를 입력하세요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+            
+        case .codeSent:
+            statusMessage(
+                "인증번호가 발송되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+            
+        case .verified:
+            statusMessage(
+                "인증이 완료되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+            
+        case .requestFailed:
+            statusMessage(
+                "인증번호 요청이 실패했어요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+            
+        default:
+            EmptyView()
+        }
+    }
+    
+    private func statusMessage(_ msg: String, color: Color, icon: String) -> some View {
+        HStack {
+            Image(systemName: icon)
+            Text(msg)
+        }
+        .font(.PretendardRegular13)
+        .foregroundStyle(color)
+    }
+    
+    // 인증번호
+    private var verificationCodeSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("인증번호")
+                .font(.PretendardMedium14)
+                .foregroundStyle(.grey600)
+            
+            HStack(spacing: 6) {
+                HStack {
+                    TextField(
+                        "인증번호 6자리 입력",
+                        text: Binding(
+                            get: { viewModel.model.verificationCode },
+                            set: { viewModel.onChangeVerificationCode($0) }
+                        )
+                    )
+                    .keyboardType(.numberPad)
+                    
+                    Spacer()
+                    
+                    Text(viewModel.verificationTimeText)
+                        .font(.PretendardRegular13)
+                        .foregroundStyle(
+                            viewModel.remainingSeconds > 0
+                            ? Color.grey500
+                            : Color.red
+                        )
+                    
+                    Button {
+                        Task { await viewModel.requestEmailVerification() }
+                    } label: {
+                        Text("재요청")
+                            .font(.PretendardRegular13)
+                            .foregroundStyle(.grey700)
+                            .underline()
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(viewModel.isRequestingEmailCode)
+                }
+                .padding(.horizontal, 14)
+                .frame(height: 44)
+                .background(Color.grey100)
+                .clipShape(RoundedRectangle(cornerRadius: 10))
+                
+                Button {
+                    Task { await viewModel.verifyEmailCode() }
+                } label: {
+                    Text("확인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.main400)
+                }
+                .foregroundStyle(.main400)
+                .frame(width: 55, height: 44)
+                .overlay {
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(Color.main400)
+                }
+                .disabled(!viewModel.canVerifyCode || viewModel.isVerifyingEmailCode || viewModel.isRequestingEmailCode)
+                .opacity(viewModel.canVerifyCode ? 1 : 0.6)
+            }
+            
+            if viewModel.shouldShowVerificationField {
+                verificationStatusMessage
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var verificationStatusMessage: some View {
+        switch viewModel.emailVerificationState {
+        case .verified:
+            statusMessage(
+                "인증이 완료되었어요.",
+                color: .green,
+                icon: "checkmark.circle"
+            )
+
+        case .invalidCode:
+            statusMessage(
+                "인증번호가 일치하지 않아요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+
+        case .expired:
+            statusMessage(
+                "인증 시간이 만료되었어요. 다시 요청해주세요.",
+                color: .red,
+                icon: "exclamationmark.circle"
+            )
+            
+        default:
+            EmptyView()
+        }
+    }
+    
     private var passwordSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        let state = viewModel.passwordValidationState
+
+        return VStack(alignment: .leading, spacing: 8) {
             Text("비밀번호")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey700)
@@ -183,17 +303,24 @@ struct SignupView: View {
                 .padding(.horizontal, 14)
                 .font(.PretendardRegular16)
             }
-            
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle")
-                    .font(.PretendardRegular13)
-                    .foregroundStyle(.grey500)
-                
-                Text(viewModel.helperTextForPasswordFormat())
-                    .font(.PretendardRegular13)
-                    .foregroundStyle(.grey500)
+            if (state != .empty) {
+                HStack(spacing: 6) {
+                    Image(systemName: state == .valid
+                          ? "checkmark.circle"
+                          : "info.circle")
+
+                    Text(state.message)
+                }
+                .font(.PretendardRegular13)
+                .foregroundStyle(
+                    state == .empty
+                        ? Color.grey500
+                        : state.isError
+                            ? Color.red
+                            : Color.green
+                )
+                .padding(.top, 2)
             }
-            .padding(.top, 2)
         }
     }
     
@@ -248,8 +375,10 @@ struct SignupView: View {
     private var startButton: some View {
         Button {
             Task {
-                let ok = await viewModel.signup()
-                if ok {
+                let ok = await viewModel.signup(terms: self.terms)
+                if ok, let tokens = viewModel.tokens {
+                    // 토큰 저장만 하고 signupFinishView로 이동 (아직 홈으로 이동 X)
+                    appState.saveSession(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
                     router.push(.signupFinish)
                 }
             }
@@ -265,4 +394,10 @@ struct SignupView: View {
         }
         .disabled(!viewModel.isReadyToStart || viewModel.isLoading)
     }
+}
+
+#Preview("회원가입") {
+    SignupView(terms: [SignUpTermDTO(id: 1, isAgreed: false)])
+        .environmentObject(AuthRouter())
+        .environmentObject(AppState())
 }

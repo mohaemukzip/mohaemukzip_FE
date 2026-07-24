@@ -1,4 +1,3 @@
-
 import Foundation
 import Moya
 
@@ -77,8 +76,65 @@ final class AuthService {
         }
     }
     
-    // MARK: - Check LoginId (Duplicate Check)
+    // MARK: Kakao Login
+    func kakaoLogin(kakaoAccessToken: String) async throws -> AuthTokensModel {
+        let requestDTO = KakaoLoginRequestDTO(kakaoAccessToken: kakaoAccessToken)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.kakaoLogin(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(LoginResponseDTO.self)
+                        continuation.resume(returning: decoded.result.toModel())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
     
+    // MARK: Apple Login
+    func appleLogin(identityToken: String) async throws -> AuthTokensModel {
+        let requestDTO = AppleLoginRequestDTO(identityToken: identityToken)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.appleLogin(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let decoded = try response.map(LoginResponseDTO.self)
+                        continuation.resume(returning: decoded.result.toModel())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+    
+    // MARK: 약관 여부 전달
+    func submitTermsAgreement(terms: [SignUpTermDTO], token: String) async throws -> Bool {
+        let requestDTO = terms
+        
+        return await withCheckedContinuation { continuation in
+            provider.request(.agreeTerms(requestDTO, token)) { result in
+                switch result {
+                case .success:
+                    continuation.resume(returning: true)
+                case .failure:
+                    continuation.resume(returning: false)
+                }
+            }
+        }
+    }
+    
+    // MARK: - Check LoginId (Duplicate Check)
     func checkLoginId(loginId: String) async throws -> CheckLoginIdModel {
         let requestDTO = CheckLoginIdRequestDTO(loginId: loginId)
         
@@ -156,9 +212,10 @@ final class AuthService {
         }
     }
     
+
     // MARK: - Email Verification
 
-    /// 인증번호 발송
+    /// 인증번호 발송 (비밀번호 재설정용)
     func sendResetPasswordEmail(email: String) async throws {
         let requestDTO = AuthRequestDTO.SendEmailVerificationRequest(
             email: email
@@ -167,7 +224,6 @@ final class AuthService {
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(.sendResetPasswordEmail(requestDTO)) { result in
                 switch result {
-
                 case .success(let response):
                     do {
                         _ = try response.map(SendEmailVerificationResponseDTO.self)
@@ -175,7 +231,6 @@ final class AuthService {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-
                 case .failure(let error):
                     continuation.resume(throwing: error)
                 }
@@ -183,29 +238,44 @@ final class AuthService {
         }
     }
 
-    /// 인증번호 검증
-    func verifyEmail(
-        email: String,
-        authCode: String
-    ) async throws -> Bool {
+    /// 이메일 인증번호 요청
+    func requestEmailVerification(email: String) async throws {
+        let request = SendEmailVerificationRequestDTO(email: email)
 
-        let requestDTO = AuthRequestDTO.VerifyEmailRequest(
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.requestEmailVerification(request)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        let _: SendEmailVerificationResultDTO = try response.mapResult(SendEmailVerificationResultDTO.self)
+                        continuation.resume(returning: ())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// 이메일 인증번호 검증
+    func verifyEmail(email: String, authCode: String) async throws -> Bool {
+        let request = VerifyEmailRequestDTO(
             email: email,
             authCode: authCode
         )
 
         return try await withCheckedThrowingContinuation { continuation in
-            provider.request(.verifyEmail(requestDTO)) { result in
+            provider.request(.verifyEmail(request)) { result in
                 switch result {
-
                 case .success(let response):
                     do {
-                        let decoded = try response.map(VerifyEmailResponseDTO.self)
-                        continuation.resume(returning: decoded.result.verified)
+                        let decoded: VerifyEmailResultDTO = try response.mapResult(VerifyEmailResultDTO.self)
+                        continuation.resume(returning: decoded.verified)
                     } catch {
                         continuation.resume(throwing: error)
                     }
-
                 case .failure(let error):
                     continuation.resume(throwing: error)
                 }
@@ -218,7 +288,6 @@ final class AuthService {
         email: String,
         newPassword: String
     ) async throws {
-
         let requestDTO = AuthRequestDTO.ResetPasswordRequest(
             email: email,
             newPassword: newPassword
@@ -227,7 +296,6 @@ final class AuthService {
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(.resetPassword(requestDTO)) { result in
                 switch result {
-
                 case .success(let response):
                     do {
                         _ = try response.map(ResetPasswordResponseDTO.self)
@@ -235,12 +303,10 @@ final class AuthService {
                     } catch {
                         continuation.resume(throwing: error)
                     }
-
                 case .failure(let error):
                     continuation.resume(throwing: error)
                 }
             }
         }
     }
-    
 }

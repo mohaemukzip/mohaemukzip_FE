@@ -1,5 +1,5 @@
-
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
     @EnvironmentObject private var appState: AppState
@@ -79,18 +79,14 @@ struct LoginView: View {
             .padding(.top, 10)
             .opacity(viewModel.showError ? 1 : 0)
             
-            // 로그인 버튼
+            // MARK: 로그인 버튼
             Button {
                 focusedField = nil
                 Task {
-                    let ok = await viewModel.login()
-
+                    let ok = await viewModel.login() // 로그인 성공시 true
                     if ok, let tokens = viewModel.tokens {
-                        appState.loginSucceeded(
-                            accessToken: tokens.accessToken,
-                            refreshToken: tokens.refreshToken,
-                            loginType: tokens.loginType
-                        )
+                        appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken, loginType: "GENERAL")
                     }
                 }
             } label: {
@@ -105,29 +101,137 @@ struct LoginView: View {
                     )
             }
             .padding(.horizontal, 17)
-            .padding(.top, 18)
+            .padding(.top, 3)
             .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
             
-            HStack(spacing: 34) {
+            HStack {
                 Button { }
                 label: {
                     Text("아이디 찾기")
-                        .font(.PretendardMedium16)
-                        .foregroundStyle(Color.grey300)
                 }
                 
-                Text("|")
-                    .font(.PretendardMedium16)
-                    .foregroundStyle(Color.grey300)
+                Text("|").padding(.horizontal)
+                    .foregroundStyle(.grey300)
                 
                 Button { }
                 label: {
                     Text("비밀번호 찾기")
-                        .font(.PretendardMedium16)
-                        .foregroundStyle(Color.grey300)
+                }
+                
+                Text("|").padding(.horizontal)
+                    .foregroundStyle(.grey300)
+                
+                Button { router.push(.agree) }
+                label: {
+                    Text("회원가입")
+                        
                 }
             }
-            .padding(.top, 40)
+            .font(.PretendardMedium14)
+            .foregroundStyle(.grey500)
+            .padding(.top, 15)
+            .padding(.horizontal)
+            
+            Spacer()
+            
+            HStack {
+                VStack { Divider().foregroundStyle(.grey300) }.padding(.horizontal)
+                Text("또는").font(.PretendardRegular16).foregroundStyle(.grey500)
+                VStack { Divider().foregroundStyle(.grey300) }.padding(.horizontal)
+            }.padding(.bottom)
+            
+            // MARK: 카카오 소셜 로그인
+            Button {
+                
+                focusedField = nil
+                Task {
+                    let ok = await viewModel.loginWithKakao()
+                    
+                    // 로그인 성공 시,
+                    if ok, let tokens = viewModel.tokens {
+                        // 약관 동의 완료하지 않은 유저라면,
+                        if !tokens.termsAgreed {
+                            appState.setSession(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken)
+                            router.push(.socialAgree)
+                        } else {
+                            appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                    refreshToken: tokens.refreshToken,loginType: "GENERAL")
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image("social-kakao")
+                    Spacer()
+                    Text("카카오로 로그인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.grey800)
+                    Spacer()
+                }.padding(.horizontal, 40)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.grey300, lineWidth: 1)
+                        .foregroundStyle(.clear)
+                        .frame(height: 52)
+                )
+            }.padding()
+                .padding(.bottom, 10)
+                .padding(.top, 10)
+                .disabled(viewModel.isKakaoLoading)
+            
+            // MARK: 애플 소셜 로그인
+            
+            // 애플 기본 제공 버튼 - 반려 시 기본 제공 버튼 고려
+            /*SignInWithAppleButton(
+                .signIn,
+                onRequest: { _ in },
+                onCompletion: { _ in }
+            )
+            .signInWithAppleButtonStyle(.black)
+            .frame(maxWidth: .infinity)
+            .frame(height: 52)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .padding(.horizontal)*/
+            
+            Button {
+                focusedField = nil
+                Task {
+                    let ok = await viewModel.loginWithApple()
+                    
+                    // 로그인 성공 시,
+                    if ok, let tokens = viewModel.tokens {
+                        // 약관 동의 완료하지 않은 유저라면,
+                        if !tokens.termsAgreed {
+                            appState.setSession(accessToken: tokens.accessToken,
+                                                refreshToken: tokens.refreshToken)
+                            router.push(.socialAgree)
+                        } else {
+                            appState.loginSucceeded(accessToken: tokens.accessToken,
+                                                    refreshToken: tokens.refreshToken, loginType: "GENERAL")
+                        }
+                    }
+                }
+            } label: {
+                HStack {
+                    Image(systemName: "apple.logo")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 28, height: 28)
+                        .foregroundStyle(.black)
+                    Spacer()
+                    Text("Apple로 로그인")
+                        .font(.PretendardMedium16)
+                        .foregroundStyle(.grey800)
+                    Spacer()
+                }.padding(.horizontal, 40)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10)
+                        .stroke(.grey300, lineWidth: 1)
+                        .foregroundStyle(.clear)
+                        .frame(height: 52)
+                )
+            }.padding()
             
             Spacer()
         }
@@ -139,5 +243,13 @@ struct LoginView: View {
         .onChange(of: viewModel.password) { _, _ in
             viewModel.clearErrorIfNeeded()
         }
+    }
+}
+
+#Preview("로그인") {
+    NavigationStack {
+        LoginView()
+            .environmentObject(AppState())
+            .environmentObject(AuthRouter())
     }
 }
