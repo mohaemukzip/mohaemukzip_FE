@@ -8,9 +8,9 @@ struct SendEmailVerificationResponseDTO: Decodable {
     let result: SendEmailVerificationResultDTO?
 }
 
-struct SendEmailVerificationResultDTO: Decodable {
+/*struct SendEmailVerificationResultDTO: Decodable {
     let message: String
-}
+}*/
 
 // MARK: - 이메일 인증 확인
 
@@ -21,10 +21,10 @@ struct VerifyEmailResponseDTO: Decodable {
     let result: VerifyEmailResultDTO
 }
 
-struct VerifyEmailResultDTO: Decodable {
+/*struct VerifyEmailResultDTO: Decodable {
     let verified: Bool
     let message: String
-}
+}*/
 
 // MARK: - 비밀번호 재설정
 
