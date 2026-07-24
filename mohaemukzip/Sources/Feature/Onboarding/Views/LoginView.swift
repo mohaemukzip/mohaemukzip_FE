@@ -84,10 +84,21 @@ struct LoginView: View {
             Button {
                 focusedField = nil
                 Task {
-                    let ok = await viewModel.login() // 로그인 성공시 true
+//<<<<<<< HEAD
+                    /*let ok = await viewModel.login() // 로그인 성공시 true
                     if ok, let tokens = viewModel.tokens {
                         appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                                                refreshToken: tokens.refreshToken)*/
+//=======
+                    let ok = await viewModel.login()
+
+                    if ok, let tokens = viewModel.tokens {
+                        appState.loginSucceeded(
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken,
+                            loginType: tokens.loginType
+                        )
+//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
                     }
                 }
             } label: {
@@ -153,11 +164,13 @@ struct LoginView: View {
                         // 약관 동의 완료하지 않은 유저라면,
                         if !tokens.termsAgreed {
                             appState.setSession(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                                                refreshToken: tokens.refreshToken,
+                                                loginType: tokens.loginType)
                             router.push(.socialAgree)
                         } else {
                             appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                    refreshToken: tokens.refreshToken)
+                                                    refreshToken: tokens.refreshToken,
+                                                    loginType: tokens.loginType)
                         }
                     }
                 }
@@ -205,11 +218,13 @@ struct LoginView: View {
                         // 약관 동의 완료하지 않은 유저라면,
                         if !tokens.termsAgreed {
                             appState.setSession(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                                                refreshToken: tokens.refreshToken,
+                                                loginType: tokens.loginType)
                             router.push(.socialAgree)
                         } else {
                             appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                    refreshToken: tokens.refreshToken)
+                                                    refreshToken: tokens.refreshToken,
+                                                    loginType: tokens.loginType)
                         }
                     }
                 }

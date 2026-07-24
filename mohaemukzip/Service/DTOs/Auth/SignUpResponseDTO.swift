@@ -15,5 +15,8 @@ struct SignUpResultDTO: Decodable {
     let isNewUser: Bool
     let isInactive: Bool
     let loginType: String
+//<<<<<<< HEAD
     let termsAgreed: Bool
+//=======
+//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
 }

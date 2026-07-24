@@ -110,8 +110,8 @@ struct ProfileSettingsView: View {
                 title: "계정 설정",
                 showsChevron: true
             ) {
-                // TODO: 계정 설정 화면으로 라우팅
-                print("[ProfileSettingsView] 계정 설정")
+                router.push(.accountSettings)
+                //계정 설정 변경 화면으로 push
             }
         }
         .background(Color.white)
@@ -181,4 +181,3 @@ struct ProfileSettingsView: View {
         .buttonStyle(.plain)
     }
 }
-
