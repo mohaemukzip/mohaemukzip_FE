@@ -29,7 +29,7 @@ final class AppState: ObservableObject {
             let tokens = TokenStore.loadTokens()
             accessToken = tokens.access
             refreshToken = tokens.refresh
-            loginType = tokens.loginType ?? "" 
+            loginType = tokens.loginType ?? ""
 
             print("boot accessToken:", accessToken ?? "nil")
 
@@ -70,16 +70,14 @@ final class AppState: ObservableObject {
             loginType: loginType
         )
 
-//<<<<<<< HEAD
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-        self.loginType =  loginType
+        self.loginType = loginType
     }
-    
+
     // 홈으로 이동
     func enterMain() { root = .main }
-        
-//=======
+
     func loginSucceeded(
         accessToken: String,
         refreshToken: String,
@@ -91,24 +89,15 @@ final class AppState: ObservableObject {
         //self.refreshToken = refreshToken
         
         saveSession(accessToken: accessToken, refreshToken: refreshToken, loginType: loginType)
-        self.loginType = loginType
 
         //Config.accessTK = accessToken
         //Config.refreshTK = refreshToken
 
         print("[AppState] loginSucceeded -> save tokens & go main")
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
-        
+
         enterMain()
-        
     }
 
-    // 토큰 저장 & 홈으로 이동
-    /*func loginSucceeded(accessToken: String, refreshToken: String) {
-        saveSession(accessToken: accessToken, refreshToken: refreshToken)
-        enterMain()
-    }*/
-    
     // 토큰을 임시 메모리에 저장
     func setSession(accessToken: String, refreshToken: String, loginType: String) {
         self.accessToken = accessToken
@@ -256,14 +245,9 @@ struct AuthRootView: View {
                     case .signupFinish:
                         SignupFinishView().environmentObject(router)
                     case .agree:
-//<<<<<<< HEAD
                         AgreeView(mode: .signup).environmentObject(router)
                     case .socialAgree:
                         AgreeView(mode: .social).environmentObject(router)
-//=======
-                        //AgreeView().environmentObject(router)
-                        
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
                     }
                 }
         }

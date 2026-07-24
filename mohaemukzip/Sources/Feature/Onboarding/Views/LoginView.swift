@@ -84,12 +84,6 @@ struct LoginView: View {
             Button {
                 focusedField = nil
                 Task {
-//<<<<<<< HEAD
-                    /*let ok = await viewModel.login() // 로그인 성공시 true
-                    if ok, let tokens = viewModel.tokens {
-                        appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)*/
-//=======
                     let ok = await viewModel.login()
 
                     if ok, let tokens = viewModel.tokens {
@@ -98,7 +92,6 @@ struct LoginView: View {
                             refreshToken: tokens.refreshToken,
                             loginType: tokens.loginType
                         )
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
                     }
                 }
             } label: {

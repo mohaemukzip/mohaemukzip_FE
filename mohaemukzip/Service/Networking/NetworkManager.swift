@@ -77,19 +77,6 @@ private final class AuthInterceptor: RequestInterceptor {
             return
         }
 
-        // auth 관련 일부 엔드포인트는 Authorization이 불필요할 수 있어 제외
-        /*if let urlString = request.url?.absoluteString {
-            if urlString.contains("/auth/login") ||
-                urlString.contains("/auth/signup") ||
-                urlString.contains("/auth/check-loginid") ||
-                urlString.contains("/auth/reissue") ||
-                urlString.contains("/auth/email/send") ||
-                urlString.contains("/auth/email/verify") {
-                completion(.success(request))
-                return
-            }
-        }*/
-        
         // 토큰 불필요한 api는 인터셉터에서 토큰 주입 제외
         if let path = request.url?.path {
             if path == "/auth/login" ||
@@ -134,15 +121,6 @@ private final class AuthInterceptor: RequestInterceptor {
         }
 
         // reissue 요청 자체가 401이면 루프 방지
-        /*if let urlString = request.request?.url?.absoluteString,
-           urlString.contains("/auth/reissue") ||
-            urlString.contains("/auth/email/send") ||
-            urlString.contains("/auth/email/verify") {
-            // DEBUG LOG REMOVED
-            completion(.doNotRetry)
-            return
-        }*/
-        
         if let path = request.request?.url?.path,
            path == "/auth/reissue" ||
            path == "/auth/email/send" ||

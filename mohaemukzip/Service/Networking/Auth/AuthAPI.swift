@@ -12,7 +12,6 @@ enum AuthAPI {
 
     // MARK: - Email
     case sendResetPasswordEmail(AuthRequestDTO.SendEmailVerificationRequest)
-    //case verifyEmail(AuthRequestDTO.VerifyEmailRequest)
     case resetPassword(AuthRequestDTO.ResetPasswordRequest)
 
     case reissue
@@ -35,16 +34,16 @@ extension AuthAPI: TargetType {
 
         case .login:
             return "/auth/login"
-//<<<<<<< HEAD
+
         case .kakaoLogin:
             return "/auth/login/kakao"
+
         case .appleLogin:
             return "/auth/login/apple"
+
         case .agreeTerms:
             return "/auth/terms/agree"
-//=======
 
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
         case .checkLoginId:
             return "/auth/check-loginid"
 
@@ -65,6 +64,7 @@ extension AuthAPI: TargetType {
 
         case .withdrawal:
             return "/auth/withdrawal"
+
         case .requestEmailVerification:
             return "/auth/email/send"
         }
@@ -73,20 +73,16 @@ extension AuthAPI: TargetType {
     var method: Moya.Method {
         switch self {
         case .signup,
-//<<<<<<< HEAD
-            .requestEmailVerification,
-            .verifyEmail,
-            .login,
+             .requestEmailVerification,
+             .verifyEmail,
+             .login,
             .kakaoLogin,
             .appleLogin,
             .agreeTerms,
-            .logout,
-            .checkLoginId,
-            .reissue,
-//=======
-             
-            .sendResetPasswordEmail:
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
+             .logout,
+             .checkLoginId,
+             .reissue,
+             .sendResetPasswordEmail:
             return .post
 
         case .resetPassword:
@@ -104,16 +100,16 @@ extension AuthAPI: TargetType {
 
         case .login(let request):
             return .requestJSONEncodable(request)
-//<<<<<<< HEAD
+
         case .kakaoLogin(let request):
             return .requestJSONEncodable(request)
+
         case .appleLogin(let request):
             return .requestJSONEncodable(request)
+
         case .agreeTerms(let request, _):
             return .requestJSONEncodable(request)
-//=======
 
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
         case .checkLoginId(let request):
             return .requestJSONEncodable(request)
 
@@ -130,6 +126,7 @@ extension AuthAPI: TargetType {
              .logout,
              .withdrawal:
             return .requestPlain
+
         case .requestEmailVerification(let request):
             return .requestJSONEncodable(request)
         }
@@ -147,12 +144,9 @@ extension AuthAPI: TargetType {
                 "Authorization": "Bearer \(tokens.access ?? "")",
                 "X-Refresh-Token": tokens.refresh ?? ""
             ]
-//<<<<<<< HEAD
-            
+
             // access token 필요 없는 API들 (필요하더라도 interceptor에서)
         case .signup, .login, .kakaoLogin, .appleLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
-//=======
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
             return [
                 "Content-Type": "application/json",
             ]
@@ -162,15 +156,11 @@ extension AuthAPI: TargetType {
                 "Content-Type": "application/json",
                 "Authorization": "Bearer \(token)"
             ]
-//<<<<<<< HEAD
-            
-//=======
 
         default:
             return [
                 "Content-Type": "application/json"
             ]
-//>>>>>>> origin/FEAT--계정설정/비밀번호-변경
         }
     }
     
