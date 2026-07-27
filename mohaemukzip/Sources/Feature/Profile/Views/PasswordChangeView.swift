@@ -289,16 +289,16 @@ private extension PasswordChangeView {
 
                 Text("인증번호 받기")
                     .font(.custom("Pretendard-SemiBold", size: 16))
-            
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 16)
+                    .frame(width: 359, alignment: .center)
                     .background(
                         viewModel.canSendVerification
-                        ? Color.black
-                        : Color.gray.opacity(0.35)
+                        ? Color(red: 1, green: 0.55, blue: 0.14)
+                        : Color(red: 0.77, green: 0.77, blue: 0.77)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .cornerRadius(10)
             }
             .disabled(!viewModel.canSendVerification)
         }
@@ -392,14 +392,15 @@ private extension PasswordChangeView {
                 Text("인증하기")
                     .font(.custom("Pretendard-SemiBold", size: 16))
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 16)
+                    .frame(width: 359, alignment: .center)
                     .background(
                         viewModel.canVerify
-                        ? Color.black
-                        : Color.gray.opacity(0.35)
+                        ? Color(red: 1, green: 0.55, blue: 0.14)
+                        : Color(red: 0.77, green: 0.77, blue: 0.77)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .cornerRadius(10)
             }
             .disabled(!viewModel.canVerify)
         }
@@ -476,10 +477,11 @@ private extension PasswordChangeView {
                     Text("비밀번호 변경")
                         .font(.custom("Pretendard-SemiBold", size: 16))
                         .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 16)
+                        .frame(width: 359, alignment: .center)
+                        .background(Color(red: 1, green: 0.55, blue: 0.14))
+                        .cornerRadius(10)
                 }
             }
           
