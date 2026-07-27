@@ -16,6 +16,7 @@ final class AppState: ObservableObject {
     @Published var root: Root = .splash
     @Published var accessToken: String? = nil
     @Published var refreshToken: String? = nil
+    @Published var loginType: String = ""
 
     /// 앱 시작 시 토큰 확인 후 루트 결정
     func boot() {
@@ -28,6 +29,7 @@ final class AppState: ObservableObject {
             let tokens = TokenStore.loadTokens()
             accessToken = tokens.access
             refreshToken = tokens.refresh
+            loginType = tokens.loginType ?? ""
 
             print("boot accessToken:", accessToken ?? "nil")
 
@@ -42,7 +44,11 @@ final class AppState: ObservableObject {
                 print("[AppState] boot -> accessToken nil, try reissue")
                 do {
                     let tokens = try await AuthService.shared.reissue()
-                    loginSucceeded(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+                    loginSucceeded(
+                        accessToken: tokens.accessToken,
+                        refreshToken: tokens.refreshToken,
+                        loginType: self.loginType
+                    )
                     print("[AppState] boot -> reissue success, go main")
                 } catch {
                     print("[AppState] boot -> reissue fail, go auth | error=\(error)")
@@ -57,37 +63,53 @@ final class AppState: ObservableObject {
     }
     
     // 토큰만 저장, 홈으로 이동은 X
-    func saveSession(accessToken: String, refreshToken: String) {
+    func saveSession(accessToken: String, refreshToken: String, loginType: String) {
         TokenStore.saveTokens(
             access: accessToken,
-            refresh: refreshToken
+            refresh: refreshToken,
+            loginType: loginType
         )
 
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-    }
-    
-    // 홈으로 이동
-    func enterMain() {
-        root = .main
+        self.loginType = loginType
     }
 
-    // 토큰 저장 & 홈으로 이동
-    func loginSucceeded(accessToken: String, refreshToken: String) {
-        saveSession(accessToken: accessToken, refreshToken: refreshToken)
+    // 홈으로 이동
+    func enterMain() { root = .main }
+
+    func loginSucceeded(
+        accessToken: String,
+        refreshToken: String,
+        loginType: String
+    ) {
+        //TokenStore.saveTokens(access: accessToken, refresh: refreshToken)
+
+        //self.accessToken = accessToken
+        //self.refreshToken = refreshToken
+        
+        saveSession(accessToken: accessToken, refreshToken: refreshToken, loginType: loginType)
+
+        //Config.accessTK = accessToken
+        //Config.refreshTK = refreshToken
+
+        print("[AppState] loginSucceeded -> save tokens & go main")
+
         enterMain()
     }
-    
+
     // 토큰을 임시 메모리에 저장
-    func setSession(accessToken: String, refreshToken: String) {
+    func setSession(accessToken: String, refreshToken: String, loginType: String) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
+        self.loginType = loginType
     }
     
     // 임시 저장된 토큰을 클리어
     func clearTempSession() {
         self.accessToken = nil
-        self.refreshToken = nil 
+        self.refreshToken = nil
+        self.loginType = ""
     }
 
 
@@ -101,6 +123,7 @@ final class AppState: ObservableObject {
         TokenStore.clear()
         accessToken = nil
         refreshToken = nil
+        loginType = ""
         root = .auth
     }
 

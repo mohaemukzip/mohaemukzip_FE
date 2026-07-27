@@ -212,7 +212,7 @@ final class AuthService {
             }
         }
     }
-    
+
     // MARK: 이메일 인증번호 요청
     func requestEmailVerification(email: String) async throws {
         let request = SendEmailVerificationRequestDTO(email: email)
@@ -220,20 +220,18 @@ final class AuthService {
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(.requestEmailVerification(request)) { result in
                 switch result {
-                    case .success(let response):
-                        do {
-                            let _: SendEmailVerificationResultDTO =
-                                try response.mapResult(SendEmailVerificationResultDTO.self)
-                            continuation.resume()
-                        } catch {
-                            continuation.resume(throwing: error)
-                        }
-
-                    case .failure(let error):
+                case .success(let response):
+                    do {
+                        _ = try response.mapResult(SendEmailVerificationResultDTO.self)
+                        continuation.resume()
+                    } catch {
                         continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
                 }
             }
-            
         }
     }
     
@@ -253,6 +251,63 @@ final class AuthService {
                             VerifyEmailResultDTO.self
                         )
                         continuation.resume(returning: decoded.verified)
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    // MARK: - Email Verification
+
+    /// 인증번호 발송
+    func sendResetPasswordEmail(email: String) async throws {
+        let requestDTO = AuthRequestDTO.SendEmailVerificationRequest(
+            email: email
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.sendResetPasswordEmail(requestDTO)) { result in
+                switch result {
+
+                case .success(let response):
+                    do {
+                        _ = try response.map(SendEmailVerificationResponseDTO.self)
+                        continuation.resume(returning: ())
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
+
+    /// 비밀번호 재설정
+    func resetPassword(
+        email: String,
+        newPassword: String
+    ) async throws {
+
+        let requestDTO = AuthRequestDTO.ResetPasswordRequest(
+            email: email,
+            newPassword: newPassword
+        )
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.resetPassword(requestDTO)) { result in
+                switch result {
+
+                case .success(let response):
+                    do {
+                        _ = try response.map(ResetPasswordResponseDTO.self)
+                        continuation.resume(returning: ())
                     } catch {
                         continuation.resume(throwing: error)
                     }

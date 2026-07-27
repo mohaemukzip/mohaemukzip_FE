@@ -84,10 +84,14 @@ struct LoginView: View {
             Button {
                 focusedField = nil
                 Task {
-                    let ok = await viewModel.login() // 로그인 성공시 true
+                    let ok = await viewModel.login()
+
                     if ok, let tokens = viewModel.tokens {
-                        appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                        appState.loginSucceeded(
+                            accessToken: tokens.accessToken,
+                            refreshToken: tokens.refreshToken,
+                            loginType: tokens.loginType
+                        )
                     }
                 }
             } label: {
@@ -153,11 +157,13 @@ struct LoginView: View {
                         // 약관 동의 완료하지 않은 유저라면,
                         if !tokens.termsAgreed {
                             appState.setSession(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                                                refreshToken: tokens.refreshToken,
+                                                loginType: tokens.loginType)
                             router.push(.socialAgree)
                         } else {
                             appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                    refreshToken: tokens.refreshToken)
+                                                    refreshToken: tokens.refreshToken,
+                                                    loginType: tokens.loginType)
                         }
                     }
                 }
@@ -205,11 +211,13 @@ struct LoginView: View {
                         // 약관 동의 완료하지 않은 유저라면,
                         if !tokens.termsAgreed {
                             appState.setSession(accessToken: tokens.accessToken,
-                                                refreshToken: tokens.refreshToken)
+                                                refreshToken: tokens.refreshToken,
+                                                loginType: tokens.loginType)
                             router.push(.socialAgree)
                         } else {
                             appState.loginSucceeded(accessToken: tokens.accessToken,
-                                                    refreshToken: tokens.refreshToken)
+                                                    refreshToken: tokens.refreshToken,
+                                                    loginType: tokens.loginType)
                         }
                     }
                 }

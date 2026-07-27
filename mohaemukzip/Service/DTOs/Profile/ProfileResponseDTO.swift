@@ -54,6 +54,13 @@ enum ProfileResponseDTO {
         let key: String
         let presignedUrl: String
     }
+    
+    // MARK: - 계정 설정 조회
+    /// GET /members/me/account-setting
+    struct AccountSetting: Decodable {
+        let email: String
+        let loginType: String
+    }
 
     // MARK: - 빈 응답 처리용
     /// PATCH /members/me/profile

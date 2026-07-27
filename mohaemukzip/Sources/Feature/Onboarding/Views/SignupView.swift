@@ -378,7 +378,7 @@ struct SignupView: View {
                 let ok = await viewModel.signup(terms: self.terms)
                 if ok, let tokens = viewModel.tokens {
                     // 토큰 저장만 하고 signupFinishView로 이동 (아직 홈으로 이동 X)
-                    appState.saveSession(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken)
+                    appState.saveSession(accessToken: tokens.accessToken, refreshToken: tokens.refreshToken, loginType: tokens.loginType)
                     router.push(.signupFinish)
                 }
             }

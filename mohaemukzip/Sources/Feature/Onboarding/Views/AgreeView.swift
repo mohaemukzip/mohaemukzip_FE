@@ -116,9 +116,10 @@ struct AgreeView: View {
                     } else if mode == .social {
                         
                         if let access = appState.accessToken, let refresh = appState.refreshToken {
+                            let loginType = appState.loginType
                             let result = await viewModel.submitAgreement(terms: terms, token: access)
                             
-                            if result { appState.loginSucceeded(accessToken: access, refreshToken: refresh) }
+                            if result { appState.loginSucceeded(accessToken: access, refreshToken: refresh, loginType: loginType) }
                         } else {
                             print("토큰 저장 및 메인 진입 실패")
                         }
