@@ -31,8 +31,6 @@ final class AppState: ObservableObject {
             refreshToken = tokens.refresh
             loginType = tokens.loginType ?? ""
 
-            print("boot accessToken:", accessToken ?? "nil")
-
             // accessToken이 있으면 바로 메인
             if let accessToken, !accessToken.isEmpty {
                 root = .main
