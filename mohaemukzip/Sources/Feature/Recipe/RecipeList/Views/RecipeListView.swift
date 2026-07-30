@@ -127,7 +127,8 @@ struct RecipeListView: View {
                 ScrollView {
                     LazyVStack(spacing: 40) {
                         ForEach(viewModel.filteredVideos) { video in
-                            /// 개별 레시피 영상 카드
+                            /// 개별 레시피
+                            ///  영상 카드
                             RecipeVideoCard(
                                 video: video,
                                 onTapBookmark: {
@@ -305,6 +306,8 @@ struct RecipeListView: View {
 
     /// 하위 카테고리 버튼 UI
     /// 선택 시 해당 하위 카테고리 기준으로 영상 필터링
+    /// 하위 카테고리 버튼 UI
+    /// 선택 시 해당 하위 카테고리 기준으로 영상 필터링
     private func subCategoryButton(
         title: String,
         isSelected: Bool,
@@ -313,21 +316,23 @@ struct RecipeListView: View {
         Button {
             onTap()
         } label: {
-            HStack(alignment: .center, spacing: 10) {
+            HStack(alignment: .center, spacing: 0) {
                 Text(title)
-                    .font(.custom("Pretendard-Medium", size: 14))
+                    .font(.custom("Pretendard-Medium", size: 14.4))
                     .foregroundColor(isSelected ? .white : Color.black.opacity(0.75))
                     .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+                    // 공간이 아주 살짝 부족할 때 글자 크기를 조금 더 유연하게 줄여주려면 0.5 정도로 변경해도 좋습니다.
+                    .minimumScaleFactor(0.6)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 18)
+            // ❌ 기존에 있던 .padding(.horizontal, 12) 와 .padding(.vertical, 18) 삭제!
+            // 여백을 지워도 아래 frame에서 64x44 크기를 강제하고 가운데 정렬하므로 버튼 모양은 유지.
             .frame(width: 64, height: 44, alignment: .center)
             .background(isSelected ? selectedOrange : unselectedGray)
             .cornerRadius(8)
         }
         .buttonStyle(.plain)
     }
+
 }
 
 

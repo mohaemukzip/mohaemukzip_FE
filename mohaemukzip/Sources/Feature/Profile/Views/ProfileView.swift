@@ -217,7 +217,7 @@ private extension ProfileView {
 
             Button {
                 guard let url = URL(
-                    string: "https://kohsuk.notion.site/38a0e70764bd80a7963cd89e0ee924c6?source=copy_link"
+                    string: "https://troubled-parmesan-24d.notion.site/37e3dc31532c80b19ca9d940eb648de6?source=copy_link"
                 ) else {
                     return
                 }
@@ -232,7 +232,7 @@ private extension ProfileView {
 
             Button {
                 guard let url = URL(
-                    string: "https://kohsuk.notion.site/38a0e70764bd8089b2d4d128107c2a00?source=copy_link"
+                    string: "https://troubled-parmesan-24d.notion.site/3853dc31532c806f838cf3fa5347fe7d?source=copy_link"
                 ) else {
                     return
                 }
@@ -245,7 +245,18 @@ private extension ProfileView {
             .buttonStyle(.plain)
             .buttonStyle(PressableRowButtonStyle())
 
-            ProfileSimpleRow(title: "1:1 문의하기")
+            Button {
+                guard let url = URL(string: "http://pf.kakao.com/_dkFxfX") else {
+                    return
+                }
+
+                openURL(url)
+            } label: {
+                ProfileSimpleRow(title: "1:1 문의하기")
+            }
+            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .buttonStyle(PressableRowButtonStyle())
         }
     }
     
