@@ -174,13 +174,26 @@ struct AccountSettingsView: View {
 
                 router.push(.passwordChange)
             }) {
-                Text("비밀번호 변경")
-                    .font(.custom("Pretendard-SemiBold", size: 16))
-                    .foregroundColor(viewModel.isPasswordChangeEnabled ? .white : .white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(viewModel.isPasswordChangeEnabled ? Color.black : Color(hex: "C4C4C4"))
-                    .cornerRadius(8)
+                HStack(alignment: .center, spacing: 0) {
+                    Text("비밀번호 변경")
+                        .font(.custom("Pretendard-SemiBold", size: 16))
+                        .foregroundColor(viewModel.isPasswordChangeEnabled ? Color(red: 1, green: 0.55, blue: 0.14) : Color(red: 0.77, green: 0.77, blue: 0.77))
+                }
+                .padding(.horizontal, 0)
+                .padding(.top, 17)
+                .padding(.bottom, 16)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .inset(by: 0.5)
+                        .stroke(
+                            viewModel.isPasswordChangeEnabled
+                                ? Color(red: 1, green: 0.55, blue: 0.14)
+                                : Color(red: 0.77, green: 0.77, blue: 0.77),
+                            lineWidth: 1
+                        )
+                )
+                .cornerRadius(8)
             }
             .disabled(!viewModel.isPasswordChangeEnabled)
         }

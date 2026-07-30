@@ -1,4 +1,3 @@
-
 import SwiftUI
 import Charts
 
@@ -59,26 +58,28 @@ struct MonthlyCookingLineChart: View {
         .chartYScale(domain: 0...maxY + 1)
         .chartYAxis(.hidden)
         .chartLegend(.hidden)
-        .chartXAxis {
-            AxisMarks(values: Array(stride(from: 1, through: 12, by: 1))) { value in
-                AxisValueLabel() {
-                    if let m = value.as(Int.self) {
-                        Text("\(m)월")
+        .chartXAxis(.hidden)
+        .chartOverlay { proxy in
+            GeometryReader { geo in
+                ForEach(points) { point in
+                    if let xPosition = proxy.position(forX: point.month) {
+                        Text("\(point.month)")
                             .font(.PretendardRegular13)
                             .foregroundStyle(.grey700)
+                            .position(
+                                x: xPosition,
+                                y: geo.size.height - 10
+                            )
                     }
                 }
             }
         }
         .chartPlotStyle { plotArea in
             plotArea
-                .padding(.horizontal, 16)
                 .background(Color.clear)
         }
-        // Charts가 공간 부족 시 마지막 축 라벨(12월)을 자동 생략하는 경우가 있어서
-        // 12월만 수동으로 한 번 더 찍어줬습니다
-        .overlay(alignment: .bottomTrailing) {
-            Text("12월")
+        .overlay(alignment: .topTrailing) {
+            Text("단위 : 월")
                 .font(.PretendardRegular13)
                 .foregroundStyle(.grey700)
                 .padding(.trailing, 4)

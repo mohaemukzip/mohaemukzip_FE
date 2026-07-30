@@ -100,9 +100,9 @@ struct ProfileSettingsView: View {
     private var accountSection: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("계정")
-                .font(.custom("Pretendard-SemiBold", size: 16))
+                .font(.custom("Pretendard-SemiBold", size: 18))
                 .foregroundStyle(Color.black)
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 10)
                 .padding(.top, 14)
                 .padding(.bottom, 8)
 
@@ -173,7 +173,7 @@ struct ProfileSettingsView: View {
                         .foregroundStyle(Color.gray)
                 }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 10)
             .padding(.vertical, 14)
             .contentShape(Rectangle())
         }

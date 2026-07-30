@@ -52,8 +52,13 @@ final class PasswordChangeViewModel {
     var isPasswordValid: Bool {
         let hasLetter = newPassword.range(of: "[A-Za-z]", options: .regularExpression) != nil
         let hasNumber = newPassword.range(of: "[0-9]", options: .regularExpression) != nil
+        let hasSpecialCharacter = newPassword.range(of: "[^A-Za-z0-9]", options: .regularExpression) != nil
 
-        return newPassword.count >= 10 && hasLetter && hasNumber
+        return newPassword.count >= 6 &&
+               newPassword.count <= 20 &&
+               hasLetter &&
+               hasNumber &&
+               hasSpecialCharacter
     }
 
     /// 비밀번호 일치
@@ -127,14 +132,14 @@ final class PasswordChangeViewModel {
                 } else {
 
                     verificationCode = ""
-                    errorMessage = "인증번호가 틀립니다."
+                    errorMessage = "인증번호가 옳지 않습니다. 다시 입력해주세요."
                 }
 
             } catch {
 
                 isLoading = false
                 verificationCode = ""
-                errorMessage = "인증번호가 틀립니다."
+                errorMessage = "인증번호가 옳지 않습니다. 다시 입력해주세요."
             }
         }
     }
@@ -289,16 +294,16 @@ private extension PasswordChangeView {
 
                 Text("인증번호 받기")
                     .font(.custom("Pretendard-SemiBold", size: 16))
-            
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 16)
+                    .frame(width: 359, alignment: .center)
                     .background(
                         viewModel.canSendVerification
-                        ? Color.black
-                        : Color.gray.opacity(0.35)
+                        ? Color(red: 1, green: 0.55, blue: 0.14)
+                        : Color(red: 0.77, green: 0.77, blue: 0.77)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .cornerRadius(10)
             }
             .disabled(!viewModel.canSendVerification)
         }
@@ -392,14 +397,15 @@ private extension PasswordChangeView {
                 Text("인증하기")
                     .font(.custom("Pretendard-SemiBold", size: 16))
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .frame(height: 54)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 16)
+                    .frame(width: 359, alignment: .center)
                     .background(
                         viewModel.canVerify
-                        ? Color.black
-                        : Color.gray.opacity(0.35)
+                        ? Color(red: 1, green: 0.55, blue: 0.14)
+                        : Color(red: 0.77, green: 0.77, blue: 0.77)
                     )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .cornerRadius(10)
             }
             .disabled(!viewModel.canVerify)
         }
@@ -430,8 +436,11 @@ private extension PasswordChangeView {
                     .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                Text("영문과 숫자를 포함해 10자 이상 입력해주세요.")                    .font(.custom("Pretendard-Regular", size: 13))
-                    .foregroundColor(.gray)
+                if !viewModel.newPassword.isEmpty && !viewModel.isPasswordValid {
+                    Text("영문,숫자,특수문자를 모두 포함하여 6~20자 이내로 입력해주세요.")
+                        .font(.custom("Pretendard-Regular", size: 13))
+                        .foregroundColor(.red)
+                }
             }
 
             VStack(alignment: .leading, spacing: 8) {
@@ -446,15 +455,14 @@ private extension PasswordChangeView {
                     .background(Color.gray.opacity(0.08))
                     .clipShape(RoundedRectangle(cornerRadius: 12))
 
-                if !viewModel.confirmPassword.isEmpty {
+                if !viewModel.confirmPassword.isEmpty && viewModel.isPasswordValid {
 
                     Text(
                         viewModel.isPasswordMatched
                         ? "비밀번호가 일치합니다."
-                        : "비밀번호가 일치하지 않습니다."
+                        : "비밀번호가 일치하지 않습니다. 다시 입력해주세요."
                     )
                     .font(.custom("Pretendard-Regular", size: 13))
-                
                     .foregroundStyle(
                         viewModel.isPasswordMatched
                         ? .green
@@ -476,10 +484,11 @@ private extension PasswordChangeView {
                     Text("비밀번호 변경")
                         .font(.custom("Pretendard-SemiBold", size: 16))
                         .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 54)
-                        .background(Color.black)
-                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 16)
+                        .frame(width: 359, alignment: .center)
+                        .background(Color(red: 1, green: 0.55, blue: 0.14))
+                        .cornerRadius(10)
                 }
             }
           
