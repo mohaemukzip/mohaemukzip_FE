@@ -110,15 +110,8 @@ struct LoginView: View {
             .disabled(viewModel.isLoading || viewModel.loginId.isEmpty || viewModel.password.isEmpty)
             
             HStack {
-                Button { }
-                label: {
-                    Text("아이디 찾기")
-                }
                 
-                Text("|").padding(.horizontal)
-                    .foregroundStyle(.grey300)
-                
-                Button { }
+                Button { /* 비밀번호 찾기 연결 */}
                 label: {
                     Text("비밀번호 찾기")
                 }
