@@ -1,15 +1,15 @@
 //
-//  ForgotPasswordEmailView.swift
+//  ResetPasswordView.swift
 //  mohaemukzip
 //
-//  Created by 이한결 on 7/30/26.
+//  Created by 이한결 on 7/31/26.
 //
 
 import SwiftUI
 
-struct ForgotPasswordEmailView: View {
-    
-    @State private var email = ""
+struct ResetPasswordView: View {
+    @State private var newPassword = ""
+    @State private var passwordAgain = ""
     
     var body: some View {
         
@@ -29,16 +29,28 @@ struct ForgotPasswordEmailView: View {
                 Spacer()
             }
             
-            VStack {
+            VStack(spacing: 15) {
                 HStack {
-                    Text("가입에 사용한 이메일 주소를 입력하세요.")
+                    Text("변경할 비밀번호를 입력해주세요.")
                         .foregroundStyle(.black)
                         .font(.PretendardSemibold16)
                     
                     Spacer()
                 }
                 
-                TextField("이메일을 입력하세요.", text: $email)
+                TextField("비밀번호를 입력해주세요.", text: $newPassword)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .keyboardType(.emailAddress)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 14)
+                    .frame(height: 52)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.grey100)
+                    )
+                
+                TextField("비밀번호 확인", text: $passwordAgain)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
@@ -53,8 +65,8 @@ struct ForgotPasswordEmailView: View {
             
             Spacer()
             
-            Button( action: { /* TODO: 인증번호 작성 뷰 이동 */ } ) {
-                Text("인증 메일 받기")
+            Button( action: { /* TODO: 이메일 변경 완료 */ } ) {
+                Text("완료")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
                     .frame(maxWidth: .infinity)
@@ -69,5 +81,5 @@ struct ForgotPasswordEmailView: View {
 }
 
 #Preview {
-    ForgotPasswordEmailView()
+    ResetPasswordView()
 }
