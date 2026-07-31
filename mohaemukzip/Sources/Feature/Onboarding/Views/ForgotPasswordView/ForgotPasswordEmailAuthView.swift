@@ -9,15 +9,19 @@ import SwiftUI
 
 struct ForgotPasswordEmailAuthView: View {
     
-    @State private var verificationCode = ""
+    @EnvironmentObject private var router: AuthRouter
+    @Environment(ForgotPasswordViewModel.self) var viewModel
+    
     @FocusState private var isCodeFieldFocused: Bool
     
     var body: some View {
         
+        @Bindable var viewModel = viewModel
+        
         VStack(spacing: 50) {
             
             HStack(spacing: 0) {
-                Button(action: { /* TODO: 뒤로가기 */ }) {
+                Button(action: { router.pop() }) {
                     Image("icon-back-big")
                         .foregroundStyle(.grey700)
                         .frame(width: 44, height: 44, alignment: .leading)
@@ -39,13 +43,13 @@ struct ForgotPasswordEmailAuthView: View {
                 }
             
                 ZStack {
-                    TextField("", text: $verificationCode)
+                    TextField("", text: $viewModel.verificationCode)
                         .keyboardType(.numberPad)
                         .textContentType(.oneTimeCode)
                         .focused($isCodeFieldFocused)
                         .opacity(0)
-                        .onChange(of: verificationCode) { _, newValue in
-                            verificationCode = String(newValue.filter { $0.isNumber }.prefix(6))
+                        .onChange(of: viewModel.verificationCode) { _, newValue in
+                            viewModel.updateVerificationCode(viewModel.verificationCode)
                         }
 
                     HStack(spacing: 12) {
@@ -67,11 +71,22 @@ struct ForgotPasswordEmailAuthView: View {
                         isCodeFieldFocused = true
                     }
                 }
+                
+                if let message = viewModel.verificationCodeErrorMessage {
+                    HStack(spacing: 0) {
+                        Image(systemName: "info.circle")
+                        Text(message)
+                        
+                        Spacer()
+                    }
+                    .font(.PretendardRegular13)
+                    .foregroundStyle(.red)
+                }
             }
             
             Spacer()
             
-            Button( action: { /* TODO: 비밀번호 재설정 뷰로 이동 */ } ) {
+            Button( action: { router.push(.resetPassword) } ) {
                 Text("인증하기")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
@@ -79,14 +94,14 @@ struct ForgotPasswordEmailAuthView: View {
                     .frame(height: 57)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.main400)
+                            .fill(viewModel.canRequestVerificationCode ? .main400 : .grey400)
                     )
-            }
+            }.disabled(!viewModel.canRequestVerificationCode)
         }.padding()
     }
     
     private func codeCharacter(at index: Int) -> String {
-        let characters = Array(verificationCode)
+        let characters = Array(viewModel.verificationCode)
         guard index < characters.count else { return "" }
         return String(characters[index])
     }
@@ -95,4 +110,6 @@ struct ForgotPasswordEmailAuthView: View {
 
 #Preview {
     ForgotPasswordEmailAuthView()
+        .environmentObject(AuthRouter())
+        .environment(ForgotPasswordViewModel())
 }

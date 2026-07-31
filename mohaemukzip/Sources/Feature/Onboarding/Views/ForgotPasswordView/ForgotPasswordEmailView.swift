@@ -9,14 +9,17 @@ import SwiftUI
 
 struct ForgotPasswordEmailView: View {
     
-    @State private var email = ""
+    @EnvironmentObject private var router: AuthRouter
+    @Environment(ForgotPasswordViewModel.self) var viewModel
     
     var body: some View {
+        
+        @Bindable var viewModel = viewModel
         
         VStack(spacing: 50) {
             
             HStack(spacing: 0) {
-                Button(action: { /* TODO: 뒤로가기 */ }) {
+                Button(action: { router.pop() }) {
                     Image("icon-back-big")
                         .foregroundStyle(.grey700)
                         .frame(width: 44, height: 44, alignment: .leading)
@@ -38,7 +41,7 @@ struct ForgotPasswordEmailView: View {
                     Spacer()
                 }
                 
-                TextField("이메일을 입력하세요.", text: $email)
+                TextField("이메일을 입력하세요.", text: $viewModel.email)
                     .textInputAutocapitalization(.never)
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
@@ -49,11 +52,24 @@ struct ForgotPasswordEmailView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .fill(Color.grey100)
                     )
+                    .onChange(of: viewModel.email) { _, newValue in
+                        viewModel.updateEmail(newValue) }
+                
+                if let message = viewModel.emailErrorMessage {
+                    HStack(spacing: 0) {
+                        Image(systemName: "info.circle")
+                        Text(message)
+                        
+                        Spacer()
+                    }
+                    .font(.PretendardRegular13)
+                    .foregroundStyle(.red)
+                }
             }
             
             Spacer()
             
-            Button( action: { /* TODO: 인증번호 작성 뷰 이동 */ } ) {
+            Button( action: { router.push(.forgotPasswordEmailAuth) } ) {
                 Text("인증 메일 받기")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
@@ -61,13 +77,15 @@ struct ForgotPasswordEmailView: View {
                     .frame(height: 57)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.main400)
+                            .fill(viewModel.canRequestVerificationEmail ? .main400 : .grey400)
                     )
-            }
+            }.disabled(!viewModel.canRequestVerificationEmail)
         }.padding()
     }
 }
 
 #Preview {
     ForgotPasswordEmailView()
+        .environmentObject(AuthRouter())
+        .environment(ForgotPasswordViewModel())
 }

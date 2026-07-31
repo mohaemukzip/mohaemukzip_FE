@@ -111,7 +111,7 @@ struct LoginView: View {
             
             HStack {
                 
-                Button { /* 비밀번호 찾기 연결 */}
+                Button { router.push(.forgotPasswordEmail) }
                 label: {
                     Text("비밀번호 찾기")
                 }

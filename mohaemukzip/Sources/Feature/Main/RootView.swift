@@ -215,6 +215,9 @@ enum AuthRoute: Hashable, Equatable {
     case signupFinish
     case agree
     case socialAgree
+    case forgotPasswordEmail
+    case forgotPasswordEmailAuth
+    case resetPassword
 }
 
 final class AuthRouter: ObservableObject {
@@ -248,6 +251,13 @@ struct AuthRootView: View {
                         AgreeView(mode: .signup).environmentObject(router)
                     case .socialAgree:
                         AgreeView(mode: .social).environmentObject(router)
+                    case .forgotPasswordEmail:
+                        ForgotPasswordEmailView().environmentObject(router)
+                    case .forgotPasswordEmailAuth:
+                        ForgotPasswordEmailAuthView().environmentObject(router)
+                    case .resetPassword:
+                        ResetPasswordView().environmentObject(router)
+                        
                     }
                 }
         }
