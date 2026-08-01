@@ -318,4 +318,26 @@ final class AuthService {
             }
         }
     }
+    
+    // MARK: 비밀번호 찾기 - 이메일 인증번호 발송
+    func requestEmailVerificationToFindPwd(email: String) async throws {
+        
+        let requestDTO = RequestEmailVerificationToFindPwdDTO(email: email)
+        
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.requestEmailVerificationToFindPwd(requestDTO)) { result in
+                switch result {
+                case .success(let response):
+                    do {
+                        _ = try response.mapResult(String.self)
+                        continuation.resume()
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
 }

@@ -69,7 +69,15 @@ struct ForgotPasswordEmailView: View {
             
             Spacer()
             
-            Button( action: { router.push(.forgotPasswordEmailAuth) } ) {
+            Button( action: {
+                
+                Task {
+                    let ok = await viewModel.requestEmailVerification(email: viewModel.email)
+                    
+                    if ok { router.push(.forgotPasswordEmailAuth) }
+                }
+                
+            } ) {
                 Text("인증 메일 받기")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)

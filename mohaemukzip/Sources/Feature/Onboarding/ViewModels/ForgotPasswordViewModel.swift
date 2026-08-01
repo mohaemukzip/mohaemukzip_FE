@@ -15,7 +15,6 @@ class ForgotPasswordViewModel {
     var newPassword = ""
     var confirmPassword = ""
     
-    
     // MARK: 이메일 관련
     var emailStatus: EmailStatus = .idle
     
@@ -33,7 +32,8 @@ class ForgotPasswordViewModel {
     // 인증메일 버튼 활성화
     var canRequestVerificationEmail: Bool {
         emailStatus == .validFormat &&
-        emailStatus != .checking
+        emailStatus != .checking &&
+        !isRequestEmailVerificationLoading
     }
     
     // 이메일 에러메시지
@@ -189,7 +189,35 @@ class ForgotPasswordViewModel {
         let specialCharacters = "!@#$%^&*()_+-=[]{}|;':\",.<>/?`~"
         return value.contains { specialCharacters.contains($0) }
     }
-
+    
+    
+    // MARK: api 호출 관련
+    private let authService = AuthService()
+    
+    // Loading
+    var isRequestEmailVerificationLoading = false
+    
+    // 이메일 인증번호 전송
+    
+    @MainActor
+    func requestEmailVerification(email: String) async -> Bool {
+        guard !isRequestEmailVerificationLoading else { return false }
+        
+        isRequestEmailVerificationLoading = true
+        defer { isRequestEmailVerificationLoading = false }
+        
+        do {
+            try await authService.requestEmailVerificationToFindPwd(email: email)
+            
+            return true
+        } catch {
+            
+            /* 서버 에러메시지 받아서 emailErrorMessage에 할당 */
+            
+            return false
+        }
+    }
+    
     
 }
 
