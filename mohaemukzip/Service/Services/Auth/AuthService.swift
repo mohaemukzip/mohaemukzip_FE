@@ -329,14 +329,49 @@ final class AuthService {
                 switch result {
                 case .success(let response):
                     do {
-                        _ = try response.mapResult(String.self)
+                        _ = try response.mapResult(EmailVerificationToFindPwdResponseDTO.self)
                         continuation.resume()
                     } catch {
                         continuation.resume(throwing: error)
                     }
+                    
+                // api실패 시 notFound인지, kakaoUser인지 BaseResponse로 파싱하여 code를 확인
                 case .failure(let error):
-                    continuation.resume(throwing: error)
+                    
+                    if case let .statusCode(response) = error {
+                        do {
+                            let decoded = try response.map(BaseResponse<EmptyResult>.self)
+                            
+                            continuation.resume(
+                                throwing: FindPasswordEmailError.from(code: decoded.code)
+                            )
+                        } catch {
+                            continuation.resume(throwing: error)
+                        }
+                    } else {
+                        continuation.resume(throwing: error)
+                    }
                 }
+            }
+        }
+    }
+    
+    // 비밀번호 찾기 - 이메일 인증번호 발송 에러 코드
+    enum FindPasswordEmailError: LocalizedError {
+        case notFound
+        case kakaoUser
+        case unknown
+        
+        static func from(code: String) -> FindPasswordEmailError {
+            switch code {
+            case "AUTH4017":
+                return .notFound
+                
+            case "AUTH4018":
+                return .kakaoUser
+                
+            default:
+                return .unknown
             }
         }
     }

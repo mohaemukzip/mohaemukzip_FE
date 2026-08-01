@@ -10,3 +10,7 @@ import Foundation
 struct RequestEmailVerificationToFindPwdDTO: Encodable {
     var email: String
 }
+
+struct EmailVerificationToFindPwdResponseDTO: Decodable {
+    var message: String
+}

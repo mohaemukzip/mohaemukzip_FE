@@ -32,7 +32,6 @@ class ForgotPasswordViewModel {
     // 인증메일 버튼 활성화
     var canRequestVerificationEmail: Bool {
         emailStatus == .validFormat &&
-        emailStatus != .checking &&
         !isRequestEmailVerificationLoading
     }
     
@@ -204,16 +203,23 @@ class ForgotPasswordViewModel {
         guard !isRequestEmailVerificationLoading else { return false }
         
         isRequestEmailVerificationLoading = true
+        emailStatus = .checking
         defer { isRequestEmailVerificationLoading = false }
         
         do {
             try await authService.requestEmailVerificationToFindPwd(email: email)
-            
+            emailStatus = .validFormat
             return true
+        } catch let error as AuthService.FindPasswordEmailError {
+            switch error {
+            case .notFound, .unknown:
+                emailStatus = .notFound
+            case .kakaoUser:
+                emailStatus = .kakaoUser
+            }
+            return false
         } catch {
-            
-            /* 서버 에러메시지 받아서 emailErrorMessage에 할당 */
-            
+            emailStatus = .notFound
             return false
         }
     }
