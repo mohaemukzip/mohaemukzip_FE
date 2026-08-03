@@ -46,7 +46,7 @@ struct ForgotPasswordEmailView: View {
                     .autocorrectionDisabled(true)
                     .keyboardType(.emailAddress)
                     .textFieldStyle(.plain)
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal)
                     .frame(height: 52)
                     .background(
                         RoundedRectangle(cornerRadius: 10)
@@ -64,6 +64,7 @@ struct ForgotPasswordEmailView: View {
                     }
                     .font(.PretendardRegular13)
                     .foregroundStyle(.red)
+                    .padding(.top, 3)
                 }
             }
             
@@ -89,6 +90,7 @@ struct ForgotPasswordEmailView: View {
                     )
             }.disabled(!viewModel.canRequestVerificationEmail)
         }.padding()
+        .navigationBarBackButtonHidden(true)
     }
 }
 

@@ -232,6 +232,7 @@ final class AuthRouter: ObservableObject {
 
 struct AuthRootView: View {
     @StateObject private var router = AuthRouter()
+    @State private var forgotPasswordVM = ForgotPasswordViewModel()
 
     var body: some View {
         NavigationStack(path: $router.path) {
@@ -252,11 +253,11 @@ struct AuthRootView: View {
                     case .socialAgree:
                         AgreeView(mode: .social).environmentObject(router)
                     case .forgotPasswordEmail:
-                        ForgotPasswordEmailView().environmentObject(router)
+                        ForgotPasswordEmailView().environmentObject(router).environment(forgotPasswordVM)
                     case .forgotPasswordEmailAuth:
-                        ForgotPasswordEmailAuthView().environmentObject(router)
+                        ForgotPasswordEmailAuthView().environmentObject(router).environment(forgotPasswordVM)
                     case .resetPassword:
-                        ResetPasswordView().environmentObject(router)
+                        ResetPasswordView().environmentObject(router).environment(forgotPasswordVM)
                         
                     }
                 }

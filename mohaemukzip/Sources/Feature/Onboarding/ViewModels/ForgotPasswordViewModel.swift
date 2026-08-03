@@ -99,7 +99,8 @@ class ForgotPasswordViewModel {
     
     // verificationCodeStatue == .lengthIs6일 떄 인증하기 버튼 활성화
     var canRequestVerificationCode: Bool {
-        return self.verificationCodeStatus == .lengthIs6
+        return self.verificationCodeStatus == .lengthIs6 &&
+        !isVerifyingEmailCode
     }
     
     
@@ -107,6 +108,7 @@ class ForgotPasswordViewModel {
     
     var newPasswordStatus: NewPasswordStatus = .idle
     var confirmPasswordStatus: ConfirmPasswordStatus = .idle
+    var resetPasswordStatus: ResetPasswordStatus = .notTryYet
     
     enum NewPasswordStatus {
         case idle
@@ -124,6 +126,12 @@ class ForgotPasswordViewModel {
         case matching
     }
     
+    enum ResetPasswordStatus {
+        case notTryYet
+        case success
+        case error
+    }
+    
     // 비밀번호 에러 메시지
     var passwordErrorMessage: String? {
         // newPassworErrorMessage를 우선 표시
@@ -131,6 +139,8 @@ class ForgotPasswordViewModel {
         if let errorMessage = newPasswordErrorMessage {
             return errorMessage
         } else if let errorMessage = confirmPasswordErrorMessage {
+            return errorMessage
+        } else if let errorMessage = resetPasswordErrorMessage {
             return errorMessage
         } else { return nil }
     }
@@ -153,6 +163,17 @@ class ForgotPasswordViewModel {
             return nil
         case .notMatching:
             return "비밀번호가 일치하지 않습니다. 다시 입력해주세요."
+        }
+    }
+    
+    var resetPasswordErrorMessage: String? {
+        if confirmPasswordErrorMessage != nil { return nil }
+        
+        switch resetPasswordStatus {
+        case .notTryYet, .success:
+            return nil
+        case .error:
+            return "비밀번호 변경에 실패하였습니다."
         }
     }
     
@@ -182,6 +203,7 @@ class ForgotPasswordViewModel {
     var canRequestResetPassword: Bool {
         newPasswordStatus == .validPassword
         && confirmPasswordStatus == .matching
+        && !isResettingPassword
     }
     
     private func containsSpecialCharacter(_ value: String) -> Bool {
@@ -195,6 +217,8 @@ class ForgotPasswordViewModel {
     
     // Loading
     var isRequestEmailVerificationLoading = false
+    var isVerifyingEmailCode = false
+    var isResettingPassword = false
     
     // 이메일 인증번호 전송
     
@@ -224,7 +248,65 @@ class ForgotPasswordViewModel {
         }
     }
     
+    // 이메일 인증번호 확인
+    @MainActor
+    func verifyEmailCode() async -> Bool {
+        guard !isVerifyingEmailCode else { return false }
+
+        let requestedEmail = self.email
+        isVerifyingEmailCode = true
+        defer { isVerifyingEmailCode = false }
+        
+        do {
+            let verified = try await authService.verifyEmail(
+                email: requestedEmail,
+                authCode: self.verificationCode
+            )
+            
+            if verified {
+                verificationCodeStatus = .lengthIs6
+                return true
+            } else {
+                verificationCodeStatus = .notCorrectCode
+                return false
+            }
+
+        } catch {
+            verificationCodeStatus = .notCorrectCode
+            
+            return false
+        }
+    }
     
+    // 비밀번호 재설정
+    @MainActor
+    func resetPassword() async {
+        guard !isResettingPassword else { return }
+        
+        resetPasswordStatus = .notTryYet
+        isResettingPassword = true
+        defer { isResettingPassword = false }
+        let requestedEmail = self.email
+        let newPassword = self.newPassword
+        
+        do {
+            try await authService.resetPassword(
+                email: requestedEmail,
+                newPassword: newPassword
+            )
+            self.resetPasswordStatus = .success
+            
+            isResettingPassword = false
+            
+            return
+        } catch {
+            self.resetPasswordStatus = .error
+            
+            isResettingPassword = false
+            
+            return
+        }
+    }
 }
 
 

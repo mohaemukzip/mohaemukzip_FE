@@ -34,13 +34,13 @@ struct ForgotPasswordEmailAuthView: View {
                 Spacer()
             }
             
-            VStack(spacing: 32) {
+            VStack {
                 HStack {
                     Text("인증번호를 입력하세요.")
                         .font(.PretendardSemibold16)
                         .foregroundColor(.black)
                     Spacer()
-                }
+                }.padding(.bottom, 32)
             
                 ZStack {
                     TextField("", text: $viewModel.verificationCode)
@@ -49,7 +49,7 @@ struct ForgotPasswordEmailAuthView: View {
                         .focused($isCodeFieldFocused)
                         .opacity(0)
                         .onChange(of: viewModel.verificationCode) { _, newValue in
-                            viewModel.updateVerificationCode(viewModel.verificationCode)
+                            viewModel.updateVerificationCode(newValue)
                         }
 
                     HStack(spacing: 12) {
@@ -67,6 +67,7 @@ struct ForgotPasswordEmailAuthView: View {
                         }
                     }
                     .padding(.horizontal, 30)
+                    .padding(.bottom, 5)
                     .onTapGesture {
                         isCodeFieldFocused = true
                     }
@@ -86,7 +87,15 @@ struct ForgotPasswordEmailAuthView: View {
             
             Spacer()
             
-            Button( action: { router.push(.resetPassword) } ) {
+            Button( action: {
+                
+                Task {
+                    let ok = await viewModel.verifyEmailCode()
+                    
+                    if ok { router.push(.resetPassword) }
+                }
+                
+            } ) {
                 Text("인증하기")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
@@ -98,6 +107,7 @@ struct ForgotPasswordEmailAuthView: View {
                     )
             }.disabled(!viewModel.canRequestVerificationCode)
         }.padding()
+            .navigationBarBackButtonHidden(true)
     }
     
     private func codeCharacter(at index: Int) -> String {

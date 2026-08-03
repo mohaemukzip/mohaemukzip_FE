@@ -64,19 +64,19 @@ private final class AuthInterceptor: RequestInterceptor {
     ) {
         var request = urlRequest
         let tokens = TokenStore.loadTokens() // 키체인에서 토큰을 불러옴
-
+        
         // 이미 Authorization이 있으면 그대로
         if request.value(forHTTPHeaderField: "Authorization") != nil {
             completion(.success(request))
             return
         }
-
+        
         // accessToken 없으면 건드리지 않음
         guard let accessToken = tokens.access, !accessToken.isEmpty else {
             completion(.success(request))
             return
         }
-
+        
         // 토큰 불필요한 api는 인터셉터에서 토큰 주입 제외
         if let path = request.url?.path {
             if path == "/auth/login" ||
@@ -84,7 +84,9 @@ private final class AuthInterceptor: RequestInterceptor {
                 path == "/auth/check-loginid" ||
                 path == "/auth/reissue" ||
                 path == "/auth/email/send" ||
-                path == "/auth/email/verify" {
+                path == "/auth/email/verify" ||
+                path == "/auth/email/send/find-password" ||
+                path == "/auth/reset-password" {
                 completion(.success(request))
                 return
             }
@@ -124,7 +126,9 @@ private final class AuthInterceptor: RequestInterceptor {
         if let path = request.request?.url?.path,
            path == "/auth/reissue" ||
            path == "/auth/email/send" ||
-           path == "/auth/email/verify" {
+           path == "/auth/email/verify" ||
+           path == "/auth/email/send/find-password" ||
+           path == "/auth/reset-password" {
             completion(.doNotRetry)
             return
         }

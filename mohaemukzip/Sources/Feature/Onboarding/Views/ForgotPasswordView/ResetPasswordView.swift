@@ -83,7 +83,15 @@ struct ResetPasswordView: View {
             
             Spacer()
             
-            Button( action: { router.popToRoot() } ) {
+            Button( action: {
+                
+                Task {
+                    await viewModel.resetPassword()
+                    
+                    if viewModel.resetPasswordStatus == .success { router.popToRoot() }
+                }
+                
+            } ) {
                 Text("완료")
                     .foregroundStyle(.white)
                     .font(.PretendardSemibold18)
@@ -95,6 +103,7 @@ struct ResetPasswordView: View {
                     )
             }.disabled(!viewModel.canRequestResetPassword)
         }.padding()
+            .navigationBarBackButtonHidden(true)
     }
 }
 
