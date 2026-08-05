@@ -318,4 +318,90 @@ final class AuthService {
             }
         }
     }
+    
+    // MARK: 비밀번호 찾기 - 이메일 인증번호 발송
+    func requestEmailVerificationToFindPwd(email: String) async throws {
+
+        let requestDTO = RequestEmailVerificationToFindPwdDTO(email: email)
+
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.request(.requestEmailVerificationToFindPwd(requestDTO)) { result in
+
+                switch result {
+                case .success(let response):
+
+                    do {
+                        let decoded = try response.map(BaseResponse<EmailVerificationToFindPwdResponseDTO>.self)
+
+                        if decoded.isSuccess {
+                            continuation.resume()
+                        } else {
+                            continuation.resume(
+                                throwing: FindPasswordEmailError.from(code: decoded.code)
+                            )
+                        }
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+
+                case .failure(let error):
+                    let response: Response?
+
+                    switch error {
+                    case .statusCode(let statusCodeResponse):
+                        response = statusCodeResponse
+
+                    case .underlying(_, let underlyingResponse):
+                        response = underlyingResponse
+
+                    default:
+                        response = nil
+                    }
+
+                    guard let response else {
+                        continuation.resume(throwing: error)
+                        return
+                    }
+
+                    do {
+                        let decoded = try response.map(AuthErrorResponseDTO.self)
+
+                        continuation.resume(
+                            throwing: FindPasswordEmailError.from(code: decoded.code)
+                        )
+                    } catch {
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+        }
+    }
+    
+    struct AuthErrorResponseDTO: Decodable {
+        let isSuccess: Bool
+        let code: String
+        let message: String
+    }
+
+
+    
+    // 비밀번호 찾기 - 이메일 인증번호 발송 에러 코드
+    enum FindPasswordEmailError: LocalizedError {
+        case notFound
+        case kakaoUser
+        case unknown
+        
+        static func from(code: String) -> FindPasswordEmailError {
+            switch code {
+            case "AUTH4017":
+                return .notFound
+                
+            case "AUTH4018":
+                return .kakaoUser
+                
+            default:
+                return .unknown
+            }
+        }
+    }
 }

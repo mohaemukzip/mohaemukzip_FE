@@ -19,6 +19,7 @@ enum AuthAPI {
     case withdrawal
     case requestEmailVerification(SendEmailVerificationRequestDTO)
     case verifyEmail(VerifyEmailRequestDTO)
+    case requestEmailVerificationToFindPwd(RequestEmailVerificationToFindPwdDTO)
 }
 
 extension AuthAPI: TargetType {
@@ -67,6 +68,9 @@ extension AuthAPI: TargetType {
 
         case .requestEmailVerification:
             return "/auth/email/send"
+        
+        case .requestEmailVerificationToFindPwd:
+            return "/auth/email/send/find-password"
         }
     }
 
@@ -82,7 +86,8 @@ extension AuthAPI: TargetType {
              .logout,
              .checkLoginId,
              .reissue,
-             .sendResetPasswordEmail:
+             .sendResetPasswordEmail,
+             .requestEmailVerificationToFindPwd:
             return .post
 
         case .resetPassword:
@@ -129,6 +134,9 @@ extension AuthAPI: TargetType {
 
         case .requestEmailVerification(let request):
             return .requestJSONEncodable(request)
+            
+        case .requestEmailVerificationToFindPwd(let request):
+            return .requestJSONEncodable(request)
         }
     }
 
@@ -146,7 +154,7 @@ extension AuthAPI: TargetType {
             ]
 
             // access token 필요 없는 API들 (필요하더라도 interceptor에서)
-        case .signup, .login, .kakaoLogin, .appleLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail:
+        case .signup, .login, .kakaoLogin, .appleLogin, .logout, .withdrawal, .checkLoginId, .requestEmailVerification, .verifyEmail, .requestEmailVerificationToFindPwd:
             return [
                 "Content-Type": "application/json",
             ]
