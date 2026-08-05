@@ -10,14 +10,11 @@ class YoTeacherService {
                 switch result {
                 case .success(let response):
                     do {
-                        let decoded = try JSONDecoder().decode(YoTeacherResponseDTO.self, from: response.data)
+                        let decoded = try response.mapResult(YoTeacherResponseDTO.self)
                         
-                        let title = decoded.title
-                        let message = decoded.message
+                        let domainModels = decoded.recipeCards?.compactMap { $0.toDomain() } ?? nil
                         
-                        let domainModels = decoded.recommendRecipes?.map { $0.toDomain() } ?? nil
-                        
-                        continuation.resume(returning: (title, message, domainModels) )
+                        continuation.resume(returning: (decoded.title, decoded.message, domainModels) )
                     } catch {
                         continuation.resume(throwing: error)
                     }
