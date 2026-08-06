@@ -39,7 +39,7 @@ struct BotResponse: View {
                         LazyHStack {
                             ForEach(unwrappedResponse) { image in
                                 Button ( action: { onTapVideo(image.id) } ) {
-                                    RecipeVideoChatCard(url: image.thumbnailURL)
+                                    RecipeVideoChatCard(url: image.thumbnailURL, videoTime: image.videoTime)
                                 }
                             }
                         }

@@ -7,17 +7,32 @@ struct YoTeacherResponseDTO: Decodable {
     let message: String
     let createdAt: String
     let formattedTime: String
-    let recommendRecipes: [YoTeacherDTO]?
+    let recipeCards: [YoTeacherDTO]?
 }
 
 struct YoTeacherDTO: Decodable {
     let recipeId: Int
     let title: String
     let imageUrl: String
-    
-    func toDomain() -> YoTeacherMessage {
-        return YoTeacherMessage(id: recipeId,
-                                title: title,
-                                thumbnailURL: URL(string: imageUrl)!)
+    let videoTime: String
+
+    enum CodingKeys: String, CodingKey {
+        case recipeId = "recipe_id"
+        case title
+        case imageUrl = "image_url"
+        case videoTime = "video_time"
+    }
+
+    func toDomain() -> YoTeacherMessage? {
+        guard let thumbnailURL = URL(string: imageUrl) else {
+            return nil
+        }
+
+        return YoTeacherMessage(
+            id: recipeId,
+            title: title,
+            thumbnailURL: thumbnailURL,
+            videoTime: videoTime
+        )
     }
 }
