@@ -16,6 +16,9 @@ struct SignupView: View {
                 header
                 nicknameSection
                 emailSection
+                if viewModel.shouldShowVerificationField {
+                    verificationCodeSection
+                }
                 passwordSection
                 passwordConfirmSection
                 
@@ -58,7 +61,7 @@ struct SignupView: View {
     }
     
     private var nicknameSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("닉네임")
                 .font(.PretendardMedium14)
                 .foregroundStyle(.grey700)
@@ -93,7 +96,7 @@ struct SignupView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("이메일")
                 .font(.PretendardMedium14)
-                .foregroundStyle(.grey600)
+                .foregroundStyle(.grey700)
             
             HStack(spacing: 10) {
                 TextField("이메일을 입력해주세요.", text: Binding(
@@ -132,9 +135,6 @@ struct SignupView: View {
             
             emailStatusMessage
             
-            if viewModel.shouldShowVerificationField {
-                verificationCodeSection
-            }
         }
     }
     
@@ -189,9 +189,9 @@ struct SignupView: View {
         VStack(alignment: .leading, spacing: 10) {
             Text("인증번호")
                 .font(.PretendardMedium14)
-                .foregroundStyle(.grey600)
+                .foregroundStyle(.grey700)
             
-            HStack(spacing: 6) {
+            HStack(spacing: 10) {
                 HStack {
                     TextField(
                         "인증번호 6자리 입력",
@@ -250,6 +250,7 @@ struct SignupView: View {
             }
         }
     }
+    
     
     @ViewBuilder
     private var verificationStatusMessage: some View {
@@ -325,10 +326,10 @@ struct SignupView: View {
     }
     
     private var passwordConfirmSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("비밀번호 확인")
-                .font(.PretendardRegular16)
-                .foregroundStyle(.grey600)
+                .font(.PretendardMedium14)
+                .foregroundStyle(.grey700)
             
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 10)
