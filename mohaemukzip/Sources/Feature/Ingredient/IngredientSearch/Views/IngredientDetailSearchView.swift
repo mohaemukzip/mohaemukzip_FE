@@ -61,6 +61,8 @@ struct IngredientDetailSearchView: View {
                                                                  Task { await viewModel.deleteRecent(name: ingredient.keyword) } })
                                     }
                                 }
+                                .padding(.horizontal, 1)
+                                .padding(.vertical, 1)
                             }.padding(.vertical, 16)
                         }
                         
