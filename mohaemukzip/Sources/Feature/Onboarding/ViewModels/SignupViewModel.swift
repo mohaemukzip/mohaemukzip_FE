@@ -158,11 +158,13 @@ final class SignupViewModel {
     }
     
     func onChangePassword(_ newValue: String) {
+        errorMessage = nil
         model.password = newValue
         validatePasswordMatch()
     }
 
     func onChangePasswordConfirm(_ newValue: String) {
+        errorMessage = nil
         model.passwordConfirm = newValue
         validatePasswordMatch()
     }

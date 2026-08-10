@@ -23,7 +23,7 @@ struct IngredientDetailSearchView: View {
                             .frame(height: 44)
                             .foregroundStyle(.grey100)
                         
-                        
+
                         HStack {
                             TextField("재료명을 입력하세요.", text: $viewModel.searchText)
                                 .font(.PretendardRegular16)
