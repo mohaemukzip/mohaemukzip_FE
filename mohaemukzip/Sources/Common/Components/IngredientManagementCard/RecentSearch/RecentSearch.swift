@@ -9,8 +9,7 @@ struct RecentSearch: View {
         Button ( action: { onTap() } ) {
             ZStack {
                 RoundedRectangle(cornerRadius: 30)
-                    .stroke(lineWidth: 1)
-                    .foregroundStyle(.grey300)
+                    .strokeBorder(.grey300, lineWidth: 1)
                     .frame(height: 32)
                 
                 HStack {

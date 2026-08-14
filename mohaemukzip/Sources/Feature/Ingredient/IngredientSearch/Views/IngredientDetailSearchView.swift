@@ -23,7 +23,7 @@ struct IngredientDetailSearchView: View {
                             .frame(height: 44)
                             .foregroundStyle(.grey100)
                         
-                        
+
                         HStack {
                             TextField("재료명을 입력하세요.", text: $viewModel.searchText)
                                 .font(.PretendardRegular16)
@@ -61,6 +61,8 @@ struct IngredientDetailSearchView: View {
                                                                  Task { await viewModel.deleteRecent(name: ingredient.keyword) } })
                                     }
                                 }
+                                .padding(.horizontal, 1)
+                                .padding(.vertical, 1)
                             }.padding(.vertical, 16)
                         }
                         

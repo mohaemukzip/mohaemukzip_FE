@@ -87,7 +87,7 @@ struct IngredientFormBottomSheet: View {
                     Spacer()
                 }.padding(.bottom, 6)
                 
-                VStack(spacing: 1) {
+                VStack(spacing: 0) {
                     Button ( action: {
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showStorageCase.toggle()
@@ -95,8 +95,7 @@ struct IngredientFormBottomSheet: View {
                     }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 4)
-                                .stroke(lineWidth: 1)
-                                .foregroundStyle(showStorageCase ? .main400 : .grey300)
+                                .strokeBorder(showStorageCase ? .main400 : .grey300, lineWidth: 1)
                                 .frame(height: 45)
                             HStack {
                                 Text(formValue.storage.displayName)
@@ -112,30 +111,32 @@ struct IngredientFormBottomSheet: View {
                     }
                     
                     if (showStorageCase) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 4)
-                                .stroke(lineWidth: 1)
-                                .foregroundStyle(.grey300)
-                                .frame(height: 159)
-                            VStack(spacing: 0) {
-                                ForEach(StorageType.allCases, id: \.self) { type in
-                                    ZStack {
-                                        RoundedRectangle(cornerRadius: 4)
-                                            .frame(height: 53)
-                                            .foregroundStyle(formValue.storage == type ? .main100 : .clear)
-                                        Button( action: {formValue.storage = type;
-                                            withAnimation(.easeInOut(duration: 0.3)) { showStorageCase.toggle() } } ) {
-                                                HStack {
-                                                    Text(type.displayName)
-                                                        .font(.PretendardRegular16)
-                                                        .foregroundStyle(.grey900)
-                                                        .padding(.leading, 10)
-                                                    Spacer()
-                                                }
-                                        }
+                        VStack(spacing: 0) {
+                            ForEach(StorageType.allCases, id: \.self) { type in
+                                Button {
+                                    formValue.storage = type
+                                    withAnimation(.easeInOut(duration: 0.3)) {
+                                        showStorageCase.toggle()
                                     }
+                                } label: {
+                                    HStack {
+                                        Text(type.displayName)
+                                            .font(.PretendardRegular16)
+                                            .foregroundStyle(.grey900)
+                                            .padding(.leading, 10)
+
+                                        Spacer()
+                                    }
+                                    .frame(height: 53)
+                                    .background(formValue.storage == type ? .main100 : .clear)
                                 }
                             }
+                        }
+                        .frame(height: 159)
+                        .clipShape(RoundedRectangle(cornerRadius: 4))
+                        .overlay {
+                            RoundedRectangle(cornerRadius: 4)
+                                .strokeBorder(.grey300, lineWidth: 1)
                         }
                     }
                 }.padding(.bottom, 16) // end of VStack
@@ -172,7 +173,7 @@ struct IngredientFormBottomSheet: View {
                     } } ) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 4)
-                                .stroke(.main400, lineWidth: 1)
+                                .strokeBorder(.main400, lineWidth: 1)
                             Text("자동 추천일")
                                 .font(.PretendardRegular16)
                                 .foregroundStyle(.main400)
