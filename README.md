@@ -186,7 +186,7 @@ if let user = self.veryLongFunctionNameWhichReturnsOptionalUser(),
 
 ## 🗂️ 폴더 컨벤션
 ```
-weady
+MohaeMukzip
 ├── Resources
 │   ├── Fonts                // 커스텀 폰트 관련 파일
 │   └── Assets.xcassets      // 이미지 및 컬러 에셋 등
@@ -206,7 +206,7 @@ weady
 │   │   └── Utilities        // Helper, Manager, Constants 등 유틸리티성 코드
 │   │
 │   └── Feature              // 기능 단위로 분리된 폴더 (MVVM 구조)
-│       └── [Feature 이름]    // 예: Login, Weadyboard, Comment 등
+│       └── [Feature 이름]    // 예: Login,Comment 등
 │           ├── View         // SwiftUI View
 │           ├── ViewModel    // 상태 및 로직 처리
 │           └── Model        // 도메인 모델 정의
