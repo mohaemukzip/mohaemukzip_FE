@@ -178,8 +178,9 @@ private final class AuthInterceptor: RequestInterceptor {
 
             case .failure(let error):
                 // 재발급 실패한 리프레시 토큰이 만료됐다는 뜻 -> expireSession함수 호출 -> 리프레시 토큰 만료 알림을 보내 RootView에서 처리 
-                if case let .statusCode(response) = error,
-                       response.statusCode == 401 || response.statusCode == 403 {
+                if let statusCode = error.response?.statusCode,
+                       statusCode == 401 || statusCode == 403 {
+                        print("재발급 실패: 로그인 화면으로 돌아갑니다.")
                         self.expireSession()
                     }
                 
