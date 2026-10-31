@@ -72,7 +72,7 @@ struct ProfileRecipeCard: Identifiable, Equatable {
     let title: String
     let channelName: String
     let viewCount: Int
-    let videoId: String
+    let videoId: String?
     let channelId: String
     let videoDuration: String
     let cookingTimeMinutes: Int

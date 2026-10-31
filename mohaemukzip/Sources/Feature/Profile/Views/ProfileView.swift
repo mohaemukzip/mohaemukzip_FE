@@ -405,20 +405,22 @@ private struct ProfileYouTubeThumbnailView: View {
 
     // MARK: - Properties
 
-    let videoId: String
+    let videoId: String?
 
     // MARK: - Body
 
     var body: some View {
         // NOTE: API 응답에 썸네일 URL이 없어서 videoId로 유튜브 썸네일 URL을 생성해서 사용합니다.
-        let url = URL(string: "https://i.ytimg.com/vi/\(videoId)/mqdefault.jpg")
+        let url = videoId.flatMap { id in
+            id.isEmpty ? nil : URL(string: "https://i.ytimg.com/vi/\(id)/mqdefault.jpg")
+        }
 
         AsyncImage(url: url) { phase in
             switch phase {
             case .empty:
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color.gray.opacity(0.2))
-                    .overlay { ProgressView() }
+                    .overlay { if url != nil { ProgressView() } }
 
             case let .success(image):
                 image

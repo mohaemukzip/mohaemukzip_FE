@@ -50,7 +50,7 @@ enum RecipeResponseDTO {
         let viewCount: Int
 
         /// 유튜브 영상 ID
-        let videoId: String
+        let videoId: String?
 
         /// 채널 ID
         let channelId: String?
@@ -87,7 +87,7 @@ enum RecipeResponseDTO {
         let cookingTimeMinutes: Int
         let videoDuration: String?
         let views: Int
-        let videoId: String
+        let videoId: String?
         let difficulty: Double
         let ratingCount: Int
         let channelProfileImageUrl: String?
@@ -117,8 +117,8 @@ enum RecipeResponseDTO {
         let description: String
 
         /// 해당 조리 단계가 시작되는 영상 시점
-        /// 서버 명세상 String으로 내려오기 때문에 String으로 받는다.
-        let videoTime: String
+        /// 시점이 없는 단계는 null 또는 필드 누락으로 내려올 수 있다.
+        let videoTime: String?
     }
 
     // MARK: - Bookmark Toggle

@@ -63,19 +63,28 @@ extension RecipeVideoDetailView {
 
     // MARK: - 플레이어
     var playerSection: some View {
-        YouTubePlayerView(player) { state in
-            switch state {
-            case .idle:
-                ProgressView()
-            case .ready:
-                EmptyView()
-            case .error:
-                VStack(spacing: 8) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                    Text("오류로 인하여 레시피 영상을 불러오지 못했어요")
-                          .font(.custom("Pretendard-Regular", size: 14))
+        Group {
+            if let videoId = video.videoId, !videoId.isEmpty {
+                YouTubePlayerView(player) { state in
+                    switch state {
+                    case .idle:
+                        ProgressView()
+                    case .ready:
+                        EmptyView()
+                    case .error:
+                        VStack(spacing: 8) {
+                            Image(systemName: "exclamationmark.triangle.fill")
+                            Text("오류로 인하여 레시피 영상을 불러오지 못했어요")
+                                  .font(.custom("Pretendard-Regular", size: 14))
+                        }
+                        .padding(12)
+                    }
                 }
-                .padding(12)
+            } else {
+                Text("영상 정보가 없어요")
+                    .font(.PretendardRegular14)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.grey100)
             }
         }
         .allowsHitTesting(true)
@@ -212,6 +221,7 @@ extension RecipeVideoDetailView {
                     ForEach(video.displaySteps) { step in
                         RecipeStepCard(
                             step: step,
+                            canSeekVideo: video.videoId.map { !$0.isEmpty } ?? false,
                             onTapTimestamp: { seconds in
                                 seekToTime(seconds)
                             }
