@@ -9,80 +9,113 @@ struct MonthlyCookingPoint: Identifiable, Equatable {
 
 struct MonthlyCookingLineChart: View {
     let points: [MonthlyCookingPoint]
-    
-    init(points: [MonthlyCookingPoint]) {
+    private let lineColor = Color(red: 1, green: 0.55, blue: 0.14)
+
+    init(points: [MonthlyCookingPoint] = []) {
         self.points = points
     }
-    
-    init() {
-        self.points = [
-            .init(month: 1, count: 2),
-            .init(month: 2, count: 3),
-            .init(month: 3, count: 1),
-            .init(month: 4, count: 3),
-            .init(month: 5, count: 4),
-            .init(month: 6, count: 5),
-            .init(month: 7, count: 5),
-            .init(month: 8, count: 6),
-            .init(month: 9, count: 7),
-            .init(month: 10, count: 6),
-            .init(month: 11, count: 6),
-            .init(month: 12, count: 1)
-        ]
-    }
-    
-    private var maxY: Int {
-        max(points.map(\.count).max() ?? 0, 1)
-    }
-    
+
     var body: some View {
-        Chart {
-            ForEach(points) { p in
-                LineMark(
-                    x: .value("Month", p.month),
-                    y: .value("Count", p.count)
-                )
-                .interpolationMethod(.linear)
-                .lineStyle(.init(lineWidth: 2.5))
-                .foregroundStyle(Color.orange)
-                
-                PointMark(
-                    x: .value("Month", p.month),
-                    y: .value("Count", p.count)
-                )
-                .symbolSize(28)
-                .foregroundStyle(Color.orange)
-            }
+        // Refresh the month when the screen stays open across a date change.
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            chart(currentMonth: Calendar.current.component(.month, from: context.date))
         }
-        .chartXScale(domain: 1...12)
-        .chartYScale(domain: 0...maxY + 1)
-        .chartYAxis(.hidden)
-        .chartLegend(.hidden)
-        .chartXAxis(.hidden)
-        .chartOverlay { proxy in
-            GeometryReader { geo in
-                ForEach(points) { point in
-                    if let xPosition = proxy.position(forX: point.month) {
-                        Text("\(point.month)")
-                            .font(.PretendardRegular13)
-                            .foregroundStyle(.grey700)
-                            .position(
-                                x: xPosition,
-                                y: geo.size.height - 10
-                            )
+    }
+
+    private func chart(currentMonth: Int) -> some View {
+        let months = (1...12).map { month in
+            MonthlyCookingPoint(month: month, count: points.first { $0.month == month }?.count ?? 0)
+        }
+        let maxY = Double(max(months.map(\.count).max() ?? 0, 1))
+
+        return VStack(alignment: .trailing, spacing: 8) {
+            Text("단위: 월")
+                .font(.custom("Pretendard-Regular", size: 12))
+                .foregroundStyle(.grey500)
+                .padding(.trailing, 4)
+
+            GeometryReader { geometry in
+                ScrollViewReader { scrollProxy in
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        VStack(spacing: 10) {
+                            Chart {
+                                ForEach([0.0, maxY / 2, maxY], id: \.self) { value in
+                                    RuleMark(y: .value("기준", value))
+                                        .foregroundStyle(Color.grey300)
+                                        .lineStyle(StrokeStyle(lineWidth: 0.5))
+                                }
+                                ForEach(months) { point in
+                                    LineMark(x: .value("월", point.month), y: .value("요리 횟수", point.count))
+                                        .interpolationMethod(.linear)
+                                        .lineStyle(StrokeStyle(lineWidth: 1))
+                                        .foregroundStyle(lineColor)
+                                    PointMark(x: .value("월", point.month), y: .value("요리 횟수", point.count))
+                                        .symbolSize(28)
+                                        .foregroundStyle(lineColor)
+                                        .annotation(position: .top, spacing: 10) {
+                                            if point.month == currentMonth {
+                                                countBubble(point.count)
+                                            }
+                                        }
+                                        .accessibilityLabel("\(point.month)월")
+                                        .accessibilityValue("\(point.count)회")
+                                }
+                            }
+                            .chartXScale(domain: 0.5...12.5)
+                            .chartYScale(domain: 0...maxY)
+                            .chartXAxis(.hidden)
+                            .chartYAxis(.hidden)
+                            .chartLegend(.hidden)
+                            .frame(height: 57)
+                            .padding(.top, 30)
+
+                            HStack(spacing: 0) {
+                                ForEach(months) { point in
+                                    Text("\(point.month)")
+                                        .font(.PretendardRegular13)
+                                        .foregroundStyle(.grey700)
+                                        .frame(width: geometry.size.width / 6)
+                                        .id(point.month)
+                                }
+                            }
+                        }
+                        .frame(width: geometry.size.width * 2)
+                        .padding(.bottom, 2)
+                    }
+                    .onAppear { scrollProxy.scrollTo(currentMonth, anchor: .trailing) }
+                    .onChange(of: currentMonth) { _, month in
+                        scrollProxy.scrollTo(month, anchor: .trailing)
                     }
                 }
             }
+            .frame(height: 115)
         }
-        .chartPlotStyle { plotArea in
-            plotArea
-                .background(Color.clear)
-        }
-        .overlay(alignment: .topTrailing) {
-            Text("단위 : 월")
-                .font(.PretendardRegular13)
-                .foregroundStyle(.grey700)
-                .padding(.trailing, 4)
+    }
+
+    private func countBubble(_ count: Int) -> some View {
+        Text("\(count)회")
+            .font(.PretendardMedium12)
+            .foregroundStyle(.white)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(Color(white: 0.43), in: RoundedRectangle(cornerRadius: 6))
+            .overlay(alignment: .bottom) {
+                Triangle()
+                    .fill(Color(white: 0.43))
+                    .frame(width: 8, height: 5)
+                    .offset(y: 5)
+            }
+    }
+}
+
+private struct Triangle: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.midX, y: rect.maxY))
+            path.closeSubpath()
         }
     }
 }
+
