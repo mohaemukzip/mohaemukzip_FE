@@ -2,6 +2,7 @@ import SwiftUI
 
 struct IngredientList: View {
     @Environment(IngredientSearchViewModel.self) var vm
+    var analyticsScreen: String = "재료 목록"
     var ingredients: [IngredientForAddition]
     var onSaveTap: (Int) -> Void
     var onPlusTap: (IngredientForAddition) -> Void
@@ -43,8 +44,14 @@ struct IngredientList: View {
                                 ),
                                 category: ingredient.category.rawValue,
                                 isSaved: ingredient.isSaved,
-                                onSaveTap: {onSaveTap(ingredient.id)},
-                                onPlusTap: {onPlusTap(ingredient)}
+                                onSaveTap: {
+                                    AppAnalytics.logButton(analyticsScreen, "즐겨찾기 변경", details: ["재료_번호": ingredient.id, "변경_방향": ingredient.isSaved ? "해제" : "등록"])
+                                    onSaveTap(ingredient.id)
+                                },
+                                onPlusTap: {
+                                    AppAnalytics.logButton(analyticsScreen, "재료 추가 열기", details: ["재료_번호": ingredient.id])
+                                    onPlusTap(ingredient)
+                                }
                             )
                             .onAppear {
                                 onLastAppear?(ingredient)
@@ -52,7 +59,7 @@ struct IngredientList: View {
                         }
                         
                         if let onTap = onRequest {
-                            Button ( action: { onTap() } ) {
+                            Button ( action: { AppAnalytics.logButton(analyticsScreen, "재료 추가 요청 열기", details: ["버튼_위치": "목록"]); onTap() } ) {
                                 IngredientRequestButton()
                             }.padding(.bottom)
                         }

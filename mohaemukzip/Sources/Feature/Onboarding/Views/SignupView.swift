@@ -40,7 +40,7 @@ struct SignupView: View {
     
     private var topBar: some View {
         HStack {
-            Button(action: { router.pop() }) {
+            Button(action: { AppAnalytics.logButton("회원가입", "뒤로가기"); router.pop() }) {
                 Image("icon-back-big")
                     .foregroundStyle(.grey700)
                     .frame(width: 44, height: 44, alignment: .leading)
@@ -114,6 +114,7 @@ struct SignupView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button {
+                    AppAnalytics.logButton("회원가입", "이메일 인증 요청")
                     guard viewModel.isValidEmail else {
                         viewModel.emailVerificationState = .invalidFormat
                         return
@@ -213,6 +214,7 @@ struct SignupView: View {
                         )
                     
                     Button {
+                        AppAnalytics.logButton("회원가입", "이메일 인증 재요청")
                         Task { await viewModel.requestEmailVerification() }
                     } label: {
                         Text("재요청")
@@ -229,6 +231,7 @@ struct SignupView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 10))
                 
                 Button {
+                    AppAnalytics.logButton("회원가입", "인증번호 확인")
                     Task { await viewModel.verifyEmailCode() }
                 } label: {
                     Text("확인")
@@ -375,6 +378,7 @@ struct SignupView: View {
     
     private var startButton: some View {
         Button {
+            AppAnalytics.logButton("회원가입", "회원가입 제출")
             Task {
                 let ok = await viewModel.signup(terms: self.terms)
                 if ok, let tokens = viewModel.tokens {

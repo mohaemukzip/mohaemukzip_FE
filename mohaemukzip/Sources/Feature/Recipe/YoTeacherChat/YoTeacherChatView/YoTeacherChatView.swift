@@ -12,7 +12,7 @@ struct YoTeacherChatView: View {
         ZStack {
             VStack {
                 HStack {
-                    Button( action: { router.pop() } ) {
+                    Button( action: { AppAnalytics.logButton("요선생 채팅", "뒤로가기"); router.pop() } ) {
                         Image("backbutton")
                             .foregroundStyle(.grey700)
                     }
@@ -91,7 +91,7 @@ struct YoTeacherChatView: View {
                     if viewModel.messages.isEmpty {
                         HStack(spacing: 17) {
                             ForEach(viewModel.recommendQ) { q in
-                                Button ( action: { Task {await viewModel.sendMessage(message: q.text)} } ) {
+                                Button ( action: { AppAnalytics.logButton("요선생 채팅", "추천 질문 선택"); Task {await viewModel.sendMessage(message: q.text)} } ) {
                                     RecommendQuestion(text: q.text)
                                 }.frame(height: 66)
                             }
@@ -106,7 +106,7 @@ struct YoTeacherChatView: View {
                             TextField("재료, 상황, 메뉴 키워드를 입력하세요.", text: $text)
                                 .padding(.leading)
                             Spacer()
-                            Button ( action: { let messageToSend = text; text = "";
+                            Button ( action: { AppAnalytics.logButton("요선생 채팅", "메시지 전송"); let messageToSend = text; text = "";
                                 Task {await viewModel.sendMessage(message: messageToSend)} } ) {
                                 Image("icon-chat")
                                         .foregroundStyle(isSendButtonDisabled ? .grey300 : .grey700)

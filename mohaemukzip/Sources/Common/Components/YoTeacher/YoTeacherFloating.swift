@@ -9,7 +9,7 @@ struct YoTeacherFloating: View {
             Spacer()
             VStack {
                 Spacer()
-                Button( action: { onTap() } ) {
+                Button( action: { AppAnalytics.logButton("레시피 목록", "요선생 열기", details: ["버튼_위치": "플로팅 버튼"]); onTap() } ) {
                     Image("icon-yoteacher-floating")
                 }
             }
