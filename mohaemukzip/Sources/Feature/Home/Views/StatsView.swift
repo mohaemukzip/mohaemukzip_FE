@@ -4,17 +4,26 @@ import SwiftUI
 struct StatsView: View {
     @Binding var isHomePowerInfoPresented: Bool
     @State private var viewModel = StatsViewModel()
+    private var loadsRemoteData = true
+
+    init(isHomePowerInfoPresented: Binding<Bool>, loadsRemoteData: Bool = true) {
+        _isHomePowerInfoPresented = isHomePowerInfoPresented
+        self.loadsRemoteData = loadsRemoteData
+    }
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 24) {
+        VStack(alignment: .leading, spacing: 12) {
             statsSummarySection
+                .padding(.bottom, 20)
             monthlyCookingChartSection
             calendarSection
         }
         .task {
-            await viewModel.load()
+            if loadsRemoteData {
+                await viewModel.load()
+            }
         }
-        .padding(.horizontal, 17)
+        .padding(.horizontal, 18)
         .padding(.top, 8)
         .background(.grey100)
     }
@@ -51,11 +60,12 @@ private extension StatsView {
     
     
     func statItem(icon: String, title: String, value: String, suffix: String) -> some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 6) {
             Image(icon)
+                .resizable()
+                .scaledToFit()
                 .frame(width: 60, height: 60)
-                .padding(.top, 7)
-                .padding(.bottom, 12)
+                .padding(.bottom, 6)
             
             Text(title)
                 .font(.PretendardMedium14)
@@ -80,9 +90,9 @@ private extension StatsView {
                 .foregroundStyle(.grey900)
             
             MonthlyCookingLineChart(points: viewModel.monthlyPoints)
-                .frame(height: 130)
-                .padding(16)
-                .background(Color(.systemBackground))
+                .padding(.horizontal, 12)
+                .padding(.vertical, 12)
+                .background(.white)
                 .clipShape(RoundedRectangle(cornerRadius: 8))
         }
     }
@@ -95,4 +105,11 @@ private extension StatsView {
         )
         .padding(.bottom, 20)
     }
+}
+
+#Preview("통계 · 신규 사용자") {
+    ScrollView {
+        StatsView(isHomePowerInfoPresented: .constant(false), loadsRemoteData: false)
+    }
+    .background(Color.grey100)
 }

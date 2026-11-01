@@ -319,26 +319,26 @@ final class RecipeService {
 
     /// 영상 타임스탬프 문자열을 초 단위 Int로 변환
     /// mm:ss / hh:mm:ss / ss 형식 대응
-    private func parseVideoTimeToSeconds(_ raw: String) -> Int {
+    private func parseVideoTimeToSeconds(_ raw: String?) -> Int? {
+        guard let raw else { return nil }
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
-
-        // 숫자만 오는 경우
-        if let seconds = Int(trimmed) {
-            return max(0, seconds)
-        }
-
-        // mm:ss / hh:mm:ss 형태 대응
-        let parts = trimmed.split(separator: ":").map { String($0) }
-        guard !parts.isEmpty else {
-            return 0
-        }
+        let parts = trimmed.split(separator: ":", omittingEmptySubsequences: false)
+        guard (1...3).contains(parts.count) else { return nil }
 
         var seconds = 0
-        for part in parts {
-            seconds *= 60
-            seconds += Int(part) ?? 0
+        for (index, part) in parts.enumerated() {
+            // Reject empty, negative and malformed components instead of inventing 0 seconds.
+            guard !part.isEmpty,
+                  part.utf8.allSatisfy({ (48...57).contains($0) }),
+                  let value = Int(part),
+                  index == 0 || value < 60 else { return nil }
+
+            let (scaled, multiplyOverflow) = seconds.multipliedReportingOverflow(by: 60)
+            let (total, addOverflow) = scaled.addingReportingOverflow(value)
+            guard !multiplyOverflow, !addOverflow else { return nil }
+            seconds = total
         }
-        return max(0, seconds)
+        return seconds
     }
 
     // MARK: - Request Helpers

@@ -73,17 +73,19 @@ struct RecipeListRow: View {
 // MARK: - YouTube Thumbnail (공용)
 
 private struct YouTubeThumbnailView: View {
-    let videoId: String
+    let videoId: String?
 
     var body: some View {
-        let url = URL(string: "https://i.ytimg.com/vi/\(videoId)/mqdefault.jpg")
+        let url = videoId.flatMap { id in
+            id.isEmpty ? nil : URL(string: "https://i.ytimg.com/vi/\(id)/mqdefault.jpg")
+        }
 
         AsyncImage(url: url) { phase in
             switch phase {
             case .empty:
                 RoundedRectangle(cornerRadius: 8)
                     .fill(Color.gray.opacity(0.2))
-                    .overlay { ProgressView() }
+                    .overlay { if url != nil { ProgressView() } }
 
             case let .success(image):
                 image

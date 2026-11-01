@@ -7,7 +7,7 @@ import SwiftUI
 
 struct ThumbnailView: View {
 
-    let videoId: String
+    let videoId: String?
     let durationText: String
 
     /// maxres 썸네일 실패 여부
@@ -15,11 +15,13 @@ struct ThumbnailView: View {
     @State private var useFallbackHQ = false
 
     private var maxResURL: URL? {
-        URL(string: "https://img.youtube.com/vi/\(videoId)/maxresdefault.jpg")
+        guard let videoId, !videoId.isEmpty else { return nil }
+        return URL(string: "https://img.youtube.com/vi/\(videoId)/maxresdefault.jpg")
     }
 
     private var hqURL: URL? {
-        URL(string: "https://img.youtube.com/vi/\(videoId)/hqdefault.jpg")
+        guard let videoId, !videoId.isEmpty else { return nil }
+        return URL(string: "https://img.youtube.com/vi/\(videoId)/hqdefault.jpg")
     }
 
     private var currentURL: URL? {

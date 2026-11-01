@@ -33,6 +33,7 @@ struct RecipeIngredientChip: View {
 struct RecipeStepCard: View {
 
     let step: RecipeStep
+    var canSeekVideo: Bool = true
     let onTapTimestamp: (Int) -> Void
 
     var body: some View {
@@ -50,22 +51,24 @@ struct RecipeStepCard: View {
 
                 Spacer()
 
-                Button {
-                    onTapTimestamp(step.videoTime)
-                } label: {
-                    HStack(spacing: 0) {
-                        Image("play.arrow.filled")
-                        Text(formattedTime(step.videoTime))
-                            .font(.custom("Pretendard-Medium", size: 14))
-                            .foregroundStyle(.white)
+                if canSeekVideo, let videoTime = step.videoTime {
+                    Button {
+                        onTapTimestamp(videoTime)
+                    } label: {
+                        HStack(spacing: 0) {
+                            Image("play.arrow.filled")
+                            Text(formattedTime(videoTime))
+                                .font(.custom("Pretendard-Medium", size: 14))
+                                .foregroundStyle(.white)
+                        }
                     }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 4)
+                    .padding(.trailing, 8)
+                    .padding(.vertical, 2)
+                    .background(Color(red: 0.29, green: 0.28, blue: 0.28))
+                    .cornerRadius(30)
                 }
-                .buttonStyle(.plain)
-                .padding(.leading, 4)
-                .padding(.trailing, 8)
-                .padding(.vertical, 2)
-                .background(Color(red: 0.29, green: 0.28, blue: 0.28))
-                .cornerRadius(30)
             }
 
             Rectangle()
