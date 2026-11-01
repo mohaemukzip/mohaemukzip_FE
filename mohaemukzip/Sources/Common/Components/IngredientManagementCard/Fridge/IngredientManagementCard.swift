@@ -46,7 +46,10 @@ struct IngredientManagementCard: View {
         }
         .overlay(alignment: .topTrailing) {
             if isEditing {
-                Button( action: onDelete ) {
+                Button(action: {
+                    AppAnalytics.logButton("냉장고", "재료 삭제", details: ["재료_번호": ingredientInfo.id])
+                    onDelete()
+                }) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.grey500)
                         .padding(4)

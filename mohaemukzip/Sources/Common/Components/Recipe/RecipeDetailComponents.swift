@@ -51,6 +51,7 @@ struct RecipeStepCard: View {
                 Spacer()
 
                 Button {
+                    AppAnalytics.logButton("레시피 상세", "조리 단계 영상 이동", details: ["영상_시각": step.videoTime])
                     onTapTimestamp(step.videoTime)
                 } label: {
                     HStack(spacing: 0) {

@@ -20,6 +20,7 @@ struct StartView: View {
             
             VStack(spacing: 18) {
                 Button {
+                    AppAnalytics.logButton("시작", "로그인")
                     router.push(.login)
                 } label: {
                     HStack(spacing: 4) {
@@ -35,6 +36,7 @@ struct StartView: View {
                 .buttonStyle(.plain)
                 
                 Button {
+                    AppAnalytics.logButton("시작", "가입하기")
                     router.push(.agree)
                 } label: {
                     Text("가입하기")

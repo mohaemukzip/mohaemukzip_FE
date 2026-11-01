@@ -54,6 +54,7 @@ struct RecipeListRow: View {
             if showsBookmark {
                 if let onTapBookmark {
                     Button {
+                        AppAnalytics.logButton("저장한 레시피", "북마크 해제", details: ["레시피_번호": recipe.id])
                         onTapBookmark()
                     } label: {
                         Image("bookmark.fill")

@@ -8,6 +8,7 @@ extension RecipeVideoDetailView {
     var navigationBar: some View {
         HStack(spacing: 12) {
             Button {
+                AppAnalytics.logButton("레시피 상세", "뒤로가기")
                 dismiss()
             } label: {
                 Image("backbutton")
@@ -21,6 +22,7 @@ extension RecipeVideoDetailView {
             Spacer()
 
             Button {
+                AppAnalytics.logButton("레시피 상세", "북마크 변경", details: ["레시피_번호": video.id, "변경_방향": video.isBookmarked ? "해제" : "등록"])
                 #if DEBUG
                 print("[RecipeDetailView] 🔘 bookmark button tapped")
                 #endif
@@ -135,6 +137,7 @@ extension RecipeVideoDetailView {
     // MARK: - 채널
     var channelSection: some View {
         Button {
+            AppAnalytics.logButton("레시피 상세", "유튜브 채널 열기")
             openChannelHome(channelId: video.channelId)
         } label: {
             HStack(spacing: 12) {
@@ -286,6 +289,7 @@ extension RecipeVideoDetailView {
         VStack(spacing: 0) {
             Divider().opacity(0.6)
             Button {
+                AppAnalytics.logButton("레시피 상세", "요리 완료 열기", details: ["레시피_번호": video.id])
                 selectedRating = 0
                 isCookingCompleteModalPresented = true
             } label: {
