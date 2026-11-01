@@ -2,6 +2,10 @@ import Foundation
 import Moya
 
 class FridgeService {
+    private struct RegistrationResponse: Decodable {
+        let isSuccess: Bool
+    }
+
     private let provider = NetworkManager.shared.makeProvider(for: FridgeAPI.self)
     
     func getIngredients() async throws -> [FridgeIngredient] {
@@ -30,12 +34,35 @@ class FridgeService {
                                                  expireDate: date,
                                                  weight: amount)
         
+        let details: [String: Any] = [
+            "재료_번호": id,
+            "보관장소": StorageType(rawValue: ty)?.displayName ?? "알 수 없음"
+        ]
+
         return try await withCheckedThrowingContinuation { continuation in
             provider.request(.addIngredients(requestDTO)) { result in
                 switch result {
-                case .success(_):
-                    continuation.resume()
+                case .success(let response):
+                    do {
+                        // 본문이 없는 성공 응답도 허용하며, 본문이 있으면 서버의 성공 여부를 확인합니다.
+                        if !response.data.isEmpty {
+                            let decoded = try response.map(RegistrationResponse.self)
+                            guard decoded.isSuccess else {
+                                throw NSError(
+                                    domain: "FridgeService",
+                                    code: response.statusCode,
+                                    userInfo: nil
+                                )
+                            }
+                        }
+                        AppAnalytics.logSuccess("재료 입력", "재료 등록", details: details)
+                        continuation.resume()
+                    } catch {
+                        AppAnalytics.logFailure("재료 입력", "재료 등록", reason: AppAnalytics.failureReason(for: error, response: response), details: details)
+                        continuation.resume(throwing: error)
+                    }
                 case .failure(let error):
+                    AppAnalytics.logFailure("재료 입력", "재료 등록", reason: AppAnalytics.failureReason(for: error), details: details)
                     continuation.resume(throwing: error)
                 }
             }

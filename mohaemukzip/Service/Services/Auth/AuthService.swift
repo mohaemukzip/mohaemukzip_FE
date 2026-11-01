@@ -21,12 +21,23 @@ final class AuthService {
                 case .success(let response):
                     do {
                         let decoded = try response.map(SignUpResponseDTO.self)
-                        continuation.resume(returning: decoded.result.toModel())
+                        guard decoded.isSuccess else {
+                            throw NSError(
+                                domain: "AuthService",
+                                code: response.statusCode,
+                                userInfo: [NSLocalizedDescriptionKey: decoded.message]
+                            )
+                        }
+                        let model = decoded.result.toModel()
+                        AppAnalytics.logSuccess("회원가입", "회원가입", details: ["회원가입_방식": "이메일"])
+                        continuation.resume(returning: model)
                     } catch {
+                        AppAnalytics.logFailure("회원가입", "회원가입", reason: AppAnalytics.failureReason(for: error, response: response), details: ["회원가입_방식": "이메일"])
                         continuation.resume(throwing: error)
                     }
                     
                 case .failure(let error):
+                    AppAnalytics.logFailure("회원가입", "회원가입", reason: AppAnalytics.failureReason(for: error), details: ["회원가입_방식": "이메일"])
                     continuation.resume(throwing: error)
                 }
             }
@@ -42,6 +53,13 @@ final class AuthService {
                 case .success(let response):
                     do {
                         let decoded = try response.map(LoginResponseDTO.self)
+                        guard decoded.isSuccess else {
+                            throw NSError(
+                                domain: "AuthService",
+                                code: response.statusCode,
+                                userInfo: [NSLocalizedDescriptionKey: decoded.message]
+                            )
+                        }
                         let model = decoded.result.toModel()
                         
                         // 정상 동작: 로그인 성공 시 토큰을 저장하고 상위(AppState 등)에서 화면 전환을 처리한다.
@@ -66,11 +84,14 @@ final class AuthService {
                          print("[TEST] access token intentionally corrupted")
                          */
                         
+                        AppAnalytics.logSuccess("로그인", "로그인", details: ["로그인_방식": "이메일"])
                         continuation.resume(returning: model)
                     } catch {
+                        AppAnalytics.logFailure("로그인", "로그인", reason: AppAnalytics.failureReason(for: error, response: response), details: ["로그인_방식": "이메일"])
                         continuation.resume(throwing: error)
                     }
                 case .failure(let error):
+                    AppAnalytics.logFailure("로그인", "로그인", reason: AppAnalytics.failureReason(for: error), details: ["로그인_방식": "이메일"])
                     continuation.resume(throwing: error)
                 }
             }
@@ -87,11 +108,22 @@ final class AuthService {
                 case .success(let response):
                     do {
                         let decoded = try response.map(LoginResponseDTO.self)
-                        continuation.resume(returning: decoded.result.toModel())
+                        guard decoded.isSuccess else {
+                            throw NSError(
+                                domain: "AuthService",
+                                code: response.statusCode,
+                                userInfo: [NSLocalizedDescriptionKey: decoded.message]
+                            )
+                        }
+                        let model = decoded.result.toModel()
+                        AppAnalytics.logSuccess("로그인", "로그인 API 인증", details: ["로그인_방식": "카카오"])
+                        continuation.resume(returning: model)
                     } catch {
+                        AppAnalytics.logFailure("로그인", "로그인 API 인증", reason: AppAnalytics.failureReason(for: error, response: response), details: ["로그인_방식": "카카오"])
                         continuation.resume(throwing: error)
                     }
                 case .failure(let error):
+                    AppAnalytics.logFailure("로그인", "로그인 API 인증", reason: AppAnalytics.failureReason(for: error), details: ["로그인_방식": "카카오"])
                     continuation.resume(throwing: error)
                 }
             }
@@ -108,11 +140,22 @@ final class AuthService {
                 case .success(let response):
                     do {
                         let decoded = try response.map(LoginResponseDTO.self)
-                        continuation.resume(returning: decoded.result.toModel())
+                        guard decoded.isSuccess else {
+                            throw NSError(
+                                domain: "AuthService",
+                                code: response.statusCode,
+                                userInfo: [NSLocalizedDescriptionKey: decoded.message]
+                            )
+                        }
+                        let model = decoded.result.toModel()
+                        AppAnalytics.logSuccess("로그인", "로그인 API 인증", details: ["로그인_방식": "애플"])
+                        continuation.resume(returning: model)
                     } catch {
+                        AppAnalytics.logFailure("로그인", "로그인 API 인증", reason: AppAnalytics.failureReason(for: error, response: response), details: ["로그인_방식": "애플"])
                         continuation.resume(throwing: error)
                     }
                 case .failure(let error):
+                    AppAnalytics.logFailure("로그인", "로그인 API 인증", reason: AppAnalytics.failureReason(for: error), details: ["로그인_방식": "애플"])
                     continuation.resume(throwing: error)
                 }
             }
@@ -223,12 +266,15 @@ final class AuthService {
                 case .success(let response):
                     do {
                         _ = try response.mapResult(SendEmailVerificationResultDTO.self)
+                        AppAnalytics.logSuccess("회원가입", "이메일 인증번호 요청")
                         continuation.resume()
                     } catch {
+                        AppAnalytics.logFailure("회원가입", "이메일 인증번호 요청", reason: AppAnalytics.failureReason(for: error, response: response))
                         continuation.resume(throwing: error)
                     }
 
                 case .failure(let error):
+                    AppAnalytics.logFailure("회원가입", "이메일 인증번호 요청", reason: AppAnalytics.failureReason(for: error))
                     continuation.resume(throwing: error)
                 }
             }
@@ -250,12 +296,19 @@ final class AuthService {
                         let decoded = try response.mapResult(
                             VerifyEmailResultDTO.self
                         )
+                        if decoded.verified {
+                            AppAnalytics.logSuccess("회원가입", "이메일 인증번호 검증")
+                        } else {
+                            AppAnalytics.logFailure("회원가입", "이메일 인증번호 검증", reason: "인증번호 검증 실패")
+                        }
                         continuation.resume(returning: decoded.verified)
                     } catch {
+                        AppAnalytics.logFailure("회원가입", "이메일 인증번호 검증", reason: AppAnalytics.failureReason(for: error, response: response))
                         continuation.resume(throwing: error)
                     }
 
                 case .failure(let error):
+                    AppAnalytics.logFailure("회원가입", "이메일 인증번호 검증", reason: AppAnalytics.failureReason(for: error))
                     continuation.resume(throwing: error)
                 }
             }
@@ -276,13 +329,23 @@ final class AuthService {
 
                 case .success(let response):
                     do {
-                        _ = try response.map(SendEmailVerificationResponseDTO.self)
+                        let decoded = try response.map(SendEmailVerificationResponseDTO.self)
+                        guard decoded.isSuccess else {
+                            throw NSError(
+                                domain: "AuthService",
+                                code: response.statusCode,
+                                userInfo: [NSLocalizedDescriptionKey: decoded.message]
+                            )
+                        }
+                        AppAnalytics.logSuccess("비밀번호 재설정", "이메일 인증번호 발송")
                         continuation.resume(returning: ())
                     } catch {
+                        AppAnalytics.logFailure("비밀번호 재설정", "이메일 인증번호 발송", reason: AppAnalytics.failureReason(for: error, response: response))
                         continuation.resume(throwing: error)
                     }
 
                 case .failure(let error):
+                    AppAnalytics.logFailure("비밀번호 재설정", "이메일 인증번호 발송", reason: AppAnalytics.failureReason(for: error))
                     continuation.resume(throwing: error)
                 }
             }
@@ -377,6 +440,7 @@ final class AuthService {
         }
     }
     
+
     struct AuthErrorResponseDTO: Decodable {
         let isSuccess: Bool
         let code: String

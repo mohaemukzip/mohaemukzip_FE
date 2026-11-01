@@ -70,8 +70,18 @@ final class RecipeService {
                 RecipeEndpoints.recipeSummary(recipeId: recipeId),
                 as: RecipeResponseDTO.RecipeSummaryGenerateResponse.self
             )
+            // 요청 수신만으로 성공 처리하지 않고 요약 생성 결과를 확인합니다.
+            if response.summaryExists {
+                AppAnalytics.logSuccess("레시피 상세", "요리 요약", details: [
+                    "레시피_번호": recipeId,
+                    "조리_단계_수": response.stepCount
+                ])
+            } else {
+                AppAnalytics.logFailure("레시피 상세", "요리 요약", reason: "요약 생성 실패", details: ["레시피_번호": recipeId])
+            }
             return (response.summaryExists, response.stepCount)
         } catch {
+            AppAnalytics.logFailure("레시피 상세", "요리 요약", reason: failureReason(for: error), details: ["레시피_번호": recipeId])
             #if DEBUG
             print("[RecipeService] SUMMARY GENERATE ❌ recipeId=\(recipeId) error=\(error)")
             #endif
@@ -112,13 +122,29 @@ final class RecipeService {
             print("[RecipeService] COMPLETE ✅ recipeId=\(recipeId) rating=\(safeRating) cookingRecordId=\(response.cookingRecordId) reward=\(response.rewardScore) leveledUp=\(response.leveledUp)")
             #endif
 
+            AppAnalytics.logSuccess("요리 완료 평가", "요리 완료", details: [
+                "레시피_번호": recipeId,
+                "별점": safeRating
+            ])
             return response
         } catch {
+            AppAnalytics.logFailure("요리 완료 평가", "요리 완료", reason: failureReason(for: error), details: [
+                "레시피_번호": recipeId,
+                "별점": safeRating
+            ])
             #if DEBUG
             print("[RecipeService] COMPLETE ❌ recipeId=\(recipeId) rating=\(safeRating) error=\(error)")
             #endif
             throw error
         }
+    }
+
+    private func failureReason(for error: Error) -> String {
+        if let serviceError = error as? RecipeServiceError,
+           case .decodingFailed(let underlyingError) = serviceError {
+            return AppAnalytics.failureReason(for: underlyingError)
+        }
+        return AppAnalytics.failureReason(for: error)
     }
 
     // MARK: - Mapping Helpers
