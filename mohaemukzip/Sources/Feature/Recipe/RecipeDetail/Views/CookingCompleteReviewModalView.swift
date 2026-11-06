@@ -90,6 +90,7 @@ struct CookingCompleteReviewModalView: View {
                 /// 하단 버튼 영역
                 HStack(spacing: 12) {
                     Button {
+                        AppAnalytics.logButton("요리 완료 평가", "취소")
                         /// 취소: 저장 없이 닫기
                         guard !isSubmitting else { return }
                         isPresented = false
@@ -106,6 +107,7 @@ struct CookingCompleteReviewModalView: View {
                     }
 
                     Button {
+                        AppAnalytics.logButton("요리 완료 평가", "요리완료 제출", details: ["별점": selectedRating])
                         /// 제출: 별점 선택 시에만 실행
                         guard selectedRating >= 1 else { return }
                         guard !isSubmitting else { return }

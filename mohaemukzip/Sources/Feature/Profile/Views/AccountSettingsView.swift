@@ -110,6 +110,7 @@ struct AccountSettingsView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Button {
+                AppAnalytics.logButton("계정 설정", "뒤로가기")
                 dismiss() // 라우터 pop 또는 dismiss
             } label: {
                 // 이전 뷰와 동일한 에셋 및 크기 적용
@@ -170,6 +171,7 @@ struct AccountSettingsView: View {
                 .foregroundColor(.black)
             
             Button(action: {
+                AppAnalytics.logButton("계정 설정", "비밀번호 변경 열기")
                 guard let email = viewModel.accountInfo?.email else { return }
 
                 router.push(.passwordChange)

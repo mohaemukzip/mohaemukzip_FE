@@ -55,7 +55,7 @@ struct RecentlyViewedRecipesView: View {
                 set: { if !$0 { viewModel.errorMessage = nil } }
             )
         ) {
-            Button("확인", role: .cancel) { }
+            Button("확인", role: .cancel) { AppAnalytics.logButton("최근 본 레시피", "오류 안내 확인"); }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -64,6 +64,7 @@ struct RecentlyViewedRecipesView: View {
     private func listHeader(title: String) -> some View {
         HStack(spacing: 8) {
             Button {
+                AppAnalytics.logButton("최근 본 레시피", "뒤로가기")
                 router.pop()
                 dismiss()
             } label: {

@@ -88,6 +88,7 @@ struct AgreeView: View {
     private var topBar: some View {
         HStack {
             Button(action: {
+                AppAnalytics.logButton("약관 동의", "뒤로가기")
                 // 뒤로가기 시 appState에 남아있던 임시토큰 삭제
                 appState.clearTempSession(); router.pop()
             }) {
@@ -105,6 +106,7 @@ struct AgreeView: View {
     private var bottomButton: some View {
         VStack(spacing: 0) {
             Button {
+                AppAnalytics.logButton("약관 동의", "다음", details: ["가입_방식": mode == .signup ? "일반 가입" : "소셜 가입"])
                 Task {
                     let terms = [SignUpTermDTO(id: 1, isAgreed: viewModel.isOver14),
                                  SignUpTermDTO(id: 2, isAgreed: viewModel.isServiceAgree),
@@ -172,6 +174,7 @@ private struct AgreeCheckRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Button {
+                AppAnalytics.logButton("약관 동의", "동의 체크", details: ["약관": title, "변경_방향": isChecked ? "해제" : "선택"])
                 onToggle()
             } label: {
                 Image(systemName: "checkmark.circle.fill")
@@ -182,8 +185,10 @@ private struct AgreeCheckRow: View {
             
             Button {
                 if let onTitleTap {
+                    AppAnalytics.logButton("약관 동의", "약관 상세 보기", details: ["약관": title])
                     onTitleTap()
                 } else {
+                    AppAnalytics.logButton("약관 동의", "동의 제목 선택", details: ["약관": title, "변경_방향": isChecked ? "해제" : "선택"])
                     onToggle()
                 }
             } label: {

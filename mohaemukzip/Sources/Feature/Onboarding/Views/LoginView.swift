@@ -82,6 +82,7 @@ struct LoginView: View {
             
             // MARK: 로그인 버튼
             Button {
+                AppAnalytics.logButton("로그인", "로그인", details: ["로그인_방식": "이메일"])
                 focusedField = nil
                 Task {
                     let ok = await viewModel.login()
@@ -111,7 +112,7 @@ struct LoginView: View {
             
             HStack {
                 
-                Button { router.push(.forgotPasswordEmail) }
+                Button { AppAnalytics.logButton("로그인", "비밀번호 찾기"); router.push(.forgotPasswordEmail) }
                 label: {
                     Text("비밀번호 찾기")
                 }
@@ -119,7 +120,7 @@ struct LoginView: View {
                 Text("|").padding(.horizontal)
                     .foregroundStyle(.grey300)
                 
-                Button { router.push(.agree) }
+                Button { AppAnalytics.logButton("로그인", "회원가입"); router.push(.agree) }
                 label: {
                     Text("회원가입")
                         
@@ -140,6 +141,7 @@ struct LoginView: View {
             
             // MARK: 카카오 소셜 로그인
             Button {
+                AppAnalytics.logButton("로그인", "로그인", details: ["로그인_방식": "카카오"])
                 
                 focusedField = nil
                 Task {
@@ -195,6 +197,7 @@ struct LoginView: View {
             .padding(.horizontal)*/
             
             Button {
+                AppAnalytics.logButton("로그인", "로그인", details: ["로그인_방식": "애플"])
                 focusedField = nil
                 Task {
                     let ok = await viewModel.loginWithApple()

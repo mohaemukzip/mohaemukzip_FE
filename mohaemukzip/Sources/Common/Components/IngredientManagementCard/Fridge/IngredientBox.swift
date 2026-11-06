@@ -36,7 +36,7 @@ struct IngredientBox: View {
                         .font(.PretendardSemibold16)
                         .foregroundStyle(.grey700)
                     Spacer()
-                    Button(action: { withAnimation { isExpanded.toggle() } } ) {
+                    Button(action: { AppAnalytics.logButton("냉장고", "보관함 펼침 변경", details: ["보관장소": text, "변경_방향": isExpanded ? "접기" : "펼치기"]); withAnimation { isExpanded.toggle() } } ) {
                         Image(isExpanded ? "icon-chevron-up" : "icon-chevron-down")
                             .foregroundStyle(.grey700)
                     }

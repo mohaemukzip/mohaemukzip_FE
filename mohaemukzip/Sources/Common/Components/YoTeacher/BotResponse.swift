@@ -38,7 +38,7 @@ struct BotResponse: View {
                     ScrollView(.horizontal) {
                         LazyHStack {
                             ForEach(unwrappedResponse) { image in
-                                Button ( action: { onTapVideo(image.id) } ) {
+                                Button ( action: { AppAnalytics.logButton("요선생 채팅", "추천 영상 선택", details: ["레시피_번호": image.id]); onTapVideo(image.id) } ) {
                                     RecipeVideoChatCard(url: image.thumbnailURL, videoTime: image.videoTime)
                                 }
                             }

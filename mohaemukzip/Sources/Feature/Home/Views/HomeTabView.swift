@@ -45,6 +45,7 @@ private extension HomeTabView {
             }
             Spacer()
             Button {
+                AppAnalytics.logButton("홈", "알림")
             } label: {
                 Image(.iconBell)
                     .frame(width: 28, height: 28)
@@ -57,6 +58,7 @@ private extension HomeTabView {
     
     func tabButton(_ tab: TopTab, title: String) -> some View {
         Button {
+            AppAnalytics.logButton("홈", "상단 탭 선택", details: ["선택_탭": title])
             selectedTab = tab
         } label: {
             Text(title)
@@ -103,6 +105,7 @@ private struct HomePowerInfoModalView: View {
                 .padding(.horizontal, 6)
                 
                 Button {
+                    AppAnalytics.logButton("집밥력 설명", "확인")
                     isPresented = false
                 } label: {
                     ZStack {

@@ -14,11 +14,14 @@ class YoTeacherService {
                         
                         let domainModels = decoded.recipeCards?.compactMap { $0.toDomain() } ?? nil
                         
+                        AppAnalytics.logSuccess("요선생 채팅", "요선생 응답", details: ["추천_영상_수": domainModels?.count ?? 0])
                         continuation.resume(returning: (decoded.title, decoded.message, domainModels) )
                     } catch {
+                        AppAnalytics.logFailure("요선생 채팅", "요선생 응답", reason: AppAnalytics.failureReason(for: error, response: response))
                         continuation.resume(throwing: error)
                     }
                 case .failure(let error):
+                    AppAnalytics.logFailure("요선생 채팅", "요선생 응답", reason: AppAnalytics.failureReason(for: error))
                     continuation.resume(throwing: error)
                 }
             }

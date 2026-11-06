@@ -1,9 +1,21 @@
 import SwiftUI
 import KakaoSDKCommon
 import KakaoSDKAuth
+import FirebaseCore
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(
+        _ application: UIApplication,
+        didFinishLaunchingWithOptions launchOption: [UIApplication.LaunchOptionsKey: Any]? = nil
+    ) -> Bool {
+        FirebaseApp.configure()
+        return true
+    }
+}
 
 @main
 struct mohaemukzipApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     
     init() {
         guard let appKey = Bundle.main.object(

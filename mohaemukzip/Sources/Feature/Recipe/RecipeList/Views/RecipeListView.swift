@@ -68,7 +68,7 @@ struct RecipeListView: View {
                 // MARK: - Search Entry
                 /// 레시피 검색 화면으로 이동하는 진입 버튼
                 // 검색창 진입 시 searchText 초기화
-                Button( action: { router.push(.recipeSearch(viewModel)); searchVM.searchText = "" } ) {
+                Button( action: { AppAnalytics.logButton("레시피 목록", "검색창 열기"); router.push(.recipeSearch(viewModel)); searchVM.searchText = "" } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .foregroundStyle(.grey100)
@@ -132,6 +132,7 @@ struct RecipeListView: View {
                             RecipeVideoCard(
                                 video: video,
                                 onTapBookmark: {
+                                    AppAnalytics.logButton("레시피 목록", "북마크 변경", details: ["레시피_번호": video.id, "변경_방향": video.isBookmarked ? "해제" : "등록"])
                                     viewModel.toggleBookmark(recipeId: video.id)
                                 }
                             )
@@ -213,6 +214,7 @@ struct RecipeListView: View {
         let isSelected = (viewModel.selectedCuisine == cuisine)
 
         return Button {
+            AppAnalytics.logButton("레시피 목록", "음식 분류 선택", details: ["음식_분류": cuisine.rawValue])
             viewModel.selectCuisine(cuisine)
         } label: {
             VStack(spacing: 8) {
@@ -314,6 +316,7 @@ struct RecipeListView: View {
         onTap: @escaping () -> Void
     ) -> some View {
         Button {
+            AppAnalytics.logButton("레시피 목록", "하위 분류 선택", details: ["하위_분류": title])
             onTap()
         } label: {
             HStack(alignment: .center, spacing: 0) {

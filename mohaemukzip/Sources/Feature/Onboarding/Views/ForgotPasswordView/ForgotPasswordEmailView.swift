@@ -19,7 +19,7 @@ struct ForgotPasswordEmailView: View {
         VStack(spacing: 50) {
             
             HStack(spacing: 0) {
-                Button(action: { router.pop() }) {
+                Button(action: { AppAnalytics.logButton("비밀번호 찾기 이메일 입력", "뒤로가기"); router.pop() }) {
                     Image("icon-back-big")
                         .foregroundStyle(.grey700)
                         .frame(width: 44, height: 44, alignment: .leading)
@@ -71,6 +71,7 @@ struct ForgotPasswordEmailView: View {
             Spacer()
             
             Button( action: {
+                AppAnalytics.logButton("비밀번호 찾기 이메일 입력", "인증번호 요청")
                 
                 Task {
                     let ok = await viewModel.requestEmailVerification(email: viewModel.email)

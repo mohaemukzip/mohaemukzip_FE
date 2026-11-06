@@ -28,6 +28,7 @@ private extension StatsView {
                     .font(.PretendardSemibold20)
                     .foregroundStyle(.grey900)
                 Button {
+                    AppAnalytics.logButton("홈 통계", "집밥력 설명 보기")
                     isHomePowerInfoPresented = true
                 } label: {
                     Image(systemName: "questionmark.circle")

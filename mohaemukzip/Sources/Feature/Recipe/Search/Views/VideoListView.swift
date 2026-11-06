@@ -9,7 +9,7 @@ struct VideoListView: View {
     var body: some View {
         VStack {
             HStack {
-                Button( action: { router.pop() } ) {
+                Button( action: { AppAnalytics.logButton("레시피 검색 결과", "뒤로가기"); router.pop() } ) {
                     Image("backbutton")
                         .foregroundStyle(.grey700)
                 }
@@ -21,7 +21,9 @@ struct VideoListView: View {
                 LazyVStack(spacing: 40) {
                     ForEach(viewModel.searchedVideos) { video in
                         NavigationLink(value: Route.recipeDetail(video)) {
-                            RecipeVideoCard(video: video, onTapBookmark: {recipeVideoVM.toggleBookmark(recipeId: video.id);
+                            RecipeVideoCard(video: video, onTapBookmark: {
+                                AppAnalytics.logButton("레시피 검색 결과", "북마크 변경", details: ["레시피_번호": video.id, "변경_방향": video.isBookmarked ? "해제" : "등록"])
+                                recipeVideoVM.toggleBookmark(recipeId: video.id);
                                 // MARK: 북마크 여부 동기화를 위해 배열 내 UI 요소를 직접 토글
                                 if let index = viewModel.searchedVideos.firstIndex(where: { $0.id == video.id }) {
                                     viewModel.searchedVideos[index].isBookmarked.toggle()

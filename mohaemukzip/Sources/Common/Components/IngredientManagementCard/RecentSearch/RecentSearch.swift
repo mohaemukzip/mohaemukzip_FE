@@ -6,7 +6,7 @@ struct RecentSearch: View {
     let onDelete: () -> Void
     
     var body: some View {
-        Button ( action: { onTap() } ) {
+        Button ( action: { AppAnalytics.logButton("재료 검색", "최근 검색어 선택"); onTap() } ) {
             ZStack {
                 RoundedRectangle(cornerRadius: 30)
                     .strokeBorder(.grey300, lineWidth: 1)
@@ -17,7 +17,7 @@ struct RecentSearch: View {
                         .font(.PretendardRegular16)
                         .foregroundStyle(.grey700)
                     
-                    Button( action: { onDelete() } ) {
+                    Button( action: { AppAnalytics.logButton("재료 검색", "최근 검색어 삭제"); onDelete() } ) {
                         Image("icon-x")
                             .foregroundStyle(.grey700)
                     }
