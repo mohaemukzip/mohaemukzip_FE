@@ -133,13 +133,13 @@ struct RecipeStep: Identifiable, Equatable, Hashable {
     let title: String
     let description: String
     /// 해당 조리 단계가 시작되는 영상 시점 (초 단위, server: videoTime)
-    let videoTime: Int
+    let videoTime: Int?
 
     init(
         stepNumber: Int,
         title: String,
         description: String,
-        videoTime: Int
+        videoTime: Int?
     ) {
         self.stepNumber = stepNumber
         self.title = title
@@ -164,7 +164,7 @@ struct RecipeVideo: Identifiable, Hashable {
     /// 목록 API에서는 내려오지 않을 수 있음
     let videoUrl: String?
     /// 유튜브 영상 ID (목록/상세 API 공통)
-    let videoId: String
+    let videoId: String?
     /// 유튜브 채널 ID
     /// 목록 API에서는 제공되지만, 상세 API에서는 없을 수 있음
     let channelId: String?
@@ -256,7 +256,7 @@ struct RecipeVideo: Identifiable, Hashable {
         id: Int,
         title: String,
         videoUrl: String? = nil,
-        videoId: String,
+        videoId: String?,
         channelId: String? = nil,
         videoDuration: String? = nil,
         channelName: String,

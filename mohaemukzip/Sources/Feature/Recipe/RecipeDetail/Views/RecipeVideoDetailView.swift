@@ -44,7 +44,7 @@ struct RecipeVideoDetailView: View {
 
         _player = StateObject(
             wrappedValue: YouTubePlayer(
-                source: .video(id: video.videoId),
+                source: video.videoId.flatMap { $0.isEmpty ? nil : .video(id: $0) },
                 configuration: .init(
                     fullscreenMode: .system,
                     allowsInlineMediaPlayback: true

@@ -30,7 +30,7 @@ struct TodayMissionModel: Equatable {
 struct RecipeModel: Identifiable, Equatable {
     let id: Int
     let title: String
-    let videoId: String
+    let videoId: String?
     let videoUrl: String
     let imageUrl: String
     let channel: String

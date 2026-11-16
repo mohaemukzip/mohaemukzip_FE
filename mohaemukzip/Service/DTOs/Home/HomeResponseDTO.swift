@@ -72,7 +72,7 @@ enum MissionStatusDTO: String, Decodable {
 struct RecommendedRecipeDTO: Decodable, Identifiable {
     let recipeId: Int
     let title: String
-    let videoId: String
+    let videoId: String?
     let videoUrl: String
     let imageUrl: String
     let channel: String

@@ -33,6 +33,7 @@ struct RecipeIngredientChip: View {
 struct RecipeStepCard: View {
 
     let step: RecipeStep
+    var canSeekVideo: Bool = true
     let onTapTimestamp: (Int) -> Void
 
     var body: some View {
@@ -50,23 +51,17 @@ struct RecipeStepCard: View {
 
                 Spacer()
 
-                Button {
-                    AppAnalytics.logButton("레시피 상세", "조리 단계 영상 이동", details: ["영상_시각": step.videoTime])
-                    onTapTimestamp(step.videoTime)
-                } label: {
-                    HStack(spacing: 0) {
-                        Image("play.arrow.filled")
-                        Text(formattedTime(step.videoTime))
-                            .font(.custom("Pretendard-Medium", size: 14))
-                            .foregroundStyle(.white)
+브랜치	수정 내용
+FIX]-통계-UI (네 코드)	canSeekVideo가 true이고 videoTime이 존재할 때만 버튼 표시
+dev (다른 사람 코드)	영상 이동 버튼 클릭 시 AppAnalytics.logButton()으로 통계 기록
                     }
+                    .buttonStyle(.plain)
+                    .padding(.leading, 4)
+                    .padding(.trailing, 8)
+                    .padding(.vertical, 2)
+                    .background(Color(red: 0.29, green: 0.28, blue: 0.28))
+                    .cornerRadius(30)
                 }
-                .buttonStyle(.plain)
-                .padding(.leading, 4)
-                .padding(.trailing, 8)
-                .padding(.vertical, 2)
-                .background(Color(red: 0.29, green: 0.28, blue: 0.28))
-                .cornerRadius(30)
             }
 
             Rectangle()
