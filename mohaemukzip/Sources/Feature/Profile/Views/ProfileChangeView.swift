@@ -88,6 +88,7 @@ private extension ProfileChangeView {
     var header: some View {
         HStack(spacing: 8) {
             Button {
+                AppAnalytics.logButton("프로필 수정", "뒤로가기")
                 router.pop()
                 dismiss()
             } label: {
@@ -103,6 +104,7 @@ private extension ProfileChangeView {
             Spacer()
 
             Button {
+                AppAnalytics.logButton("프로필 수정", "확인")
                 saveAndDismiss()
             } label: {
                 Text("확인")

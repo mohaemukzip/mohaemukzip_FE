@@ -57,6 +57,7 @@ private extension CalandarView {
             Spacer()
             
             Button {
+                AppAnalytics.logButton("요리 달력", "이전 달")
                 displayedMonth = addMonths(displayedMonth, value: -1)
             } label: {
                 Image(systemName: "chevron.left")
@@ -66,6 +67,7 @@ private extension CalandarView {
             .buttonStyle(.plain)
             
             Button {
+                AppAnalytics.logButton("요리 달력", "다음 달")
                 displayedMonth = addMonths(displayedMonth, value: 1)
             } label: {
                 Image(systemName: "chevron.right")

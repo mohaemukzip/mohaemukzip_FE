@@ -210,6 +210,7 @@ struct PasswordChangeView: View {
         HStack(spacing: 8) {
 
             Button {
+                AppAnalytics.logButton("비밀번호 변경", "뒤로가기")
                 back()
             } label: {
 
@@ -287,6 +288,7 @@ private extension PasswordChangeView {
             }
 
             Button {
+                AppAnalytics.logButton("비밀번호 변경", "인증번호 받기")
 
                 viewModel.sendVerificationCode()
 
@@ -389,6 +391,7 @@ private extension PasswordChangeView {
             }
 
             Button {
+                AppAnalytics.logButton("비밀번호 변경", "인증하기")
 
                 viewModel.verifyCode()
 
@@ -474,6 +477,7 @@ private extension PasswordChangeView {
             if viewModel.canComplete {
 
                 Button {
+                    AppAnalytics.logButton("비밀번호 변경", "비밀번호 변경 제출")
 
                     viewModel.complete {
                         dismiss()

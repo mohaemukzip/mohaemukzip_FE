@@ -19,7 +19,7 @@ struct ResetPasswordView: View {
         VStack(spacing: 50) {
             
             HStack(spacing: 0) {
-                Button(action: { router.pop() }) {
+                Button(action: { AppAnalytics.logButton("비밀번호 재설정", "뒤로가기"); router.pop() }) {
                     Image("icon-back-big")
                         .foregroundStyle(.grey700)
                         .frame(width: 44, height: 44, alignment: .leading)
@@ -84,6 +84,7 @@ struct ResetPasswordView: View {
             Spacer()
             
             Button( action: {
+                AppAnalytics.logButton("비밀번호 재설정", "비밀번호 변경")
                 
                 Task {
                     await viewModel.resetPassword()

@@ -37,6 +37,7 @@ struct SignupFinishView: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             Button {
+                AppAnalytics.logButton("회원가입 완료", "시작하기")
                 // 회원가입 완료 후 "시작하기" 버튼 클릭 시 appState의 enterMain으로 홈화면으로 이동
                 appState.enterMain()
             } label: {

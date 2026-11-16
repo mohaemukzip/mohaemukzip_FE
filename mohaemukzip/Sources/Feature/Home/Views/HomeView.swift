@@ -179,6 +179,7 @@ private extension HomeView {
                     .foregroundStyle(.main400)
                 
                 Button {
+                    AppAnalytics.logButton("홈 보드", "퀘스트 도전하기", details: ["메뉴_번호": home.todayMission.dishId])
                     print("BEFORE:", router.path)
                     searchViewModel.selectedDishId = home.todayMission.dishId
                     router.push(.videoList(recipeVideoVM))

@@ -31,7 +31,7 @@ struct RequestBottomSheet: View {
                     .padding(.leading, 14)
             }.padding(.bottom, 50)
             
-            Button( action: { onRequest(text); isShowingSheet.toggle() } ) {
+            Button( action: { AppAnalytics.logButton("재료 추가 요청", "추가 요청하기"); onRequest(text); isShowingSheet.toggle() } ) {
                 OrangeButton(text: "추가 요청하기", size: .big)
             }.frame(height: 56)
         }.padding(.horizontal)

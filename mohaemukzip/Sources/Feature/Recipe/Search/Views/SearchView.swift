@@ -9,7 +9,7 @@ struct SearchView: View {
         @Bindable var viewModel = viewModel
         VStack {
             HStack(spacing: 30) {
-                Button( action: { router.pop(); viewModel.searchText = "" } ) { Image("backbutton") }
+                Button( action: { AppAnalytics.logButton("레시피 검색", "뒤로가기"); router.pop(); viewModel.searchText = "" } ) { Image("backbutton") }
                 ZStack {
                     RoundedRectangle(cornerRadius: 10)
                         .foregroundStyle(.grey100)
@@ -19,7 +19,7 @@ struct SearchView: View {
                             .padding(.leading, 10)
                         
                         if !viewModel.searchText.isEmpty {
-                            Button ( action: { viewModel.searchText = "" } ) {
+                            Button ( action: { AppAnalytics.logButton("레시피 검색", "검색어 지우기"); viewModel.searchText = "" } ) {
                                 Image("icon-x")
                                     .foregroundStyle(.grey500)
                                     .padding(.trailing, 10)
@@ -33,7 +33,7 @@ struct SearchView: View {
                 LazyVStack {
                     ForEach(viewModel.suggestions) { suggestion in
                         
-                        Button ( action: { viewModel.selectedDishId = suggestion.id
+                        Button ( action: { AppAnalytics.logButton("레시피 검색", "추천 검색 결과 선택", details: ["메뉴_번호": suggestion.id]); viewModel.selectedDishId = suggestion.id
                                            router.push(.videoList(recipeVideoVM)) } ) {
                             SearchSuggestion(inputText: viewModel.searchText, suggestionText: suggestion.text)
                                 // MARK: onAppear 활용해서 무한스크롤 구현

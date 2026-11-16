@@ -11,12 +11,12 @@ struct IngredientSearchView: View {
         @Bindable var viewModel = viewModel
         VStack {
             HStack {
-                Button( action: { router.pop() } ) {
+                Button( action: { AppAnalytics.logButton("재료 목록", "뒤로가기"); router.pop() } ) {
                     Image("icon-back-big")
                         .foregroundStyle(.grey700)
                 }
                 
-                Button ( action: { router.push(.ingredientDetailSearch) } ) {
+                Button ( action: { AppAnalytics.logButton("재료 목록", "검색창 열기"); router.push(.ingredientDetailSearch) } ) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 10)
                             .frame(height: 44)
@@ -40,7 +40,7 @@ struct IngredientSearchView: View {
                 HStack {
                     ForEach(Category.allCases, id: \.self) { category in
                         VStack {
-                            Button( action: { viewModel.selectedCategory = category } ) {
+                            Button( action: { AppAnalytics.logButton("재료 목록", "카테고리 선택", details: ["카테고리": category.rawValue]); viewModel.selectedCategory = category } ) {
                                 Text(category.rawValue)
                                     .foregroundStyle(viewModel.selectedCategory == category ? .grey900 : .grey400)
                                     .font(.PretendardSemibold18)

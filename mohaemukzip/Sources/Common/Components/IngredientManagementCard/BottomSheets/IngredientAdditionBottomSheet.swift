@@ -61,6 +61,7 @@ struct IngredientFormBottomSheet: View {
                         .foregroundStyle(.grey900)
                         .font(.PretendardSemibold20)
                     Button(action: {
+                        AppAnalytics.logButton("재료 입력", "즐겨찾기 변경", details: ["재료_번호": ingredient.id, "변경_방향": ingredient.isSaved ? "해제" : "등록"])
                         ingredient.isSaved.toggle()
                         onSave(ingredient.id)
                     }) {
@@ -70,7 +71,7 @@ struct IngredientFormBottomSheet: View {
                     
                     Spacer()
                     
-                    Button( action: { onDismiss() } ) {
+                    Button( action: { AppAnalytics.logButton("재료 입력", "닫기"); onDismiss() } ) {
                         Image("icon-x")
                             .foregroundStyle(.grey700)
                     }
@@ -89,6 +90,7 @@ struct IngredientFormBottomSheet: View {
                 
                 VStack(spacing: 0) {
                     Button ( action: {
+                        AppAnalytics.logButton("재료 입력", "보관장소 목록 변경", details: ["변경_방향": showStorageCase ? "닫기" : "열기"])
                         withAnimation(.easeInOut(duration: 0.3)) {
                             showStorageCase.toggle()
                         }
@@ -114,6 +116,7 @@ struct IngredientFormBottomSheet: View {
                         VStack(spacing: 0) {
                             ForEach(StorageType.allCases, id: \.self) { type in
                                 Button {
+                                    AppAnalytics.logButton("재료 입력", "보관장소 선택", details: ["보관장소": type.displayName])
                                     formValue.storage = type
                                     withAnimation(.easeInOut(duration: 0.3)) {
                                         showStorageCase.toggle()
@@ -150,7 +153,7 @@ struct IngredientFormBottomSheet: View {
                 }.padding(.bottom, 6)
                 
                 HStack(spacing: 12) {
-                    Button ( action: { withAnimation { showDatePicker.toggle() } }) {
+                    Button ( action: { AppAnalytics.logButton("재료 입력", "소비기한 달력 변경", details: ["변경_방향": showDatePicker ? "닫기" : "열기"]); withAnimation { showDatePicker.toggle() } }) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 4)
                                 .frame(height: 40)
@@ -166,7 +169,7 @@ struct IngredientFormBottomSheet: View {
                         }
                     }
                     
-                    Button ( action: { Task {
+                    Button ( action: { AppAnalytics.logButton("재료 입력", "자동 추천일"); Task {
                         if let newDate = await onRecommend() {
                             self.formValue.expiryDate = newDate
                         }
@@ -236,6 +239,7 @@ struct IngredientFormBottomSheet: View {
             VStack {
                 Spacer()
                 Button(action: {
+                    AppAnalytics.logButton("재료 입력", mode.modeTitle, details: ["재료_번호": ingredient.id, "보관장소": formValue.storage.displayName])
                     
                     // 유효하지 않은 중량인 경우(parsedAmount == nil) 요청 중단
                     guard let parsedAmount else {

@@ -56,6 +56,7 @@ struct LevelUpView: View {
         }
         .safeAreaInset(edge: .bottom) {
             Button {
+                AppAnalytics.logButton("레벨업", "확인")
                 onConfirm?()
             } label: {
                 Text("확인")

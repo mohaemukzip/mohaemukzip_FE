@@ -14,7 +14,7 @@ struct IngredientDetailSearchView: View {
         ZStack(alignment: .bottom) {
             VStack {
                 HStack {
-                    Button( action: { router.pop(); viewModel.searchText = "" } ) {
+                    Button( action: { AppAnalytics.logButton("재료 검색", "뒤로가기"); router.pop(); viewModel.searchText = "" } ) {
                         Image("icon-back-big")
                             .foregroundStyle(.grey700)
                     }
@@ -82,7 +82,7 @@ struct IngredientDetailSearchView: View {
                                     .foregroundStyle(.grey500)
                             }
                         } else {
-                            IngredientList(ingredients: viewModel.savedIngredients,
+                            IngredientList(analyticsScreen: "재료 검색", ingredients: viewModel.savedIngredients,
                                            onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                            onPlusTap: { item in self.sheetItem = item },
                                            onRequest: { self.isShowingSheet = true })
@@ -94,7 +94,7 @@ struct IngredientDetailSearchView: View {
                         HStack {
                             ForEach(Category.allCases, id: \.self) { category in
                                 VStack {
-                                    Button( action: { viewModel.selectedCategory = category } ) {
+                                    Button( action: { AppAnalytics.logButton("재료 검색", "카테고리 선택", details: ["카테고리": category.rawValue]); viewModel.selectedCategory = category } ) {
                                         Text(category.rawValue)
                                             .foregroundStyle(viewModel.selectedCategory == category ? .grey900 : .grey400)
                                             .font(.PretendardSemibold18)
@@ -108,7 +108,7 @@ struct IngredientDetailSearchView: View {
                         }
                     }.padding(.vertical, 10)
                     
-                    IngredientList(ingredients: viewModel.filteredIngredients,
+                    IngredientList(analyticsScreen: "재료 검색", ingredients: viewModel.filteredIngredients,
                                    onSaveTap: { id in Task { await viewModel.toggleSaved(id: id)} },
                                    onPlusTap: { item in self.sheetItem = item })
                     .padding(.horizontal)
@@ -116,7 +116,7 @@ struct IngredientDetailSearchView: View {
             } // end of VStack
             
             if viewModel.savedIngredients.isEmpty {
-                Button ( action: { isShowingSheet = true } ) {
+                Button ( action: { AppAnalytics.logButton("재료 검색", "재료 추가 요청 열기", details: ["버튼_위치": "하단"]); isShowingSheet = true } ) {
                     IngredientRequestButton()
                         .padding(.horizontal)
                         .padding(.bottom, 35)

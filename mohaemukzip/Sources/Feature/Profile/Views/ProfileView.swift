@@ -64,7 +64,7 @@ struct ProfileView: View {
                 set: { if !$0 { viewModel.errorMessage = nil } }
             )
         ) {
-            Button("확인", role: .cancel) { }
+            Button("확인", role: .cancel) { AppAnalytics.logButton("마이", "오류 안내 확인"); }
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
@@ -85,6 +85,7 @@ private extension ProfileView {
             Spacer()
 
             Button {
+                AppAnalytics.logButton("마이", "설정")
                 router.push(.profileSettings)
             } label: {
                 Image("setting")
@@ -128,6 +129,7 @@ private extension ProfileView {
 
             // NOTE: 닉네임/프로필 사진 수정 화면은 다음 단계에서 구현할 예정
             Button {
+                AppAnalytics.logButton("마이", "프로필 수정")
                 router.push(.profileChange)
             } label: {
                 Image("pencil")
@@ -216,6 +218,7 @@ private extension ProfileView {
                 .padding(.top, 12)
 
             Button {
+                AppAnalytics.logButton("마이", "서비스 이용약관")
                 guard let url = URL(
                     string: "https://troubled-parmesan-24d.notion.site/37e3dc31532c80b19ca9d940eb648de6?source=copy_link"
                 ) else {
@@ -231,6 +234,7 @@ private extension ProfileView {
             .buttonStyle(PressableRowButtonStyle())
 
             Button {
+                AppAnalytics.logButton("마이", "개인정보 처리방침")
                 guard let url = URL(
                     string: "https://troubled-parmesan-24d.notion.site/3853dc31532c806f838cf3fa5347fe7d?source=copy_link"
                 ) else {
@@ -246,6 +250,7 @@ private extension ProfileView {
             .buttonStyle(PressableRowButtonStyle())
 
             Button {
+                AppAnalytics.logButton("마이", "일대일 문의하기")
                 guard let url = URL(string: "http://pf.kakao.com/_dkFxfX") else {
                     return
                 }
@@ -266,6 +271,7 @@ private extension ProfileView {
         verticalPadding: CGFloat = 10
     ) -> some View {
         Button {
+            AppAnalytics.logButton("마이", "레시피 목록 열기", details: ["목록_종류": title, "버튼_위치": "제목"])
             router.push(route)
         } label: {
             // 우측 '>' 버튼 포함한 라인 전체가 탭 영역

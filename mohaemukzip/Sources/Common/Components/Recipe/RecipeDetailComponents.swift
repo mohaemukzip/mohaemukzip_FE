@@ -51,16 +51,9 @@ struct RecipeStepCard: View {
 
                 Spacer()
 
-                if canSeekVideo, let videoTime = step.videoTime {
-                    Button {
-                        onTapTimestamp(videoTime)
-                    } label: {
-                        HStack(spacing: 0) {
-                            Image("play.arrow.filled")
-                            Text(formattedTime(videoTime))
-                                .font(.custom("Pretendard-Medium", size: 14))
-                                .foregroundStyle(.white)
-                        }
+브랜치	수정 내용
+FIX]-통계-UI (네 코드)	canSeekVideo가 true이고 videoTime이 존재할 때만 버튼 표시
+dev (다른 사람 코드)	영상 이동 버튼 클릭 시 AppAnalytics.logButton()으로 통계 기록
                     }
                     .buttonStyle(.plain)
                     .padding(.leading, 4)

@@ -43,8 +43,9 @@ struct ProfileSettingsView: View {
         }
         .navigationBarHidden(true)
         .alert("로그아웃", isPresented: $showLogoutConfirm) {
-            Button("취소", role: .cancel) {}
+            Button("취소", role: .cancel) { AppAnalytics.logButton("로그아웃 확인", "취소");}
             Button("로그아웃", role: .destructive) {
+                AppAnalytics.logButton("로그아웃 확인", "로그아웃")
                 Task { @MainActor in
                     isPerformingAuthAction = true
                     defer { isPerformingAuthAction = false }
@@ -57,8 +58,9 @@ struct ProfileSettingsView: View {
             Text("정말 로그아웃할까요?")
         }
         .alert("회원탈퇴", isPresented: $showWithdrawalConfirm) {
-            Button("취소", role: .cancel) {}
+            Button("취소", role: .cancel) { AppAnalytics.logButton("회원탈퇴 확인", "취소");}
             Button("회원탈퇴", role: .destructive) {
+                AppAnalytics.logButton("회원탈퇴 확인", "회원탈퇴")
                 Task { @MainActor in
                     isPerformingAuthAction = true
                     defer { isPerformingAuthAction = false }
@@ -75,6 +77,7 @@ struct ProfileSettingsView: View {
     private var header: some View {
         HStack(spacing: 8) {
             Button {
+                AppAnalytics.logButton("설정", "뒤로가기")
                 router.pop()
             } label: {
                 Image("backbutton")
@@ -158,6 +161,7 @@ struct ProfileSettingsView: View {
         action: @escaping () -> Void
     ) -> some View {
         Button {
+            AppAnalytics.logButton("설정", title)
             action()
         } label: {
             HStack(spacing: 8) {
